@@ -1,0 +1,3 @@
+target_sources(WoTMin2D PUBLIC
+    ${CMAKE_CURRENT_LIST_DIR}/Screen.cpp
+)
