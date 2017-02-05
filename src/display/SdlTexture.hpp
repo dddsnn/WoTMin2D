@@ -6,6 +6,7 @@
 #include <SDL.h>
 #include <cstdint>
 #include <cassert>
+#include <algorithm>
 
 namespace wotmin2d {
 

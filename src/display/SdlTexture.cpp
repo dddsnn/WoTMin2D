@@ -75,11 +75,16 @@ void SdlTexture::setPixel(unsigned int index, std::uint8_t red,
     pixels32[index] = pixel_value;
 }
 
-// void SdlTexture::setRange(unsigned int start, unsigned int end,
-//                           std::uint8_t red, std::uint8_t green,
-//                           std::uint8_t blue) {
-//     // TODO
-// }
+void SdlTexture::setRange(unsigned int start, unsigned int end,
+                          std::uint8_t red, std::uint8_t green,
+                          std::uint8_t blue) {
+    if (start > end) {
+        return;
+    }
+    std::uint32_t pixel_value = SDL_MapRGB(pixel_format, red, green, blue);
+    std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
+    std::fill_n(pixels32 + start, end - start, pixel_value);
+}
 
 unsigned int SdlTexture::getWidth() const {
     return width;

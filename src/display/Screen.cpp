@@ -68,11 +68,9 @@ void Screen::draw(const State& state) {
 
 void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
-    // TODO
-    // Make a 100 pixel line 100 pixels into the texture for testing
-    for (int i = 100; i < 200; i++) {
-        texture->setPixel(100 * texture->getWidth() + i, 0xff, 0x00, 0x00);
-    }
+    // Make 50 100 pixel line 100 pixels into the texture for testing.
+    texture->setRange(100 * texture->getWidth(), 150 * texture->getWidth(),
+                      0xff, 0x00, 0x00);
     texture->unlock();
 }
 
