@@ -1,5 +1,5 @@
-#ifndef BLOB_H
-#define BLOB_H
+#ifndef BLOB_HPP
+#define BLOB_HPP
 
 #include "Particle.hpp"
 
