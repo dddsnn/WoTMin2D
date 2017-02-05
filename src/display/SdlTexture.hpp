@@ -4,10 +4,8 @@
 #include "SdlException.hpp"
 
 #include <SDL.h>
-#include <utility>
 #include <cstdint>
 #include <cassert>
-#include <stdexcept>
 
 namespace wotmin2d {
 
@@ -34,7 +32,6 @@ class SdlTexture {
     const unsigned int height;
     SDL_Texture* texture;
     SDL_PixelFormat* pixel_format;
-    unsigned int bits_per_pixel;
     void* pixels;
     int pitch;
 };

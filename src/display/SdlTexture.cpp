@@ -9,7 +9,6 @@ SdlTexture::SdlTexture(SDL_Renderer* renderer, unsigned int width,
     height(height),
     texture(nullptr),
     pixel_format(nullptr),
-    bits_per_pixel(0),
     pixels(nullptr),
     pitch(0)
 {
@@ -27,30 +26,15 @@ std::uint32_t SdlTexture::findPixelFormat(SDL_Renderer* renderer) {
         throw SdlException("Error getting renderer info.", SDL_GetError());
     }
 
-    // Find a supported pixel format with 24 or 32 bits per pixel, with 24
-    // taking preference.
-    std::uint_fast32_t pixel_format_id;
+    // Find a supported pixel format with 32 bits per pixel.
+    std::uint_fast32_t pixel_format_id = SDL_PIXELFORMAT_UNKNOWN;
     for (unsigned int i = 0; i < 16 && i < info.num_texture_formats; i++) {
         std::uint_fast32_t candidate = info.texture_formats[i];
-        unsigned int candidate_bits_per_pixel = SDL_BITSPERPIXEL(candidate);
-        switch (candidate_bits_per_pixel) {
-            case 24:
-                // 24 is our preference, take it immediately.
-                pixel_format_id = candidate;
-                bits_per_pixel = candidate_bits_per_pixel;
-                goto bits_per_pixel_found;
-                break;
-            case 32:
-                // 32 is acceptable, but keep looking.
-                pixel_format_id = candidate;
-                bits_per_pixel = candidate_bits_per_pixel;
-                break;
-            default:
-                break;
+        if (SDL_BITSPERPIXEL(candidate) == 32) {
+            pixel_format_id = candidate;
         }
     }
-    bits_per_pixel_found:
-    if (bits_per_pixel == 0) {
+    if (pixel_format_id == SDL_PIXELFORMAT_UNKNOWN) {
         throw SdlException("No useful pixel format supported.", SDL_GetError());
     }
     pixel_format = SDL_AllocFormat(pixel_format_id);
@@ -87,26 +71,8 @@ void SdlTexture::setPixel(unsigned int index, std::uint8_t red,
            "Attempting to set pixels on unlocked texture.");
 
     std::uint32_t pixel_value = SDL_MapRGB(pixel_format, red, green, blue);
-    switch (bits_per_pixel) {
-        case 24: {
-            // Write the lower 3 bytes of the pixel_value.
-            // TODO I'm pretty sure little endian needs special handling here.
-            std::uint8_t* pixels8 = static_cast<std::uint8_t*>(pixels);
-            pixels8[3 * index] = pixel_value;
-            pixels8[3 * index + 1] = pixel_value >> 8;
-            pixels8[3 * index + 2] = pixel_value >> 16;
-            break;
-        }
-        case 32: {
-            std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
-            pixels32[index] = pixel_value;
-            break;
-        }
-        default:
-            // This shouldn't happen, since we check bits_per_pixel in the
-            // constructor.
-            throw std::runtime_error("Illegal bytes per pixel.");
-    }
+    std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
+    pixels32[index] = pixel_value;
 }
 
 // void SdlTexture::setRange(unsigned int start, unsigned int end,
