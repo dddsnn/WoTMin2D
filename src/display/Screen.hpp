@@ -2,6 +2,8 @@
 #define SCREEN_HPP
 
 #include "../game/State.hpp"
+#include "../game/Blob.hpp"
+#include "../game/Particle.hpp"
 #include "SdlTexture.hpp"
 #include "SdlException.hpp"
 

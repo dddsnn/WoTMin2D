@@ -68,9 +68,13 @@ void Screen::draw(const State& state) {
 
 void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
-    // Make 50 100 pixel line 100 pixels into the texture for testing.
-    texture->setRange(100 * texture->getWidth(), 150 * texture->getWidth(),
-                      0xff, 0x00, 0x00);
+    for (const Blob& blob: state.getBlobs()) {
+        for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
+            unsigned int index = texture->getWidth() * particle->getY() +
+                                 particle->getX();
+            texture->setPixel(index, 0xff, 0x00, 0x00);
+        }
+    }
     texture->unlock();
 }
 
