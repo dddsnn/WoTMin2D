@@ -4,7 +4,7 @@ namespace wotmin2d {
 
 Battle::Battle(unsigned int width, unsigned int height) :
     screen(width, height),
-    state() {
+    state(width, height) {
 }
 
 void Battle::start() {
