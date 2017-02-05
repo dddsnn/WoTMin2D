@@ -6,26 +6,25 @@ Blob::Blob() :
     particles() {
 }
 
-Blob::Blob(unsigned int center_x, unsigned int center_y, float radius,
-           unsigned int max_x, unsigned int max_y) :
+Blob::Blob(const Vector& center, float radius, const Vector& bottom_right) :
     particles() {
-    // Add particles by checking every coordinate within the bounding box of the
+    if (radius <= 0.0) {
+        return;
+    }
+    // Add particles by checking every Vector within the bounding box of the
     // circle whether it's less than the radius from the center.
-    unsigned int rounded_radius = static_cast<unsigned int>(radius + 0.5);
-    unsigned int left = rounded_radius > center_x ? 0 : center_x
-                                                        - rounded_radius;
-    unsigned int top = rounded_radius > center_y ? 0 : center_y
-                                                       - rounded_radius;
-    unsigned int right = std::min(center_x + rounded_radius, max_x);
-    unsigned int bottom = std::min(center_y + rounded_radius, max_y);
+    int rounded_radius = static_cast<int>(radius + 0.5);
+    int left = std::max(0, center.getX() - rounded_radius);
+    int top = std::max(0, center.getY() - rounded_radius);
+    int right = std::min(center.getX() + rounded_radius, bottom_right.getX());
+    int bottom = std::min(center.getY() + rounded_radius, bottom_right.getY());
     float squared_radius = radius * radius;
-    for (unsigned int i = left; i <= right; i++) {
-        for (unsigned int j = top ; j <= bottom; j++) {
-            int diff_x = i - center_x;
-            int diff_y = j - center_y;
-            if (diff_x * diff_x + diff_y * diff_y < squared_radius) {
+    for (Vector c(left, top); c.y() <= bottom; c.y()++) {
+        for (c.x() = left; c.x() <= right; c.x()++) {
+            Vector center_to_c = c - center;
+            if (center_to_c.dot(center_to_c) < squared_radius) {
                 // Add particle.
-                particles.push_back(std::make_shared<Particle>(i, j));
+                particles.push_back(std::make_shared<Particle>(c));
             }
         }
     }

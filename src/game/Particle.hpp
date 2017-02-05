@@ -1,17 +1,16 @@
 #ifndef PARTICLE_HPP
 #define PARTICLE_HPP
 
+#include "Vector.hpp"
+
 namespace wotmin2d {
 
 class Particle {
     public:
-    Particle(unsigned int x, unsigned int y);
-    unsigned int getX() const;
-    unsigned int getY() const;
-    void setPosition(unsigned int x, unsigned int y);
+    Particle(Vector position);
+    const Vector& getPosition() const;
     private:
-    unsigned int x;
-    unsigned int y;
+    Vector position_;
 };
 
 }

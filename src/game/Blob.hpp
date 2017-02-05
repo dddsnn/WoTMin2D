@@ -2,6 +2,7 @@
 #define BLOB_HPP
 
 #include "Particle.hpp"
+#include "Vector.hpp"
 
 #include <vector>
 #include <memory>
@@ -12,8 +13,7 @@ namespace wotmin2d {
 class Blob {
     public:
     Blob();
-    Blob(unsigned int center_x, unsigned int center_y, float radius,
-         unsigned int max_x, unsigned int max_y);
+    Blob(const Vector& center, float radius, const Vector& bottom_right);
     const std::vector<std::shared_ptr<Particle>>& getParticles() const;
     private:
     std::vector<std::shared_ptr<Particle>> particles;

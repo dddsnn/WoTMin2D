@@ -70,8 +70,9 @@ void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
     for (const Blob& blob: state.getBlobs()) {
         for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
-            unsigned int index = texture->getWidth() * particle->getY() +
-                                 particle->getX();
+            unsigned int index = texture->getWidth()
+                                 * particle->getPosition().getY()
+                                 + particle->getPosition().getX();
             texture->setPixel(index, 0xff, 0x00, 0x00);
         }
     }
