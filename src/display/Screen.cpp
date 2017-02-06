@@ -70,9 +70,17 @@ void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
     for (const Blob& blob: state.getBlobs()) {
         for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
-            unsigned int index = texture->getWidth()
-                                 * particle->getPosition().getY()
-                                 + particle->getPosition().getX();
+            int x_signed = particle->getPosition().getX();
+            int y_signed = particle->getPosition().getY();
+            assert(x_signed >= 0 && "X coordinate must be positive");
+            assert(y_signed >= 0 && "Y coordinate must be positive");
+            unsigned int x = static_cast<unsigned int>(x_signed);
+            unsigned int y = static_cast<unsigned int>(y_signed);
+            assert(x < state.getWidth() && "X coordinate must be less than "
+                                           "arena width.");
+            assert(y < state.getHeight() && "Y coordinate must be less than "
+                                           "arena height.");
+            unsigned int index = texture->getWidth() * y + x;
             texture->setPixel(index, 0xff, 0x00, 0x00);
         }
     }

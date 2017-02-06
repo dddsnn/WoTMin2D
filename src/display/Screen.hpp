@@ -11,6 +11,7 @@
 #include <utility>
 #include <cstdint>
 #include <memory>
+#include <cassert>
 
 namespace wotmin2d {
 
