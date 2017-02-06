@@ -6,6 +6,7 @@ Blob::Blob() :
     particles() {
 }
 
+// bottom_right is the right- and bottom-most valid coordinate.
 Blob::Blob(const Vector& center, float radius, const Vector& bottom_right) :
     particles() {
     if (radius <= 0.0) {
