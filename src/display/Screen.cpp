@@ -68,6 +68,9 @@ void Screen::draw(const State& state) {
 
 void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
+    // Make everything white to begin with.
+    texture->setRange(0, texture->getWidth() * texture->getHeight(), 0xff, 0xff,
+                      0xff);
     for (const Blob& blob: state.getBlobs()) {
         for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
             int x_signed = particle->getPosition().getX();
