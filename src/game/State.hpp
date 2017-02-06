@@ -2,6 +2,7 @@
 #define STATE_HPP
 
 #include "Blob.hpp"
+#include "Vector.hpp"
 
 #include <vector>
 

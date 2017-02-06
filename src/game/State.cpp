@@ -6,7 +6,12 @@ State::State(unsigned int width, unsigned int height) :
     width(width),
     height(height),
     blobs() {
+    // TODO some blobs for testing     
+    blobs.emplace_back(Vector(200, 200), 130, Vector(width, height));
+    blobs.emplace_back(Vector(400, 400), 130, Vector(width, height));
+    blobs.emplace_back(Vector(800, 600), 130, Vector(width, height));
 }
+
 void State::update() {
 
 }
