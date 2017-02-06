@@ -10,14 +10,14 @@ namespace wotmin2d {
 
 class State {
     public:
-    State(unsigned int width, unsigned int height);
+    State(unsigned int arena_width, unsigned int arena_height);
     void update();
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     const std::vector<Blob>& getBlobs() const;
     private:
-    const unsigned int width;
-    const unsigned int height;
+    const unsigned int arena_width;
+    const unsigned int arena_height;
     std::vector<Blob> blobs;
 };
 

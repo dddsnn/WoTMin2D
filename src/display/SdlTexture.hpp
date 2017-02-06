@@ -12,8 +12,8 @@ namespace wotmin2d {
 
 class SdlTexture {
     public:
-    SdlTexture(SDL_Renderer* renderer, unsigned int width,
-               unsigned int height);
+    SdlTexture(SDL_Renderer* renderer, unsigned int texture_width,
+               unsigned int texture_height);
     SdlTexture(const SdlTexture& other) = delete;
     SdlTexture& operator=(SdlTexture other) = delete;
     ~SdlTexture();
@@ -29,8 +29,8 @@ class SdlTexture {
     private:
     std::uint32_t findPixelFormat(SDL_Renderer* renderer);
     const SDL_Renderer* const renderer;
-    const unsigned int width;
-    const unsigned int height;
+    const unsigned int texture_width;
+    const unsigned int texture_height;
     SDL_Texture* texture;
     SDL_PixelFormat* pixel_format;
     void* pixels;

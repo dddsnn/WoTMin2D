@@ -2,11 +2,11 @@
 
 namespace wotmin2d {
 
-SdlTexture::SdlTexture(SDL_Renderer* renderer, unsigned int width,
-                       unsigned int height) :
+SdlTexture::SdlTexture(SDL_Renderer* renderer, unsigned int texture_width,
+                       unsigned int texture_height) :
     renderer(renderer),
-    width(width),
-    height(height),
+    texture_width(texture_width),
+    texture_height(texture_height),
     texture(nullptr),
     pixel_format(nullptr),
     pixels(nullptr),
@@ -14,7 +14,8 @@ SdlTexture::SdlTexture(SDL_Renderer* renderer, unsigned int width,
 {
     std::uint32_t pixel_format_id = findPixelFormat(renderer);
     texture = SDL_CreateTexture(renderer, pixel_format_id,
-                                SDL_TEXTUREACCESS_STREAMING, width, height);
+                                SDL_TEXTUREACCESS_STREAMING, texture_width,
+                                texture_height);
     if (texture == nullptr) {
         throw SdlException("Error creating a texture.", SDL_GetError());
     }
@@ -87,11 +88,11 @@ void SdlTexture::setRange(unsigned int start, unsigned int end,
 }
 
 unsigned int SdlTexture::getWidth() const {
-    return width;
+    return texture_width;
 }
 
 unsigned int SdlTexture::getHeight() const {
-    return height;
+    return texture_height;
 }
 
 SDL_Texture* SdlTexture::getTexture() const {

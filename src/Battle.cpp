@@ -2,9 +2,9 @@
 
 namespace wotmin2d {
 
-Battle::Battle(unsigned int width, unsigned int height) :
-    screen(width, height),
-    state(width, height) {
+Battle::Battle(unsigned int arena_width, unsigned int arena_height) :
+    screen(arena_width, arena_height),
+    state(arena_width, arena_height) {
 }
 
 void Battle::start() {

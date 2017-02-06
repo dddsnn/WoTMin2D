@@ -2,18 +2,18 @@
 
 namespace wotmin2d {
 
-Blob::Blob(const unsigned int& width, const unsigned int& height) :
+Blob::Blob(const unsigned int& arena_width, const unsigned int& arena_height) :
     particles(),
-    width(width),
-    height(height) {
+    arena_width(arena_width),
+    arena_height(arena_height) {
 }
 
 // bottom_right is the right- and bottom-most valid coordinate.
-Blob::Blob(const Vector& center, float radius, const unsigned int& width,
-           const unsigned int& height) :
+Blob::Blob(const Vector& center, float radius, const unsigned int& arena_width,
+           const unsigned int& arena_height) :
     particles(),
-    width(width),
-    height(height) {
+    arena_width(arena_width),
+    arena_height(arena_height) {
     if (radius <= 0.0) {
         return;
     }
@@ -23,9 +23,9 @@ Blob::Blob(const Vector& center, float radius, const unsigned int& width,
     int left = std::max(0, center.getX() - rounded_radius);
     int top = std::max(0, center.getY() - rounded_radius);
     int right = std::min(center.getX() + rounded_radius,
-                         static_cast<int>(width - 1));
+                         static_cast<int>(arena_width - 1));
     int bottom = std::min(center.getY() + rounded_radius,
-                          static_cast<int>(height - 1));
+                          static_cast<int>(arena_height - 1));
     float squared_radius = radius * radius;
     for (Vector c(left, top); c.y() <= bottom; c.y()++) {
         for (c.x() = left; c.x() <= right; c.x()++) {

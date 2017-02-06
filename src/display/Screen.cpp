@@ -2,9 +2,11 @@
 
 namespace wotmin2d {
 
-void Screen::construct(unsigned int width, unsigned int height) {
+void Screen::construct(unsigned int display_width,
+                       unsigned int display_height) {
     window = SDL_CreateWindow("WoTMin2D", SDL_WINDOWPOS_CENTERED,
-                              SDL_WINDOWPOS_CENTERED, width, height, 0);
+                              SDL_WINDOWPOS_CENTERED, display_width,
+                              display_height, 0);
     if (window == nullptr) {
         throw SdlException("Error creating a window.", SDL_GetError());
     }
@@ -14,7 +16,7 @@ void Screen::construct(unsigned int width, unsigned int height) {
         throw SdlException("Error creating a renderer.", SDL_GetError());
     }
     try {
-        texture.reset(new SdlTexture(renderer, width, height));
+        texture.reset(new SdlTexture(renderer, display_width, display_height));
     } catch (...) {
         SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(window);
@@ -22,12 +24,12 @@ void Screen::construct(unsigned int width, unsigned int height) {
     }
 }
 
-Screen::Screen(unsigned int width, unsigned int height) :
+Screen::Screen(unsigned int display_width, unsigned int display_height) :
     window(nullptr),
     renderer(nullptr),
     texture(nullptr)
 {
-    construct(width, height);
+    construct(display_width, display_height);
 }
 
 Screen::Screen(const Screen& other) :
@@ -35,9 +37,9 @@ Screen::Screen(const Screen& other) :
     renderer(nullptr),
     texture(nullptr)
 {
-    int width, height;
-    SDL_GetWindowSize(other.window, &width, &height);
-    construct(width, height);
+    int display_width, display_height;
+    SDL_GetWindowSize(other.window, &display_width, &display_height);
+    construct(display_width, display_height);
 }
 
 Screen& Screen::operator=(Screen other) {
