@@ -10,6 +10,10 @@ Vector Vector::operator-(const Vector& subtrahend) const {
     return Vector(first - subtrahend.first, second - subtrahend.second);
 }
 
+Vector Vector::operator+(const Vector& summand) const {
+    return Vector(first + summand.first, second + summand.second);
+}
+
 bool Vector::operator==(const Vector& other) const {
     return first == other.first && second == other.second;
 }
