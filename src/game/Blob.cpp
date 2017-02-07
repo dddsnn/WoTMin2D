@@ -4,14 +4,15 @@ namespace wotmin2d {
 
 Blob::Blob(const unsigned int& arena_width, const unsigned int& arena_height) :
     particles(),
+    particle_map(),
     arena_width(arena_width),
     arena_height(arena_height) {
 }
 
-// bottom_right is the right- and bottom-most valid coordinate.
 Blob::Blob(const Vector& center, float radius, const unsigned int& arena_width,
            const unsigned int& arena_height) :
     particles(),
+    particle_map(),
     arena_width(arena_width),
     arena_height(arena_height) {
     if (radius <= 0.0) {
@@ -32,7 +33,7 @@ Blob::Blob(const Vector& center, float radius, const unsigned int& arena_width,
             Vector center_to_c = c - center;
             if (center_to_c.dot(center_to_c) < squared_radius) {
                 // Add particle.
-                particles.push_back(std::make_shared<Particle>(c));
+                addParticle(c);
             }
         }
     }
@@ -40,6 +41,12 @@ Blob::Blob(const Vector& center, float radius, const unsigned int& arena_width,
 
 const std::vector<std::shared_ptr<Particle>>& Blob::getParticles() const {
     return particles;
+}
+
+void Blob::addParticle(Vector position) {
+    std::shared_ptr<Particle> particle = std::make_shared<Particle>(position);
+    particles.push_back(particle);
+    particle_map.insert(ParticleMap::value_type(position, particle));
 }
 
 }

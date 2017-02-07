@@ -7,10 +7,13 @@
 #include <vector>
 #include <memory>
 #include <algorithm>
+#include <unordered_map>
 
 namespace wotmin2d {
 
 class Blob {
+    using ParticleMap = std::unordered_map<Vector, std::shared_ptr<Particle>,
+                                           Vector::Hash>;
     public:
     Blob(const unsigned int& arena_width, const unsigned int& arena_height);
     Blob(const Vector& center, float radius, const unsigned int& widht,
@@ -19,8 +22,10 @@ class Blob {
     void update();
     private:
     std::vector<std::shared_ptr<Particle>> particles;
+    ParticleMap particle_map;
     const unsigned int& arena_width;
     const unsigned int& arena_height;
+    void addParticle(Vector position);
 };
 
 }
