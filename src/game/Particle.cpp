@@ -2,31 +2,31 @@
 
 namespace wotmin2d {
 
-Particle::Particle(Vector position) :
-    position_(position),
+Particle::Particle(IntVector position) :
+    position(position),
     neighbor_north(),
     neighbor_south(),
     neighbor_west(),
     neighbor_east() {
 }
 
-const Vector& Particle::getPosition() const {
-    return position_;
+const IntVector& Particle::getPosition() const {
+    return position;
 }
 
 void Particle::move(Direction direction) {
     switch (direction) {
     case Direction::north:
-        position_.y()--;
+        position.setY(position.getY() - 1);
         break;
     case Direction::south:
-        position_.y()++;
+        position.setY(position.getY() + 1);
         break;
     case Direction::west:
-        position_.x()--;
+        position.setX(position.getX() - 1);
         break;
     case Direction::east:
-        position_.x()++;
+        position.setX(position.getX() + 1);
         break;
     }
 }

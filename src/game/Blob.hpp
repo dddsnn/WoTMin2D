@@ -12,11 +12,11 @@
 namespace wotmin2d {
 
 class Blob {
-    using ParticleMap = std::unordered_map<Vector, std::shared_ptr<Particle>,
-                                           Vector::Hash>;
+    using ParticleMap = std::unordered_map<IntVector, std::shared_ptr<Particle>,
+                                           IntVector::Hash>;
     public:
     Blob(const unsigned int& arena_width, const unsigned int& arena_height);
-    Blob(const Vector& center, float radius, const unsigned int& widht,
+    Blob(const IntVector& center, float radius, const unsigned int& width,
          const unsigned int& arena_height);
     const std::vector<std::shared_ptr<Particle>>& getParticles() const;
     void update();
@@ -25,7 +25,7 @@ class Blob {
     ParticleMap particle_map;
     const unsigned int& arena_width;
     const unsigned int& arena_height;
-    void addParticle(Vector position);
+    void addParticle(IntVector position);
 };
 
 }
