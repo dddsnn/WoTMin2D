@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <stdexcept>
+#include <array>
 
 namespace wotmin2d {
 
@@ -17,10 +18,7 @@ class Particle {
     std::shared_ptr<Particle>& neighbor(Direction direction);
     private:
     IntVector position;
-    std::shared_ptr<Particle> neighbor_north;
-    std::shared_ptr<Particle> neighbor_south;
-    std::shared_ptr<Particle> neighbor_west;
-    std::shared_ptr<Particle> neighbor_east;
+    std::array<std::shared_ptr<Particle>, 4> neighbors;
 };
 
 }
