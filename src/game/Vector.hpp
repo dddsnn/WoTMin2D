@@ -4,6 +4,7 @@
 #include <utility>
 #include <climits>
 #include <cstdint>
+#include <algorithm>
 
 namespace wotmin2d {
 
@@ -11,15 +12,29 @@ template<typename T>
 class Vector {
     using hash_t = std::uint_fast32_t;
     public:
-    Vector(T x, T y);
-    Vector<T> operator-(const Vector<T>& subtrahend) const;
+    Vector();
+    Vector(const Vector<T>& other);
+    Vector(Vector<T>&& other);
+    Vector(const T& x, const T& y);
+    Vector<T>& operator=(Vector<T> other);
+    template<typename U>
+    friend void swap(Vector<U>& first, Vector<U>& second) noexcept;
     Vector<T> operator+(const Vector<T>& summand) const;
+    Vector<T> operator-(const Vector<T>& subtrahend) const;
+    Vector<T> operator*(const T& scalar) const;
+    Vector<T> operator/(const T& scalar) const;
+    Vector<T>& operator+=(const Vector<T>& summand);
+    Vector<T>& operator-=(const Vector<T>& subtrahend);
+    Vector<T>& operator*=(const T& scalar);
+    Vector<T>& operator/=(const T& scalar);
     bool operator==(const Vector<T>& other) const;
+    bool operator!=(const Vector<T>& other) const;
     T dot(const Vector<T>& other) const;
-    T getX() const;
-    T getY() const;
-    void setX(T x);
-    void setY(T y);
+    T squaredNorm() const;
+    const T& getX() const;
+    const T& getY() const;
+    void setX(const T& x);
+    void setY(const T& y);
 
     class Hash {
         public:
@@ -31,16 +46,44 @@ class Vector {
 };
 
 using IntVector = Vector<int>;
+using FloatVector = Vector<float>;
 
 template<typename T>
-Vector<T>::Vector(T x, T y) :
+Vector<T>::Vector() :
+    x(),
+    y() {
+}
+
+template<typename T>
+Vector<T>::Vector(const Vector<T>& other) :
+    x(other.x),
+    y(other.y) {
+}
+
+template<typename T>
+Vector<T>::Vector(Vector<T>&& other) :
+    x(),
+    y() {
+    swap(*this, other);
+}
+
+template<typename T>
+Vector<T>::Vector(const T& x, const T& y) :
     x(x),
     y(y) {
 }
 
 template<typename T>
-Vector<T> Vector<T>::operator-(const Vector<T>& subtrahend) const {
-    return Vector<T>(x - subtrahend.x, y - subtrahend.y);
+Vector<T>& Vector<T>::operator=(Vector<T> other) {
+    swap(*this, other);
+    return *this;
+}
+
+template<typename T>
+void swap(Vector<T>& first, Vector<T>& second) noexcept {
+    using std::swap;
+    swap(first.x, second.x);
+    swap(first.y, second.y);
 }
 
 template<typename T>
@@ -49,8 +92,56 @@ Vector<T> Vector<T>::operator+(const Vector<T>& summand) const {
 }
 
 template<typename T>
+Vector<T> Vector<T>::operator-(const Vector<T>& subtrahend) const {
+    return Vector<T>(x - subtrahend.x, y - subtrahend.y);
+}
+
+template<typename T>
+Vector<T> Vector<T>::operator*(const T& scalar) const {
+    return Vector(x * scalar, y * scalar);
+}
+
+template<typename T>
+Vector<T> Vector<T>::operator/(const T& scalar) const {
+    return Vector(x / scalar, y / scalar);
+}
+
+template<typename T>
+Vector<T>& Vector<T>::operator+=(const Vector<T>& summand) {
+    x += summand.x;
+    y += summand.y;
+    return *this;
+}
+
+template<typename T>
+Vector<T>& Vector<T>::operator-=(const Vector<T>& subtrahend) {
+    x -= subtrahend.x;
+    y -= subtrahend.y;
+    return *this;
+}
+
+template<typename T>
+Vector<T>& Vector<T>::operator*=(const T& scalar) {
+    x *= scalar;
+    y *= scalar;
+    return *this;
+}
+
+template<typename T>
+Vector<T>& Vector<T>::operator/=(const T& scalar) {
+    x /= scalar;
+    y /= scalar;
+    return *this;
+}
+
+template<typename T>
 bool Vector<T>::operator==(const Vector& other) const {
     return x == other.x && y == other.y;
+}
+
+template<typename T>
+bool Vector<T>::operator!=(const Vector& other) const {
+    return !(*this == other);
 }
 
 template<typename T>
@@ -59,22 +150,27 @@ T Vector<T>::dot(const Vector& other) const {
 }
 
 template<typename T>
-T Vector<T>::getX() const {
+T Vector<T>::squaredNorm() const {
+    return this->dot(*this);
+}
+
+template<typename T>
+const T& Vector<T>::getX() const {
     return x;
 }
 
 template<typename T>
-T Vector<T>::getY() const {
+const T& Vector<T>::getY() const {
     return y;
 }
 
 template<typename T>
-void Vector<T>::setX(T x) {
+void Vector<T>::setX(const T& x) {
     this->x = x;
 }
 
 template<typename T>
-void Vector<T>::setY(T y) {
+void Vector<T>::setY(const T& y) {
     this->y = y;
 }
 
