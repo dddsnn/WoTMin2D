@@ -19,7 +19,7 @@ class Blob {
     Blob(const IntVector& center, float radius, const unsigned int& width,
          const unsigned int& arena_height);
     const std::vector<std::shared_ptr<Particle>>& getParticles() const;
-    void update();
+    void advance();
     private:
     std::vector<std::shared_ptr<Particle>> particles;
     ParticleMap particle_map;

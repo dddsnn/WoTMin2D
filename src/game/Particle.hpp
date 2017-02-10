@@ -7,6 +7,9 @@
 #include <memory>
 #include <stdexcept>
 #include <array>
+#include <cmath>
+#include <utility>
+#include <algorithm>
 
 namespace wotmin2d {
 

@@ -16,4 +16,9 @@ Vector<int>::hash_t Vector<int>::Hash::operator()(const Vector<int>& vector)
     return left | right;
 }
 
+template<> template<>
+Vector<int>::operator Vector<float>() const {
+    return Vector<float>(static_cast<float>(x), static_cast<float>(y));
+}
+
 }

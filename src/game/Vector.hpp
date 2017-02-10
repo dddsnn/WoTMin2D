@@ -13,9 +13,9 @@ class Vector {
     using hash_t = std::uint_fast32_t;
     public:
     Vector();
-    Vector(const Vector<T>& other);
+    constexpr Vector(const Vector<T>& other);
     Vector(Vector<T>&& other);
-    Vector(const T& x, const T& y);
+    constexpr Vector(const T& x, const T& y);
     Vector<T>& operator=(Vector<T> other);
     template<typename U>
     friend void swap(Vector<U>& first, Vector<U>& second) noexcept;
@@ -29,6 +29,8 @@ class Vector {
     Vector<T>& operator/=(const T& scalar);
     bool operator==(const Vector<T>& other) const;
     bool operator!=(const Vector<T>& other) const;
+    template<typename U>
+    explicit operator Vector<U>() const;
     T dot(const Vector<T>& other) const;
     T squaredNorm() const;
     const T& getX() const;
@@ -55,7 +57,7 @@ Vector<T>::Vector() :
 }
 
 template<typename T>
-Vector<T>::Vector(const Vector<T>& other) :
+constexpr Vector<T>::Vector(const Vector<T>& other) :
     x(other.x),
     y(other.y) {
 }
@@ -68,7 +70,7 @@ Vector<T>::Vector(Vector<T>&& other) :
 }
 
 template<typename T>
-Vector<T>::Vector(const T& x, const T& y) :
+constexpr Vector<T>::Vector(const T& x, const T& y) :
     x(x),
     y(y) {
 }
