@@ -26,6 +26,7 @@ class Blob {
     const unsigned int& arena_width;
     const unsigned int& arena_height;
     void addParticle(IntVector position);
+    void advanceParticle(Particle& particle);
 };
 
 }

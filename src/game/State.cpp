@@ -11,7 +11,9 @@ State::State(unsigned int arena_width, unsigned int arena_height) :
 }
 
 void State::update() {
-
+    for (auto& blob: blobs) {
+        blob.advance();
+    }
 }
 
 unsigned int State::getWidth() const {

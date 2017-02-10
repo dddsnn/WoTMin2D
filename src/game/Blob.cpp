@@ -60,4 +60,29 @@ void Blob::addParticle(IntVector position) {
     }
 }
 
+void Blob::advance() {
+    for (std::shared_ptr<Particle>& particle: particles) {
+        // TODO can these be null?
+        advanceParticle(*particle);
+    }
+}
+
+void Blob::advanceParticle(Particle& particle) {
+    using Movement = Particle::Movement;
+    Movement movement = particle.getMovement();
+    if (!movement.second) {
+        // Particle doesn't want to move.
+        return;
+    }
+    Direction& forward_direction = movement.first;
+    std::shared_ptr<Particle>& forward_neighbor
+        = particle.neighbor(forward_direction);
+    if (forward_neighbor != nullptr) {
+        // Movement is obstructed. Only collide.
+        particle.collideWith(*forward_neighbor);
+        return;
+    }
+    particle.move(forward_direction);
+}
+
 }
