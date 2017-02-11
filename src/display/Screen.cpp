@@ -84,8 +84,11 @@ void Screen::updateTexture(const State& state) {
             assert(x < state.getWidth() && "X coordinate must be less than "
                                            "arena width.");
             assert(y < state.getHeight() && "Y coordinate must be less than "
-                                           "arena height.");
-            unsigned int index = texture->getWidth() * y + x;
+                                            "arena height.");
+            // The y-coordinates of particle start at the bottom, increasing
+            // towards the top, texture coordinates are the other way around.
+            unsigned int y_top_bottom = texture->getHeight() - y - 1;
+            unsigned int index = texture->getWidth() * y_top_bottom + x;
             texture->setPixel(index, 0xff, 0x00, 0x00);
         }
     }
