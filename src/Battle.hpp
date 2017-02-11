@@ -15,7 +15,7 @@ class Battle {
            unsigned int display_width, unsigned int display_height);
     void start();
     void stop();
-
+    constexpr static std::uint_fast32_t frame_ticks = 50;
     private:
     Screen screen;
     State state;
