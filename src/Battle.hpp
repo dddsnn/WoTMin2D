@@ -11,7 +11,8 @@ namespace wotmin2d {
 
 class Battle {
     public:
-    Battle(unsigned int arena_width, unsigned int arena_height);
+    Battle(unsigned int arena_width, unsigned int arena_height,
+           unsigned int display_width, unsigned int display_height);
     void start();
     void stop();
 

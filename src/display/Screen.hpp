@@ -17,14 +17,16 @@ namespace wotmin2d {
 
 class Screen {
     public:
-    Screen(unsigned int display_width, unsigned int display_height);
+    Screen(unsigned int arena_width, unsigned int arena_height,
+           unsigned int display_width, unsigned int display_height);
     Screen(const Screen& other);
     Screen& operator=(Screen other);
     ~Screen();
     friend void swap(Screen& first, Screen& second) noexcept;
     void draw(const State& state);
     private:
-    void construct(unsigned int display_width, unsigned int display_height);
+    void construct(unsigned int arena_width, unsigned int arena_height,
+                   unsigned int display_width, unsigned int display_height);
     void updateTexture(const State& state);
     void presentTexture();
     SDL_Window* window;

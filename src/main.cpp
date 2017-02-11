@@ -12,7 +12,7 @@ int main(int, char**) {
         }
     }
 
-    wotmin2d::Battle b(800, 600);
+    wotmin2d::Battle b(800, 600, 800, 600);
     b.start();
 
     SDL_Quit();
