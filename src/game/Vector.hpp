@@ -5,6 +5,7 @@
 #include <climits>
 #include <cstdint>
 #include <algorithm>
+#include <cmath>
 
 namespace wotmin2d {
 
@@ -32,6 +33,7 @@ class Vector {
     template<typename U>
     explicit operator Vector<U>() const;
     T dot(const Vector<T>& other) const;
+    float norm() const;
     T squaredNorm() const;
     const T& getX() const;
     const T& getY() const;
@@ -149,6 +151,11 @@ bool Vector<T>::operator!=(const Vector& other) const {
 template<typename T>
 T Vector<T>::dot(const Vector& other) const {
     return x * other.x + y * other.y;
+}
+
+template<typename T>
+float Vector<T>::norm() const {
+    return std::sqrt(static_cast<float>(squaredNorm()));
 }
 
 template<typename T>
