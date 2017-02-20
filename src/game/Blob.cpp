@@ -45,44 +45,100 @@ const std::vector<std::shared_ptr<Particle>>& Blob::getParticles() const {
     return particles;
 }
 
-void Blob::addParticle(IntVector position) {
+void Blob::addParticle(const IntVector& position) {
     std::shared_ptr<Particle> particle = std::make_shared<Particle>(position);
     particles.push_back(particle);
     particle_map.insert(ParticleMap::value_type(position, particle));
-    // Make potential neighbors aware of the new particle.
+    // Make potential neighbors aware of the new particle and vice versa.
     for (const Direction& direction: Direction::directions()) {
         auto neighbor_iter = particle_map.find(position + direction.vector());
         if (neighbor_iter == particle_map.end()) {
             continue;
         }
         std::shared_ptr<Particle>& neighbor = (*neighbor_iter).second;
-        neighbor->neighbor(direction) = particle;
+        particle->neighbor(direction) = neighbor;
+        neighbor->neighbor(direction.opposite()) = particle;
     }
 }
 
 void Blob::advance() {
     for (std::shared_ptr<Particle>& particle: particles) {
-        // TODO can these be null?
-        advanceParticle(*particle);
+        assert(particle != nullptr && "Particle in blob was null.");
+        advanceParticle(particle);
     }
 }
 
-void Blob::advanceParticle(Particle& particle) {
+void Blob::advanceParticle(std::shared_ptr<Particle>& particle) {
+    // Advance particle to "refresh" pressure.
+    particle->advance();
+    // Now, where does it want to go?
     using Movement = Particle::Movement;
-    Movement movement = particle.getMovement();
+    Movement movement = particle->getMovement();
     if (!movement.second) {
         // Particle doesn't want to move.
         return;
     }
-    Direction& forward_direction = movement.first;
+    const Direction& forward_direction = movement.first;
     std::shared_ptr<Particle>& forward_neighbor
-        = particle.neighbor(forward_direction);
+        = particle->neighbor(forward_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
-        particle.collideWith(*forward_neighbor);
+        particle->collideWith(*forward_neighbor);
         return;
     }
-    particle.move(forward_direction);
+    const IntVector old_position = particle->getPosition();
+    particle->move(forward_direction);
+    updateParticleInformation(particle, old_position);
+}
+
+void Blob::updateParticleInformation(std::shared_ptr<Particle>& particle,
+                                     const IntVector& old_position) {
+    updateParticleMap(particle, old_position);
+    updateParticleNeighbors(particle);
+}
+
+void Blob::updateParticleMap(const std::shared_ptr<Particle>& particle,
+                             const IntVector& old_position) {
+    #ifndef NDEBUG
+        ParticleMap::iterator old_position_iter
+            = particle_map.find(old_position);
+        assert(old_position_iter != particle_map.end()
+               && old_position_iter->second == particle
+               && "Particle not found at the position it's supposed to be.");
+    #endif
+    // Delete particle at old position.
+    particle_map.erase(old_position);
+    // Put back in at the new position. We're deleting a shared pointer here and
+    // immediately copying it back in. I haven't found a better solution without
+    // using C++17 features.
+    auto emplace_result = particle_map.emplace(particle->getPosition(),
+                                               particle);
+    assert(emplace_result.second && "There is already a particle at the new "
+           "position in the map.");
+}
+
+void Blob::updateParticleNeighbors(std::shared_ptr<Particle>& particle) {
+    for (Direction direction: Direction::directions()) {
+        std::shared_ptr<Particle>& neighbor = particle->neighbor(direction);
+        if (neighbor != nullptr) {
+            // Unset the old neighbor's neighbor (since the particle just left).
+            neighbor->neighbor(direction.opposite()) = nullptr;
+        }
+        // Get the new neighbor from the particle map.
+        // TODO Can this be done more efficiently?
+        IntVector new_neighbor_position = particle->getPosition()
+                                          + direction.vector();
+        ParticleMap::iterator new_neighbor_iter
+            = particle_map.find(new_neighbor_position);
+        if (new_neighbor_iter == particle_map.end()) {
+            // No neighbor in that direction at the new position.
+            neighbor = nullptr;
+        } else {
+            neighbor = new_neighbor_iter->second;
+            // Also set our particle as the new neighbor's neighbor.
+            neighbor->neighbor(direction.opposite()) = particle;
+        }
+    }
 }
 
 }

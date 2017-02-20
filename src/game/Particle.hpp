@@ -20,6 +20,8 @@ class Particle {
     const IntVector& getPosition() const;
     std::shared_ptr<Particle>& neighbor(Direction direction);
     Movement getMovement() const;
+    void advance();
+    void setTarget(const IntVector& target, float target_pressure);
     void move(Direction direction);
     void collideWith(Particle& forward_neighbor);
     private:

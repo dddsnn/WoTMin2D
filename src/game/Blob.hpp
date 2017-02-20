@@ -8,6 +8,8 @@
 #include <memory>
 #include <algorithm>
 #include <unordered_map>
+#include <cassert>
+#include <utility>
 
 namespace wotmin2d {
 
@@ -25,8 +27,13 @@ class Blob {
     ParticleMap particle_map;
     const unsigned int& arena_width;
     const unsigned int& arena_height;
-    void addParticle(IntVector position);
-    void advanceParticle(Particle& particle);
+    void addParticle(const IntVector& position);
+    void advanceParticle(std::shared_ptr<Particle>& particle);
+    void updateParticleInformation(std::shared_ptr<Particle>& particle,
+                                     const IntVector& old_position);
+    void updateParticleMap(const std::shared_ptr<Particle>& particle,
+                             const IntVector& old_position);
+    void updateParticleNeighbors(std::shared_ptr<Particle>& particle);
 };
 
 }
