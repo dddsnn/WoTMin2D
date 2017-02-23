@@ -34,6 +34,8 @@ class Blob {
     void updateParticleMap(const std::shared_ptr<Particle>& particle,
                              const IntVector& old_position);
     void updateParticleNeighbors(std::shared_ptr<Particle>& particle);
+    void moveParticleLine(std::shared_ptr<Particle> first_particle,
+                          Direction movement_direction);
 };
 
 }

@@ -86,9 +86,7 @@ void Blob::advanceParticle(std::shared_ptr<Particle>& particle) {
         particle->collideWith(*forward_neighbor);
         return;
     }
-    const IntVector old_position = particle->getPosition();
-    particle->move(forward_direction);
-    updateParticleInformation(particle, old_position);
+    moveParticleLine(particle, forward_direction);
 }
 
 void Blob::updateParticleInformation(std::shared_ptr<Particle>& particle,
@@ -138,6 +136,23 @@ void Blob::updateParticleNeighbors(std::shared_ptr<Particle>& particle) {
             // Also set our particle as the new neighbor's neighbor.
             neighbor->neighbor(direction.opposite()) = particle;
         }
+    }
+}
+
+// Moves a particle and drags all particles behind it in the same direction so
+// that no bubbles appear.
+void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
+                            Direction forward_direction) {
+    while (first_particle != nullptr) {
+        const IntVector old_position = first_particle->getPosition();
+        std::shared_ptr<Particle> next_particle
+            = first_particle->neighbor(forward_direction.opposite());
+        first_particle->move(forward_direction);
+        // TODO Could be done more efficiently in one go instead of separately
+        // for each changed particle.
+        updateParticleInformation(first_particle, old_position);
+        // Swap and proceed with the next particle in line.
+        std::swap(first_particle, next_particle);
     }
 }
 
