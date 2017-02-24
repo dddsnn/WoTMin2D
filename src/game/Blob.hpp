@@ -10,6 +10,7 @@
 #include <unordered_map>
 #include <cassert>
 #include <utility>
+#include <array>
 
 namespace wotmin2d {
 

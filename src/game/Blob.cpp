@@ -143,11 +143,46 @@ void Blob::updateParticleNeighbors(std::shared_ptr<Particle>& particle) {
 // that no bubbles appear.
 void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
                             Direction forward_direction) {
-    while (first_particle != nullptr) {
+    std::array<Direction, 2> side_directions = { forward_direction.left(),
+                                                 Direction::north()
+                                               };
+    side_directions[1] = side_directions[0].opposite();
+    while (true) {
         const IntVector old_position = first_particle->getPosition();
         std::shared_ptr<Particle> next_particle
             = first_particle->neighbor(forward_direction.opposite());
         first_particle->move(forward_direction);
+        if (next_particle == nullptr) {
+            // We're at the end of the line, first_particle is now the last
+            // particle. Check whether we're isolating particles to the side of
+            // it and pull them in behind is that's the case.
+            // We have to do this before we call updateParticleInformation() for
+            // first_particle so it still has its old neighbors.
+            for (Direction side_direction: side_directions) {
+                std::shared_ptr<Particle> side_neighbor
+                    = first_particle->neighbor(side_direction);
+                if (side_neighbor == nullptr
+                    || side_neighbor->getNumberOfNeighbors() > 1) {
+                    continue;
+                }
+                const IntVector side_old_position
+                    = side_neighbor->getPosition();
+                side_neighbor->move(side_direction.opposite());
+                // Update first_particle's information first so it's not in the
+                // way in the particle map.
+                updateParticleInformation(first_particle, old_position);
+                updateParticleInformation(side_neighbor, side_old_position);
+                // We've moved one particle, no need to also move the other one,
+                // since it can't be disconnected anymore (it's adjacent to the
+                // particle we just moved).
+                return;
+            }
+            // At this point, neither of the side neighbors had to be moved. But
+            // we still have to update first_particle's information since we
+            // couldn't do it before.
+            updateParticleInformation(first_particle, old_position);
+            return;
+        }
         // TODO Could be done more efficiently in one go instead of separately
         // for each changed particle.
         updateParticleInformation(first_particle, old_position);

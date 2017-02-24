@@ -18,6 +18,7 @@ class Direction {
     constexpr static const std::array<Direction, 4>& directions();
     constexpr operator val_t() const;
     constexpr Direction opposite() const;
+    constexpr Direction left() const;
     constexpr IntVector vector() const;
     private:
     constexpr Direction(val_t value);
@@ -69,6 +70,10 @@ constexpr Direction::operator val_t() const {
 
 constexpr Direction Direction::opposite() const {
     return Direction((value + 2) % 4);
+}
+
+constexpr Direction Direction::left() const {
+    return Direction((value + 1) % 4);
 }
 
 constexpr IntVector Direction::vector() const {

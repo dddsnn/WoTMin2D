@@ -18,6 +18,7 @@ class Particle {
     using Movement = std::pair<Direction, bool>;
     Particle(IntVector position);
     const IntVector& getPosition() const;
+    unsigned int getNumberOfNeighbors() const;
     std::shared_ptr<Particle>& neighbor(Direction direction);
     Movement getMovement() const;
     void advance();

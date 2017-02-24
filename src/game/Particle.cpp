@@ -15,6 +15,13 @@ const IntVector& Particle::getPosition() const {
     return position;
 }
 
+unsigned int Particle::getNumberOfNeighbors() const {
+    return std::count_if(neighbors.begin(), neighbors.end(),
+                         [] (std::shared_ptr<Particle> p) {
+                            return p != nullptr;
+                         });
+}
+
 std::shared_ptr<Particle>& Particle::neighbor(Direction direction) {
     // Direction is convertible to unsigned integers, starting at 0.
     return neighbors[static_cast<Direction::val_t>(direction)];
