@@ -40,9 +40,11 @@ void Particle::setTarget(const IntVector& target, float target_pressure) {
 }
 
 void Particle::move(Direction direction) {
-    position += direction.vector();
-    // TODO damp based on time step/distance traveled
-    pressure = FloatVector(0.0f, 0.0f);
+    const IntVector vector = direction.vector();
+    position += vector;
+    // TODO Damp based on time step/distance traveled. Right now this just
+    // subtracts the unit vector in movement direction.
+    pressure -= static_cast<FloatVector>(vector);
 }
 
 void Particle::collideWith(Particle& forward_neighbor) {
