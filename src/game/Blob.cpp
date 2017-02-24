@@ -55,20 +55,20 @@ void Blob::addParticle(const IntVector& position) {
         if (neighbor_iter == particle_map.end()) {
             continue;
         }
-        std::shared_ptr<Particle>& neighbor = (*neighbor_iter).second;
-        particle->neighbor(direction) = neighbor;
-        neighbor->neighbor(direction.opposite()) = particle;
+        std::shared_ptr<Particle>& neighbor = neighbor_iter->second;
+        particle->setNeighbor(direction, neighbor);
+        neighbor->setNeighbor(direction.opposite(), particle);
     }
 }
 
 void Blob::advance() {
-    for (std::shared_ptr<Particle>& particle: particles) {
+    for (const std::shared_ptr<Particle>& particle: particles) {
         assert(particle != nullptr && "Particle in blob was null.");
         advanceParticle(particle);
     }
 }
 
-void Blob::advanceParticle(std::shared_ptr<Particle>& particle) {
+void Blob::advanceParticle(const std::shared_ptr<Particle>& particle) {
     // Advance particle to "refresh" pressure.
     particle->advance();
     // Now, where does it want to go?
@@ -79,8 +79,8 @@ void Blob::advanceParticle(std::shared_ptr<Particle>& particle) {
         return;
     }
     const Direction& forward_direction = movement.first;
-    std::shared_ptr<Particle>& forward_neighbor
-        = particle->neighbor(forward_direction);
+    const std::shared_ptr<Particle>& forward_neighbor
+        = particle->getNeighbor(forward_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
         particle->collideWith(*forward_neighbor);
@@ -89,7 +89,7 @@ void Blob::advanceParticle(std::shared_ptr<Particle>& particle) {
     moveParticleLine(particle, forward_direction);
 }
 
-void Blob::updateParticleInformation(std::shared_ptr<Particle>& particle,
+void Blob::updateParticleInformation(const std::shared_ptr<Particle>& particle,
                                      const IntVector& old_position) {
     updateParticleMap(particle, old_position);
     updateParticleNeighbors(particle);
@@ -115,12 +115,13 @@ void Blob::updateParticleMap(const std::shared_ptr<Particle>& particle,
            "position in the map.");
 }
 
-void Blob::updateParticleNeighbors(std::shared_ptr<Particle>& particle) {
+void Blob::updateParticleNeighbors(const std::shared_ptr<Particle>& particle) {
     for (Direction direction: Direction::directions()) {
-        std::shared_ptr<Particle>& neighbor = particle->neighbor(direction);
+        const std::shared_ptr<Particle>& neighbor
+            = particle->getNeighbor(direction);
         if (neighbor != nullptr) {
             // Unset the old neighbor's neighbor (since the particle just left).
-            neighbor->neighbor(direction.opposite()) = nullptr;
+            neighbor->setNeighbor(direction.opposite(), nullptr);
         }
         // Get the new neighbor from the particle map.
         // TODO Can this be done more efficiently?
@@ -130,11 +131,11 @@ void Blob::updateParticleNeighbors(std::shared_ptr<Particle>& particle) {
             = particle_map.find(new_neighbor_position);
         if (new_neighbor_iter == particle_map.end()) {
             // No neighbor in that direction at the new position.
-            neighbor = nullptr;
+            particle->setNeighbor(direction, nullptr);
         } else {
-            neighbor = new_neighbor_iter->second;
+            particle->setNeighbor(direction, new_neighbor_iter->second);
             // Also set our particle as the new neighbor's neighbor.
-            neighbor->neighbor(direction.opposite()) = particle;
+            neighbor->setNeighbor(direction.opposite(), particle);
         }
     }
 }
@@ -150,7 +151,7 @@ void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
     while (true) {
         const IntVector old_position = first_particle->getPosition();
         std::shared_ptr<Particle> next_particle
-            = first_particle->neighbor(forward_direction.opposite());
+            = first_particle->getNeighbor(forward_direction.opposite());
         first_particle->move(forward_direction);
         if (next_particle == nullptr) {
             // We're at the end of the line, first_particle is now the last
@@ -159,8 +160,8 @@ void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
             // We have to do this before we call updateParticleInformation() for
             // first_particle so it still has its old neighbors.
             for (Direction side_direction: side_directions) {
-                std::shared_ptr<Particle> side_neighbor
-                    = first_particle->neighbor(side_direction);
+                const std::shared_ptr<Particle> side_neighbor
+                    = first_particle->getNeighbor(side_direction);
                 if (side_neighbor == nullptr
                     || side_neighbor->getNumberOfNeighbors() > 1) {
                     continue;

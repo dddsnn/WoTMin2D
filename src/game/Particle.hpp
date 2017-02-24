@@ -19,7 +19,9 @@ class Particle {
     Particle(IntVector position);
     const IntVector& getPosition() const;
     unsigned int getNumberOfNeighbors() const;
-    std::shared_ptr<Particle>& neighbor(Direction direction);
+    const std::shared_ptr<Particle>& getNeighbor(Direction direction) const;
+    void setNeighbor(Direction direction,
+                     const std::shared_ptr<Particle>& neighbor);
     Movement getMovement() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);

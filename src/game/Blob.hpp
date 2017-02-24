@@ -29,12 +29,12 @@ class Blob {
     const unsigned int& arena_width;
     const unsigned int& arena_height;
     void addParticle(const IntVector& position);
-    void advanceParticle(std::shared_ptr<Particle>& particle);
-    void updateParticleInformation(std::shared_ptr<Particle>& particle,
+    void advanceParticle(const std::shared_ptr<Particle>& particle);
+    void updateParticleInformation(const std::shared_ptr<Particle>& particle,
                                      const IntVector& old_position);
     void updateParticleMap(const std::shared_ptr<Particle>& particle,
                              const IntVector& old_position);
-    void updateParticleNeighbors(std::shared_ptr<Particle>& particle);
+    void updateParticleNeighbors(const std::shared_ptr<Particle>& particle);
     void moveParticleLine(std::shared_ptr<Particle> first_particle,
                           Direction movement_direction);
 };

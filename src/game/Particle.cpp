@@ -22,9 +22,15 @@ unsigned int Particle::getNumberOfNeighbors() const {
                          });
 }
 
-std::shared_ptr<Particle>& Particle::neighbor(Direction direction) {
+const std::shared_ptr<Particle>& Particle::getNeighbor(Direction direction)
+    const {
     // Direction is convertible to unsigned integers, starting at 0.
     return neighbors[static_cast<Direction::val_t>(direction)];
+}
+
+void Particle::setNeighbor(Direction direction,
+                           const std::shared_ptr<Particle>& neighbor) {
+    neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
 }
 
 void Particle::advance() {
