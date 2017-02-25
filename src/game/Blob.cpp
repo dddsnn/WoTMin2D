@@ -157,10 +157,8 @@ void Blob::updateParticleNeighbors(const std::shared_ptr<Particle>& particle) {
 void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
                             Direction forward_direction) {
     std::array<Direction, 2> side_directions = { forward_direction.left(),
-                                                 Direction::north()
+                                                 forward_direction.right()
                                                };
-    // TODO add Direction::right() to avoid this.
-    side_directions[1] = side_directions[0].opposite();
     while (true) {
         const IntVector old_position = first_particle->getPosition();
         std::shared_ptr<Particle> next_particle

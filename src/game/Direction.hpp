@@ -22,6 +22,7 @@ class Direction {
     constexpr operator val_t() const;
     constexpr Direction opposite() const;
     constexpr Direction left() const;
+    constexpr Direction right() const;
     constexpr IntVector vector() const;
     private:
     constexpr Direction(val_t value);
@@ -122,6 +123,10 @@ constexpr Direction Direction::opposite() const {
 
 constexpr Direction Direction::left() const {
     return Direction((value + 1) % 4);
+}
+
+constexpr Direction Direction::right() const {
+    return Direction((value + 3) % 4);
 }
 
 constexpr IntVector Direction::vector() const {
