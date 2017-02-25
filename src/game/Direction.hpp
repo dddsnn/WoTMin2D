@@ -15,7 +15,8 @@ class Direction {
     constexpr static Direction south();
     constexpr static Direction west();
     constexpr static Direction east();
-    constexpr static const std::array<Direction, 4>& directions();
+    constexpr static const std::array<Direction, 4>& all();
+    constexpr const std::array<Direction, 3>& others() const;
     constexpr operator val_t() const;
     constexpr Direction opposite() const;
     constexpr Direction left() const;
@@ -53,15 +54,33 @@ namespace direction_detail {
     // This namespace only contains a list of all possible directions. Can't put
     // it in the class itself, because constexpr members have to be defined
     // where they're declared, but at that point the class is still incomplete.
-    constexpr static std::array<Direction, 4> directions = { Direction::north(),
-                                                             Direction::south(),
-                                                             Direction::west(),
-                                                             Direction::east()
-                                                           };
+    constexpr static std::array<Direction, 4> all = { Direction::north(),
+                                                      Direction::south(),
+                                                      Direction::west(),
+                                                      Direction::east()
+                                                    };
+    constexpr static std::array<Direction, 3> all_except_north
+        = { Direction::south(), Direction::west(), Direction::east() };
+    constexpr static std::array<Direction, 3> all_except_south
+        = { Direction::north(), Direction::west(), Direction::east() };
+    constexpr static std::array<Direction, 3> all_except_west
+        = { Direction::north(), Direction::south(), Direction::east() };
+    constexpr static std::array<Direction, 3> all_except_east
+        = { Direction::north(), Direction::south(), Direction::west() };
+    // The order of arrays is dependent on the actual values for the directions.
+    // This could get confusing if the values ever change, but I can't think of
+    // a better solution.
+    constexpr static std::array<std::array<Direction, 3>, 4> all_except
+        = { all_except_north, all_except_west, all_except_south,
+            all_except_east };
 }
 
-constexpr const std::array<Direction, 4>& Direction::directions() {
-    return direction_detail::directions;
+constexpr const std::array<Direction, 4>& Direction::all() {
+    return direction_detail::all;
+}
+
+constexpr const std::array<Direction, 3>& Direction::others() const {
+    return direction_detail::all_except[value];
 }
 
 constexpr Direction::operator val_t() const {

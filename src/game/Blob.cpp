@@ -48,9 +48,9 @@ const std::vector<std::shared_ptr<Particle>>& Blob::getParticles() const {
 void Blob::addParticle(const IntVector& position) {
     std::shared_ptr<Particle> particle = std::make_shared<Particle>(position);
     particles.push_back(particle);
-    particle_map.insert(ParticleMap::value_type(position, particle));
+    particle_map.emplace(position, particle);
     // Make potential neighbors aware of the new particle and vice versa.
-    for (const Direction& direction: Direction::directions()) {
+    for (const Direction& direction: Direction::all()) {
         auto neighbor_iter = particle_map.find(position + direction.vector());
         if (neighbor_iter == particle_map.end()) {
             continue;
@@ -116,7 +116,7 @@ void Blob::updateParticleMap(const std::shared_ptr<Particle>& particle,
 }
 
 void Blob::updateParticleNeighbors(const std::shared_ptr<Particle>& particle) {
-    for (Direction direction: Direction::directions()) {
+    for (Direction direction: Direction::all()) {
         const std::shared_ptr<Particle>& neighbor
             = particle->getNeighbor(direction);
         if (neighbor != nullptr) {
