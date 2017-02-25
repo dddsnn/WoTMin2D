@@ -5,6 +5,7 @@
 
 #include <cstdint>
 #include <array>
+#include <bitset>
 
 namespace wotmin2d {
 
@@ -17,6 +18,7 @@ class Direction {
     constexpr static Direction east();
     constexpr static const std::array<Direction, 4>& all();
     constexpr const std::array<Direction, 3>& others() const;
+    constexpr const std::bitset<4>& bitmask() const;
     constexpr operator val_t() const;
     constexpr Direction opposite() const;
     constexpr Direction left() const;
@@ -53,9 +55,13 @@ constexpr Direction Direction::east() {
     return Direction(value_east);
 }
 
+constexpr Direction::operator val_t() const {
+    return value;
+}
+
 namespace direction_detail {
-    // This namespace only contains a list of all possible directions. Can't put
-    // it in the class itself, because constexpr members have to be defined
+    // This namespace only contains constants relating to Direction. Can't put
+    // them in the class itself, because constexpr members have to be defined
     // where they're declared, but at that point the class is still incomplete.
     constexpr static std::array<Direction, 4> all = { Direction::north(),
                                                       Direction::south(),
@@ -70,18 +76,31 @@ namespace direction_detail {
         = { Direction::north(), Direction::south(), Direction::east() };
     constexpr static std::array<Direction, 3> all_except_east
         = { Direction::north(), Direction::south(), Direction::west() };
-    // The order of arrays is dependent on the actual values for the directions.
-    // This could get confusing if the values ever change, but I can't think of
-    // a better solution.
+    // The order of elements in the following arrays is dependent on the actual
+    // values for the directions. This could get confusing if the values ever
+    // change, but I can't think of a better solution.
     constexpr static std::array<std::array<Direction, 3>, 4> all_except
         = { all_except_north, all_except_west, all_except_south,
             all_except_east };
-    // Same here.
     constexpr static std::array<const IntVector, 4> vectors
         = { IntVector(0, 1), // north
             IntVector(-1, 0), // west
             IntVector(0, -1), // south
             IntVector(1, 0) // east
+          };
+    constexpr static std::array<const std::bitset<4>, 4> bitmasks
+        = { std::bitset<4>(
+                1 << static_cast<Direction::val_t>(Direction::north())
+            ),
+            std::bitset<4>(
+                1 << static_cast<Direction::val_t>(Direction::west())
+            ),
+            std::bitset<4>(
+                1 << static_cast<Direction::val_t>(Direction::south())
+            ),
+            std::bitset<4>(
+                1 << static_cast<Direction::val_t>(Direction::east())
+            )
           };
 }
 
@@ -93,8 +112,8 @@ constexpr const std::array<Direction, 3>& Direction::others() const {
     return direction_detail::all_except[value];
 }
 
-constexpr Direction::operator val_t() const {
-    return value;
+constexpr const std::bitset<4>& Direction::bitmask() const {
+    return direction_detail::bitmasks[value];
 }
 
 constexpr Direction Direction::opposite() const {
