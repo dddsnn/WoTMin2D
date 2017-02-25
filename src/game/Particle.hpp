@@ -10,6 +10,7 @@
 #include <cmath>
 #include <utility>
 #include <algorithm>
+#include <bitset>
 
 namespace wotmin2d {
 
@@ -21,7 +22,11 @@ class Particle {
     unsigned int getNumberOfNeighbors() const;
     const std::shared_ptr<Particle>& getNeighbor(Direction direction) const;
     void setNeighbor(Direction direction,
+                     const std::shared_ptr<Particle>& neighbor,
+                     bool is_connected);
+    void setNeighbor(Direction direction,
                      const std::shared_ptr<Particle>& neighbor);
+    bool isConnectedViaOthers(Direction direction) const;
     Movement getMovement() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
@@ -33,6 +38,7 @@ class Particle {
     float target_pressure;
     FloatVector pressure;
     std::array<std::shared_ptr<Particle>, 4> neighbors;
+    std::bitset<4> neighbor_connectivity;
     Direction getPressureDirection() const;
 };
 

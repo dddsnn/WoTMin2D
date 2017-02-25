@@ -28,7 +28,7 @@ class Blob {
     ParticleMap particle_map;
     const unsigned int& arena_width;
     const unsigned int& arena_height;
-    void addParticle(const IntVector& position);
+    void addParticleConnected(const IntVector& position);
     void advanceParticle(const std::shared_ptr<Particle>& particle);
     void updateParticleInformation(const std::shared_ptr<Particle>& particle,
                                      const IntVector& old_position);

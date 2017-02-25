@@ -34,8 +34,7 @@ Blob::Blob(const IntVector& center, float radius,
             IntVector center_to_coordinate = coordinate - center;
             int dot_product = center_to_coordinate.dot(center_to_coordinate);
             if (dot_product < squared_radius) {
-                // Add particle.
-                addParticle(coordinate);
+                addParticleConnected(coordinate);
             }
         }
     }
@@ -45,7 +44,9 @@ const std::vector<std::shared_ptr<Particle>>& Blob::getParticles() const {
     return particles;
 }
 
-void Blob::addParticle(const IntVector& position) {
+// Sets all connectivity flags to true. This is only correct if the reachability
+// graph (via the neighbor pointers) is 2-connected.
+void Blob::addParticleConnected(const IntVector& position) {
     std::shared_ptr<Particle> particle = std::make_shared<Particle>(position);
     particles.push_back(particle);
     particle_map.emplace(position, particle);
@@ -56,8 +57,10 @@ void Blob::addParticle(const IntVector& position) {
             continue;
         }
         std::shared_ptr<Particle>& neighbor = neighbor_iter->second;
-        particle->setNeighbor(direction, neighbor);
-        neighbor->setNeighbor(direction.opposite(), particle);
+        // Just set connectivity to true for everything, since the blob is
+        // 2-connected.
+        particle->setNeighbor(direction, neighbor, true);
+        neighbor->setNeighbor(direction.opposite(), particle, true);
     }
 }
 
@@ -134,9 +137,18 @@ void Blob::updateParticleNeighbors(const std::shared_ptr<Particle>& particle) {
             particle->setNeighbor(direction, nullptr);
         } else {
             particle->setNeighbor(direction, new_neighbor_iter->second);
-            // Also set our particle as the new neighbor's neighbor.
-            neighbor->setNeighbor(direction.opposite(), particle);
         }
+    }
+    // Iterate over the neighbors of the particle again to set the particle as
+    // the neighbor's neighbor. We can only do this now since we only now know
+    // for sure via which directions our particle can reach the entire blob.
+    for (Direction direction: Direction::all()) {
+        const std::shared_ptr<Particle>& neighbor
+            = particle->getNeighbor(direction);
+        if (neighbor == nullptr) {
+            continue;
+        }
+        neighbor->setNeighbor(direction.opposite(), particle);
     }
 }
 
@@ -147,6 +159,7 @@ void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
     std::array<Direction, 2> side_directions = { forward_direction.left(),
                                                  Direction::north()
                                                };
+    // TODO add Direction::right() to avoid this.
     side_directions[1] = side_directions[0].opposite();
     while (true) {
         const IntVector old_position = first_particle->getPosition();

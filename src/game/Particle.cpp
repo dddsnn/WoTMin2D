@@ -7,7 +7,8 @@ Particle::Particle(IntVector position) :
     target(0, 0),
     target_pressure(0.0f),
     pressure(0.0f, 0.0f),
-    neighbors() {
+    neighbors(),
+    neighbor_connectivity() {
     setTarget(IntVector(50, 30), 1.0f); // TODO here for testing
 }
 
@@ -29,8 +30,25 @@ const std::shared_ptr<Particle>& Particle::getNeighbor(Direction direction)
 }
 
 void Particle::setNeighbor(Direction direction,
-                           const std::shared_ptr<Particle>& neighbor) {
+                           const std::shared_ptr<Particle>& neighbor,
+                           bool is_connected) {
     neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
+    if (is_connected) {
+        neighbor_connectivity |= direction.bitmask();
+    }
+}
+
+// Sets connectivity by asking the new neighbor (if any) whether it is connected
+// via directions other than the one towards this particle.
+void Particle::setNeighbor(Direction direction,
+                           const std::shared_ptr<Particle>& neighbor) {
+    bool is_connected = neighbor != nullptr
+                        && neighbor->isConnectedViaOthers(direction.opposite());
+    setNeighbor(direction, neighbor, is_connected);
+}
+
+bool Particle::isConnectedViaOthers(Direction direction) const {
+    return (neighbor_connectivity & ~direction.bitmask()).any();
 }
 
 void Particle::advance() {
