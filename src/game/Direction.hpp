@@ -23,6 +23,9 @@ class Direction {
     constexpr IntVector vector() const;
     private:
     constexpr Direction(val_t value);
+    // Changing these values without adjusting constants in direction_detail
+    // will break this class. I know, I don't like it either, but can't figure
+    // out a better way.
     constexpr static val_t value_north = 0;
     constexpr static val_t value_west = 1;
     constexpr static val_t value_south = 2;
@@ -73,6 +76,13 @@ namespace direction_detail {
     constexpr static std::array<std::array<Direction, 3>, 4> all_except
         = { all_except_north, all_except_west, all_except_south,
             all_except_east };
+    // Same here.
+    constexpr static std::array<const IntVector, 4> vectors
+        = { IntVector(0, 1), // north
+            IntVector(-1, 0), // west
+            IntVector(0, -1), // south
+            IntVector(1, 0) // east
+          };
 }
 
 constexpr const std::array<Direction, 4>& Direction::all() {
@@ -96,12 +106,7 @@ constexpr Direction Direction::left() const {
 }
 
 constexpr IntVector Direction::vector() const {
-    // C++11 requires constexpr functions to be a single return statement. This
-    // is not my fault.
-    return value == value_north ? IntVector(0, 1) :
-           value == value_south ? IntVector(0, -1) :
-           value == value_west ? IntVector(-1, 0) :
-           /* has to be east */ IntVector(1, 0);
+    return direction_detail::vectors[value];
 }
 
 }
