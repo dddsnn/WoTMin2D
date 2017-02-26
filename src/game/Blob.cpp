@@ -73,6 +73,8 @@ void Blob::advance() {
 
 void Blob::advanceParticle(const std::shared_ptr<Particle>& particle) {
     // Advance particle to "refresh" pressure.
+    // TODO Should I advance() all particles before I move any of them? Moving
+    // one can entail moving another in order to avoid bubbles/disconnection.
     particle->advance();
     // Now, where does it want to go?
     using Movement = Particle::Movement;
@@ -167,23 +169,26 @@ void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
         if (next_particle == nullptr) {
             // We're at the end of the line, first_particle is now the last
             // particle. Check whether we're isolating particles to the side of
-            // it and pull them in behind is that's the case.
+            // it and pull them in behind if that's the case.
             // We have to do this before we call updateParticleInformation() for
             // first_particle so it still has its old neighbors.
             for (Direction side_direction: side_directions) {
                 const std::shared_ptr<Particle> side_neighbor
                     = first_particle->getNeighbor(side_direction);
                 if (side_neighbor == nullptr
-                    || side_neighbor->getNumberOfNeighbors() > 1) {
+                    || side_neighbor->isConnectedViaOthers(
+                        side_direction.opposite()
+                    )) {
+                    // Neighbor, if any, is connected to the entire blob through
+                    // a neighbor other than the last particle of the line.
                     continue;
                 }
-                const IntVector side_old_position
-                    = side_neighbor->getPosition();
-                side_neighbor->move(side_direction.opposite());
-                // Update first_particle's information first so it's not in the
-                // way in the particle map.
+                // Update first_particle's information first so the state is
+                // consistent.
                 updateParticleInformation(first_particle, old_position);
-                updateParticleInformation(side_neighbor, side_old_position);
+                // Drag the side neighbor in first_particle's old position.
+                dragParticlesForConnectivity(std::move(side_neighbor),
+                                             side_direction.opposite());
                 // We've moved one particle, no need to also move the other one,
                 // since it can't be disconnected anymore (it's adjacent to the
                 // particle we just moved).
@@ -201,6 +206,37 @@ void Blob::moveParticleLine(std::shared_ptr<Particle> first_particle,
         // Swap and proceed with the next particle in line.
         std::swap(first_particle, next_particle);
     }
+}
+
+// Moves particle one in forward_direction and drags particles that it was
+// previously connected to if those would otherwise become disconnected from the
+// blob.
+void Blob::dragParticlesForConnectivity(std::shared_ptr<Particle> particle,
+                                        Direction forward_direction) {
+    std::shared_ptr<Particle> next_particle;
+    Direction next_direction = Direction::north();
+    do {
+        next_particle = nullptr;
+        for (Direction other_direction: forward_direction.others()) {
+            const std::shared_ptr<Particle>& other_neighbor
+                = particle->getNeighbor(other_direction);
+            if (other_neighbor == nullptr
+                || other_neighbor->isConnectedViaOthers(
+                    other_direction.opposite()
+                )) {
+                continue;
+            }
+            // Set next_particle so the next iteration continues with moving it.
+            next_particle = other_neighbor;
+            next_direction = other_direction.opposite();
+            break;
+        }
+        const IntVector old_position = particle->getPosition();
+        particle->move(forward_direction);
+        updateParticleInformation(particle, old_position);
+        particle = std::move(next_particle);
+        forward_direction = next_direction;
+    } while (next_particle != nullptr);
 }
 
 }

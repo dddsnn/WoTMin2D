@@ -16,13 +16,6 @@ const IntVector& Particle::getPosition() const {
     return position;
 }
 
-unsigned int Particle::getNumberOfNeighbors() const {
-    return std::count_if(neighbors.begin(), neighbors.end(),
-                         [] (std::shared_ptr<Particle> p) {
-                            return p != nullptr;
-                         });
-}
-
 const std::shared_ptr<Particle>& Particle::getNeighbor(Direction direction)
     const {
     // Direction is convertible to unsigned integers, starting at 0.
@@ -33,8 +26,11 @@ void Particle::setNeighbor(Direction direction,
                            const std::shared_ptr<Particle>& neighbor,
                            bool is_connected) {
     neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
+    // TODO Get rid of the bitmask, it's not helping.
     if (is_connected) {
         neighbor_connectivity |= direction.bitmask();
+    } else {
+        neighbor_connectivity &= ~direction.bitmask();
     }
 }
 

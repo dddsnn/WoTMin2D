@@ -37,6 +37,8 @@ class Blob {
     void updateParticleNeighbors(const std::shared_ptr<Particle>& particle);
     void moveParticleLine(std::shared_ptr<Particle> first_particle,
                           Direction movement_direction);
+    void dragParticlesForConnectivity(std::shared_ptr<Particle> particle,
+                                      Direction forward_direction);
 };
 
 }
