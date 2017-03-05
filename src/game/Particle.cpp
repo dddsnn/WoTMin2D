@@ -47,6 +47,22 @@ bool Particle::isConnectedViaOthers(Direction direction) const {
     return (neighbor_connectivity & ~direction.bitmask()).any();
 }
 
+bool Particle::hasPath(std::initializer_list<Direction> directions) const {
+    if (directions.size() == 0) {
+        return true;
+    }
+    auto direction_iter = directions.begin();
+    std::shared_ptr<Particle> neighbor = getNeighbor(*direction_iter);
+    direction_iter++;
+    for (; direction_iter != directions.end(); direction_iter++) {
+        if (neighbor == nullptr) {
+            return false;
+        }
+        neighbor = neighbor->getNeighbor(*direction_iter);
+    }
+    return neighbor != nullptr;
+}
+
 void Particle::advance() {
     FloatVector to_target = static_cast<FloatVector>(target - position);
     FloatVector to_target_pressure = to_target

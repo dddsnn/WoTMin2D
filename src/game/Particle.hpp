@@ -11,6 +11,7 @@
 #include <utility>
 #include <algorithm>
 #include <bitset>
+#include <initializer_list>
 
 namespace wotmin2d {
 
@@ -26,6 +27,7 @@ class Particle {
     void setNeighbor(Direction direction,
                      const std::shared_ptr<Particle>& neighbor);
     bool isConnectedViaOthers(Direction direction) const;
+    bool hasPath(std::initializer_list<Direction> directions) const;
     Movement getMovement() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
