@@ -70,13 +70,13 @@ namespace direction_detail {
                                                       Direction::east()
                                                     };
     constexpr static std::array<Direction, 3> all_except_north
-        = { Direction::south(), Direction::west(), Direction::east() };
+        = { Direction::west(), Direction::south(), Direction::east() };
     constexpr static std::array<Direction, 3> all_except_south
-        = { Direction::north(), Direction::west(), Direction::east() };
+        = { Direction::east(), Direction::north(), Direction::west() };
     constexpr static std::array<Direction, 3> all_except_west
-        = { Direction::north(), Direction::south(), Direction::east() };
+        = { Direction::south(), Direction::east(), Direction::north() };
     constexpr static std::array<Direction, 3> all_except_east
-        = { Direction::north(), Direction::south(), Direction::west() };
+        = { Direction::north(), Direction::west(), Direction::south() };
     // The order of elements in the following arrays is dependent on the actual
     // values for the directions. This could get confusing if the values ever
     // change, but I can't think of a better solution.
@@ -109,6 +109,7 @@ constexpr const std::array<Direction, 4>& Direction::all() {
     return direction_detail::all;
 }
 
+// TODO Test that this returns counter-clockwise directions.
 constexpr const std::array<Direction, 3>& Direction::others() const {
     return direction_detail::all_except[value];
 }
