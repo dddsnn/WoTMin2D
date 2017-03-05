@@ -11,6 +11,7 @@
 #include <cassert>
 #include <utility>
 #include <array>
+#include <unordered_set>
 
 namespace wotmin2d {
 

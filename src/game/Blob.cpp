@@ -226,8 +226,10 @@ bool Blob::dragParticlesBehindLine(std::shared_ptr<Particle> particle,
                                    Direction forward_direction,
                                    Direction line_direction) {
     bool has_moved = false;
+    std::unordered_set<std::shared_ptr<Particle>> done_set;
     // TODO Does this always terminate?
     while (particle != nullptr) {
+        done_set.insert(particle);
         // Figure out if we even need to move or if there is local connectivity
         // to the line.
         bool need_to_move;
@@ -256,8 +258,6 @@ bool Blob::dragParticlesBehindLine(std::shared_ptr<Particle> particle,
         std::shared_ptr<Particle> next_particle;
         Direction next_direction = Direction::north();
         for (Direction direction: forward_direction.others()) {
-            // TODO Here I'm not sure that this will always terminate. There
-            // might be an infinite loop, where particles are moved in a cycle.
             // TODO Test that Direction::others() returns directions
             // counter-clockwise.
             // Direction::others() returns directions always counter-clockwise
@@ -267,6 +267,14 @@ bool Blob::dragParticlesBehindLine(std::shared_ptr<Particle> particle,
             const std::shared_ptr<Particle>& neighbor
                 = particle->getNeighbor(direction);
             if (neighbor == nullptr) {
+                continue;
+            }
+            if (done_set.count(neighbor) > 0) {
+                // The neighbor is one that was already moved by this function.
+                // Don't consider it for moving, as that would lead to an
+                // infinite loop. It should have connectivity (though not
+                // necessarily local) because this should only happen if there
+                // is a bubble that we've just traversed the outside of.
                 continue;
             }
             next_particle = neighbor;
