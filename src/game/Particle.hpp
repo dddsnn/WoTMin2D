@@ -22,11 +22,7 @@ class Particle {
     const IntVector& getPosition() const;
     const std::shared_ptr<Particle>& getNeighbor(Direction direction) const;
     void setNeighbor(Direction direction,
-                     const std::shared_ptr<Particle>& neighbor,
-                     bool is_connected);
-    void setNeighbor(Direction direction,
                      const std::shared_ptr<Particle>& neighbor);
-    bool isConnectedViaOthers(Direction direction) const;
     bool hasPath(std::initializer_list<Direction> directions) const;
     Movement getMovement() const;
     void advance();
@@ -39,7 +35,6 @@ class Particle {
     float target_pressure;
     FloatVector pressure;
     std::array<std::shared_ptr<Particle>, 4> neighbors;
-    std::bitset<4> neighbor_connectivity;
     Direction getPressureDirection() const;
 };
 

@@ -18,7 +18,6 @@ class Direction {
     constexpr static Direction east();
     constexpr static const std::array<Direction, 4>& all();
     constexpr const std::array<Direction, 3>& others() const;
-    constexpr const std::bitset<4>& bitmask() const;
     constexpr operator val_t() const;
     constexpr Direction opposite() const;
     constexpr Direction left() const;
@@ -89,20 +88,6 @@ namespace direction_detail {
             IntVector(0, -1), // south
             IntVector(1, 0) // east
           };
-    constexpr static std::array<const std::bitset<4>, 4> bitmasks
-        = { std::bitset<4>(
-                1 << static_cast<Direction::val_t>(Direction::north())
-            ),
-            std::bitset<4>(
-                1 << static_cast<Direction::val_t>(Direction::west())
-            ),
-            std::bitset<4>(
-                1 << static_cast<Direction::val_t>(Direction::south())
-            ),
-            std::bitset<4>(
-                1 << static_cast<Direction::val_t>(Direction::east())
-            )
-          };
 }
 
 constexpr const std::array<Direction, 4>& Direction::all() {
@@ -112,10 +97,6 @@ constexpr const std::array<Direction, 4>& Direction::all() {
 // TODO Test that this returns counter-clockwise directions.
 constexpr const std::array<Direction, 3>& Direction::others() const {
     return direction_detail::all_except[value];
-}
-
-constexpr const std::bitset<4>& Direction::bitmask() const {
-    return direction_detail::bitmasks[value];
 }
 
 constexpr Direction Direction::opposite() const {
