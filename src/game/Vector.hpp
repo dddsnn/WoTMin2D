@@ -11,8 +11,8 @@ namespace wotmin2d {
 
 template<typename T>
 class Vector {
-    using hash_t = std::uint_fast32_t;
     public:
+    using hash_t = std::uint_fast32_t;
     Vector();
     constexpr Vector(const Vector<T>& other);
     Vector(Vector<T>&& other);
