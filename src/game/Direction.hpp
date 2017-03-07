@@ -94,7 +94,6 @@ constexpr const std::array<Direction, 4>& Direction::all() {
     return direction_detail::all;
 }
 
-// TODO Test that this returns counter-clockwise directions.
 constexpr const std::array<Direction, 3>& Direction::others() const {
     return direction_detail::all_except[value];
 }

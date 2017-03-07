@@ -258,8 +258,6 @@ bool Blob::dragParticlesBehindLine(std::shared_ptr<Particle> particle,
         std::shared_ptr<Particle> next_particle;
         Direction next_direction = Direction::north();
         for (Direction direction: forward_direction.others()) {
-            // TODO Test that Direction::others() returns directions
-            // counter-clockwise.
             // Direction::others() returns directions always counter-clockwise
             // to the forward_direction, so there shouldn't be an infinite loop
             // since we always prefer to go to the left first, then back and

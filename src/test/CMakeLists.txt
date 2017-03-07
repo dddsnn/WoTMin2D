@@ -6,8 +6,6 @@ target_compile_options(UnitTests PUBLIC ${COMPILE_OPTIONS})
 target_link_libraries(UnitTests Game ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
 
 target_sources(UnitTests PUBLIC
-    ${CMAKE_CURRENT_LIST_DIR}/ExampleTest.cpp
-    ${CMAKE_CURRENT_LIST_DIR}/OtherTest.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/DirectionTest.cpp
 )
-add_test(NAME Example COMMAND UnitTests --gtest_filter=Example*)
-add_test(NAME Other COMMAND UnitTests --gtest_filter=Other*)
+add_test(NAME Direction COMMAND UnitTests --gtest_filter=Direction*)
