@@ -3,7 +3,7 @@
 namespace wotmin2d {
 
 const std::chrono::milliseconds Battle::frame_time
-    = std::chrono::milliseconds(50);
+    = std::chrono::milliseconds(500);
 
 Battle::Battle(unsigned int arena_width, unsigned int arena_height,
                unsigned int display_width, unsigned int display_height) :
@@ -18,7 +18,7 @@ void Battle::start() {
     using time_point = high_resolution_clock::time_point;
     // TODO implement stopping
     // Render 100 frames.
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 10; i++) {
         time_point start_time = high_resolution_clock::now();
         state.update();
         screen.draw(state);
