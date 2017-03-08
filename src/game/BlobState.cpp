@@ -44,8 +44,10 @@ void BlobState::updateParticleMap(const ParticlePtr& particle,
     // Put back in at the new position. We're deleting a shared pointer here and
     // immediately copying it back in. I haven't found a better solution without
     // using C++17 features.
-    auto emplace_result = particle_map.emplace(particle->getPosition(),
-                                               particle);
+    #ifndef NDEBUG
+        auto emplace_result =
+    #endif
+    particle_map.emplace(particle->getPosition(), particle);
     assert(emplace_result.second && "There is already a particle at the new "
            "position in the map.");
 }
