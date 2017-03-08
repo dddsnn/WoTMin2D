@@ -19,8 +19,8 @@ void BlobState::addParticle(const IntVector& position) {
             continue;
         }
         ParticlePtr& neighbor = neighbor_iter->second;
-        particle->setNeighbor(direction, neighbor);
-        neighbor->setNeighbor(direction.opposite(), particle);
+        particle->setNeighbor({}, direction, neighbor);
+        neighbor->setNeighbor({}, direction.opposite(), particle);
     }
 }
 
@@ -58,7 +58,7 @@ void BlobState::updateParticleNeighbors(const ParticlePtr& particle) {
             = particle->getNeighbor(direction);
         if (neighbor != nullptr) {
             // Unset the old neighbor's neighbor (since the particle just left).
-            neighbor->setNeighbor(direction.opposite(), nullptr);
+            neighbor->setNeighbor({}, direction.opposite(), nullptr);
         }
         // Get the new neighbor from the particle map.
         // TODO Can this be done more efficiently?
@@ -68,9 +68,9 @@ void BlobState::updateParticleNeighbors(const ParticlePtr& particle) {
             = particle_map.find(new_neighbor_position);
         if (new_neighbor_iter == particle_map.end()) {
             // No neighbor in that direction at the new position.
-            particle->setNeighbor(direction, nullptr);
+            particle->setNeighbor({}, direction, nullptr);
         } else {
-            particle->setNeighbor(direction, new_neighbor_iter->second);
+            particle->setNeighbor({}, direction, new_neighbor_iter->second);
         }
     }
     // Iterate over the neighbors of the particle again to set the particle as
@@ -82,14 +82,14 @@ void BlobState::updateParticleNeighbors(const ParticlePtr& particle) {
         if (neighbor == nullptr) {
             continue;
         }
-        neighbor->setNeighbor(direction.opposite(), particle);
+        neighbor->setNeighbor({}, direction.opposite(), particle);
     }
 }
 
 void BlobState::moveParticle(const ParticlePtr& first_particle,
                              Direction forward_direction) {
     const IntVector old_position = first_particle->getPosition();
-    first_particle->move(forward_direction);
+    first_particle->move({}, forward_direction);
     updateParticleInformation(first_particle, old_position);
 }
 

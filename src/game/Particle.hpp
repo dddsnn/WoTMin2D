@@ -16,7 +16,14 @@
 namespace wotmin2d {
 
 class Particle {
-    friend class BlobState;
+    private:
+    class MoveKey {
+        friend class BlobState;
+        private:
+        MoveKey() {}
+        MoveKey(const MoveKey&) = delete;
+        MoveKey& operator=(const MoveKey&) = delete;
+    };
     public:
     using Movement = std::pair<Direction, bool>;
     Particle(IntVector position);
@@ -27,6 +34,9 @@ class Particle {
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
+    void setNeighbor(MoveKey, Direction direction,
+                     const std::shared_ptr<Particle>& neighbor);
+    void move(MoveKey, Direction direction);
     private:
     IntVector position;
     IntVector target;
@@ -34,9 +44,6 @@ class Particle {
     FloatVector pressure;
     std::array<std::shared_ptr<Particle>, 4> neighbors;
     Direction getPressureDirection() const;
-    void setNeighbor(Direction direction,
-                     const std::shared_ptr<Particle>& neighbor);
-    void move(Direction direction);
 };
 
 }

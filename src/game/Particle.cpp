@@ -21,7 +21,7 @@ const std::shared_ptr<Particle>& Particle::getNeighbor(Direction direction)
     return neighbors[static_cast<Direction::val_t>(direction)];
 }
 
-void Particle::setNeighbor(Direction direction,
+void Particle::setNeighbor(MoveKey, Direction direction,
                            const std::shared_ptr<Particle>& neighbor) {
     neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
 }
@@ -61,7 +61,7 @@ void Particle::setTarget(const IntVector& target, float target_pressure) {
     this->target_pressure = target_pressure;
 }
 
-void Particle::move(Direction direction) {
+void Particle::move(MoveKey, Direction direction) {
     const IntVector vector = direction.vector();
     position += vector;
     // TODO Damp based on time step/distance traveled. Right now this just
