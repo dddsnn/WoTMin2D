@@ -9,55 +9,55 @@ namespace wotmin2d {
 namespace test {
 
 TEST(Direction, valuesArePairwiseDistinct) {
-    ASSERT_NE(Direction::north(), Direction::west());
-    ASSERT_NE(Direction::north(), Direction::south());
-    ASSERT_NE(Direction::north(), Direction::east());
-    ASSERT_NE(Direction::west(), Direction::south());
-    ASSERT_NE(Direction::west(), Direction::east());
-    ASSERT_NE(Direction::south(), Direction::east());
+    EXPECT_NE(Direction::north(), Direction::west());
+    EXPECT_NE(Direction::north(), Direction::south());
+    EXPECT_NE(Direction::north(), Direction::east());
+    EXPECT_NE(Direction::west(), Direction::south());
+    EXPECT_NE(Direction::west(), Direction::east());
+    EXPECT_NE(Direction::south(), Direction::east());
 }
 
 TEST(Direction, left) {
-    ASSERT_EQ(Direction::west(), Direction::north().left());
-    ASSERT_EQ(Direction::south(), Direction::west().left());
-    ASSERT_EQ(Direction::east(), Direction::south().left());
-    ASSERT_EQ(Direction::north(), Direction::east().left());
+    EXPECT_EQ(Direction::west(), Direction::north().left());
+    EXPECT_EQ(Direction::south(), Direction::west().left());
+    EXPECT_EQ(Direction::east(), Direction::south().left());
+    EXPECT_EQ(Direction::north(), Direction::east().left());
 }
 
 TEST(Direction, right) {
-    ASSERT_EQ(Direction::east(), Direction::north().right());
-    ASSERT_EQ(Direction::north(), Direction::west().right());
-    ASSERT_EQ(Direction::west(), Direction::south().right());
-    ASSERT_EQ(Direction::south(), Direction::east().right());
+    EXPECT_EQ(Direction::east(), Direction::north().right());
+    EXPECT_EQ(Direction::north(), Direction::west().right());
+    EXPECT_EQ(Direction::west(), Direction::south().right());
+    EXPECT_EQ(Direction::south(), Direction::east().right());
 }
 
 TEST(Direction, opposite) {
-    ASSERT_EQ(Direction::south(), Direction::north().opposite());
-    ASSERT_EQ(Direction::east(), Direction::west().opposite());
-    ASSERT_EQ(Direction::north(), Direction::south().opposite());
-    ASSERT_EQ(Direction::west(), Direction::east().opposite());
+    EXPECT_EQ(Direction::south(), Direction::north().opposite());
+    EXPECT_EQ(Direction::east(), Direction::west().opposite());
+    EXPECT_EQ(Direction::north(), Direction::south().opposite());
+    EXPECT_EQ(Direction::west(), Direction::east().opposite());
 }
 
 TEST(Direction, vector) {
-    ASSERT_EQ(IntVector(0, 1), Direction::north().vector());
-    ASSERT_EQ(IntVector(-1, 0), Direction::west().vector());
-    ASSERT_EQ(IntVector(0, -1), Direction::south().vector());
-    ASSERT_EQ(IntVector(1, 0), Direction::east().vector());
+    EXPECT_EQ(IntVector(0, 1), Direction::north().vector());
+    EXPECT_EQ(IntVector(-1, 0), Direction::west().vector());
+    EXPECT_EQ(IntVector(0, -1), Direction::south().vector());
+    EXPECT_EQ(IntVector(1, 0), Direction::east().vector());
 }
 
 TEST(Direction, allContainsAllDirections) {
     const auto& all = Direction::all();
-    ASSERT_EQ(1, std::count(all.begin(), all.end(), Direction::north()));
-    ASSERT_EQ(1, std::count(all.begin(), all.end(), Direction::west()));
-    ASSERT_EQ(1, std::count(all.begin(), all.end(), Direction::south()));
-    ASSERT_EQ(1, std::count(all.begin(), all.end(), Direction::east()));
+    EXPECT_EQ(1, std::count(all.begin(), all.end(), Direction::north()));
+    EXPECT_EQ(1, std::count(all.begin(), all.end(), Direction::west()));
+    EXPECT_EQ(1, std::count(all.begin(), all.end(), Direction::south()));
+    EXPECT_EQ(1, std::count(all.begin(), all.end(), Direction::east()));
 }
 
 TEST(Direction, othersContainsOthersCounterClockwise) {
     for (Direction direction: Direction::all()) {
         Direction expected = direction.left();
         for (int i = 0; i < 3; i++) {
-            ASSERT_EQ(expected, direction.others()[i]);
+            EXPECT_EQ(expected, direction.others()[i]);
             expected = expected.left();
         }
     }
@@ -70,7 +70,7 @@ TEST(Direction, valueCanBeUsedAsArrayIndex) {
         return static_cast<Direction::val_t>(d);
     });
     for (int i = 0; i < 3; i++) {
-        ASSERT_EQ(1, std::count(values.begin(), values.end(), i));
+        EXPECT_EQ(1, std::count(values.begin(), values.end(), i));
     }
 }
 
