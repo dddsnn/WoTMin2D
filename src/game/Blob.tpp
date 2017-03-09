@@ -3,16 +3,17 @@ namespace wotmin2d {
 using ParticlePtr = std::shared_ptr<Particle>;
 
 template<class B>
-Blob<B>::Blob(unsigned int arena_width, unsigned int arena_height) :
-    state(),
+Blob<B>::Blob(unsigned int arena_width, unsigned int arena_height,
+              std::shared_ptr<B> state) :
+    state(state),
     arena_width(arena_width),
     arena_height(arena_height) {
 }
 
 template<class B>
 Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
-              unsigned int arena_height) :
-    state(),
+              unsigned int arena_height, std::shared_ptr<B> state) :
+    state(state),
     arena_width(arena_width),
     arena_height(arena_height) {
     if (radius <= 0.0) {
@@ -34,7 +35,7 @@ Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
             IntVector center_to_coordinate = coordinate - center;
             int dot_product = center_to_coordinate.dot(center_to_coordinate);
             if (dot_product < squared_radius) {
-                state.addParticle(coordinate);
+                state->addParticle(coordinate);
             }
         }
     }
@@ -42,12 +43,12 @@ Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
 
 template<class B>
 const std::vector<ParticlePtr>& Blob<B>::getParticles() const {
-    return state.getParticles();
+    return state->getParticles();
 }
 
 template<class B>
 void Blob<B>::advance() {
-    for (const ParticlePtr& particle: state.getParticles()) {
+    for (const ParticlePtr& particle: state->getParticles()) {
         assert(particle != nullptr && "Particle in blob was null.");
         advanceParticle(particle);
     }
@@ -98,7 +99,7 @@ void Blob<B>::moveParticleLine(ParticlePtr first_particle,
                 = { std::make_pair(first_particle->getNeighbor(left), left),
                     std::make_pair(first_particle->getNeighbor(right), right) };
             // Now we can move it.
-            state.moveParticle(first_particle, forward_direction);
+            state->moveParticle(first_particle, forward_direction);
             for (const ParticleDirection& side_neighbor_direction:
                  side_neighbors_directions)
             {
@@ -129,7 +130,7 @@ void Blob<B>::moveParticleLine(ParticlePtr first_particle,
         }
         // TODO Implement a method in BlobState to move an entire line without
         // updating particle information in the map for each individually.
-        state.moveParticle(first_particle, forward_direction);
+        state->moveParticle(first_particle, forward_direction);
         // Swap and proceed with the next particle in line.
         std::swap(first_particle, next_particle);
     }
@@ -204,7 +205,7 @@ bool Blob<B>::dragParticlesBehindLine(ParticlePtr particle,
             break;
         }
         // Move the current particle.
-        state.moveParticle(particle, forward_direction);
+        state->moveParticle(particle, forward_direction);
         has_moved = true;
         // Set particle to the next particle.
         particle = std::move(next_particle);

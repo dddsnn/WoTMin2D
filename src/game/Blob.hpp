@@ -21,13 +21,15 @@ class Blob {
     private:
     using ParticlePtr = std::shared_ptr<Particle>;
     public:
-    Blob(unsigned int arena_width, unsigned int arena_height);
+    Blob(unsigned int arena_width, unsigned int arena_height,
+         std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
     Blob(const IntVector& center, float radius, unsigned int arena_width,
-         unsigned int arena_height);
+         unsigned int arena_height,
+         std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
     const std::vector<ParticlePtr>& getParticles() const;
     void advance();
     private:
-    BlobState state;
+    std::shared_ptr<BlobState> state;
     unsigned int arena_width;
     unsigned int arena_height;
     void advanceParticle(const ParticlePtr& particle);
