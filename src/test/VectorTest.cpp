@@ -9,19 +9,19 @@
 namespace wotmin2d {
 namespace test {
 
-TEST(Vector, defaultConstruction) {
+TEST(VectorTest, defaultConstruction) {
     IntVector zero;
     EXPECT_EQ(0, zero.getX());
     EXPECT_EQ(0, zero.getY());
 }
 
-TEST(Vector, construction) {
+TEST(VectorTest, construction) {
     IntVector a(3, 5);
     EXPECT_EQ(3, a.getX());
     EXPECT_EQ(5, a.getY());
 }
 
-TEST(Vector, equality) {
+TEST(VectorTest, equality) {
     IntVector a(3, 5);
     IntVector b(3, 5);
     IntVector c(3, 6);
@@ -31,7 +31,7 @@ TEST(Vector, equality) {
     EXPECT_TRUE(a != d);
 }
 
-TEST(Vector, copyConstruction) {
+TEST(VectorTest, copyConstruction) {
     IntVector a(3, 5);
     IntVector b(a);
     IntVector c(std::move(a));
@@ -39,14 +39,14 @@ TEST(Vector, copyConstruction) {
     EXPECT_EQ(IntVector(3, 5), c);
 }
 
-TEST(Vector, assignment) {
+TEST(VectorTest, assignment) {
     IntVector a(3, 5);
     IntVector b;
     b = a;
     EXPECT_EQ(IntVector(3, 5), b);
 }
 
-TEST(Vector, swap) {
+TEST(VectorTest, swap) {
     IntVector a(3, 5);
     IntVector b(7, 11);
     std::swap(a, b);
@@ -54,7 +54,7 @@ TEST(Vector, swap) {
     EXPECT_EQ(IntVector(3, 5), b);
 }
 
-TEST(Vector, addition) {
+TEST(VectorTest, addition) {
     IntVector a(3, 5);
     IntVector b(7, 11);
     EXPECT_EQ(IntVector(10, 16), a + b);
@@ -62,7 +62,7 @@ TEST(Vector, addition) {
     EXPECT_EQ(IntVector(10, 16), a);
 }
 
-TEST(Vector, subtraction) {
+TEST(VectorTest, subtraction) {
     IntVector a(3, 5);
     IntVector b(7, 11);
     EXPECT_EQ(IntVector(4, 6), b - a);
@@ -70,21 +70,21 @@ TEST(Vector, subtraction) {
     EXPECT_EQ(IntVector(4, 6), b);
 }
 
-TEST(Vector, scalarMultiplication) {
+TEST(VectorTest, scalarMultiplication) {
     IntVector a(3, 5);
     EXPECT_EQ(IntVector(21, 35), a * 7);
     a *= 7;
     EXPECT_EQ(IntVector(21, 35), a);
 }
 
-TEST(Vector, scalarDivision) {
+TEST(VectorTest, scalarDivision) {
     IntVector a(21, 35);
     EXPECT_EQ(IntVector(3, 5), a / 7);
     a /= 7;
     EXPECT_EQ(IntVector(3, 5), a);
 }
 
-TEST(Vector, accessAndMutation) {
+TEST(VectorTest, accessAndMutation) {
     IntVector a(3, 5);
     EXPECT_EQ(3, a.getX());
     EXPECT_EQ(5, a.getY());
@@ -94,25 +94,25 @@ TEST(Vector, accessAndMutation) {
     EXPECT_EQ(11, a.getY());
 }
 
-TEST(Vector, dot) {
+TEST(VectorTest, dot) {
     IntVector a(3, 5);
     IntVector b(7, 11);
     EXPECT_EQ(21 + 55, a.dot(b));
     EXPECT_EQ(21 + 55, b.dot(a));
 }
 
-TEST(Vector, squaredNorm) {
+TEST(VectorTest, squaredNorm) {
     IntVector a(3, 5);
     EXPECT_EQ(34, a.squaredNorm());
 }
 
-TEST(Vector, norm) {
+TEST(VectorTest, norm) {
     IntVector a(3, 5);
     float norm = std::sqrt(34);
     EXPECT_EQ(norm, a.norm());
 }
 
-TEST(Vector, intToFloatCast) {
+TEST(VectorTest, intToFloatCast) {
     IntVector a(3, 5);
     EXPECT_EQ(FloatVector(3.0f, 5.0f), static_cast<FloatVector>(a));
 
@@ -126,7 +126,7 @@ TEST(Vector, intToFloatCast) {
     EXPECT_EQ(FloatVector(x_f, y_f), c);
 }
 
-TEST(Vector, intHashDoesntCollideForSmallPositiveValues) {
+TEST(VectorTest, intHashDoesntCollideForSmallPositiveValues) {
     // The limit for which this should work is actually 2^16 - 1, but testing
     // that uses 16GiB of memory (at least). This isn't ideal but at least fast.
     const int limit = 100;
