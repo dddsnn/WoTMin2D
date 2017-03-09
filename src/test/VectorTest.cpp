@@ -1,13 +1,13 @@
-#include <gtest/gtest.h>
-
 #include "../game/Vector.hpp"
 
+#include <gtest/gtest.h>
 #include <utility>
 #include <cmath>
 #include <algorithm>
 #include <vector>
 
-using namespace wotmin2d;
+namespace wotmin2d {
+namespace test {
 
 TEST(Vector, defaultConstruction) {
     IntVector zero;
@@ -143,4 +143,7 @@ TEST(Vector, intHashDoesntCollideForSmallPositiveValues) {
     std::sort(hashes.begin(), hashes.end());
     std::unique(hashes.begin(), hashes.end());
     ASSERT_EQ(limit * limit, hashes.size());
+}
+
+}
 }

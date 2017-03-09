@@ -1,12 +1,12 @@
-#include <gtest/gtest.h>
-
 #include "../game/Direction.hpp"
 #include "../game/Vector.hpp"
 
+#include <gtest/gtest.h>
 #include <algorithm>
 #include <array>
 
-using namespace wotmin2d;
+namespace wotmin2d {
+namespace test {
 
 TEST(Direction, valuesArePairwiseDistinct) {
     ASSERT_NE(Direction::north(), Direction::west());
@@ -72,4 +72,7 @@ TEST(Direction, valueCanBeUsedAsArrayIndex) {
     for (int i = 0; i < 3; i++) {
         ASSERT_EQ(1, std::count(values.begin(), values.end(), i));
     }
+}
+
+}
 }
