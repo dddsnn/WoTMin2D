@@ -77,7 +77,7 @@ void Screen::updateTexture(const State& state) {
     // Make everything white to begin with.
     texture->setRange(0, texture->getWidth() * texture->getHeight(), 0xff, 0xff,
                       0xff);
-    for (const Blob& blob: state.getBlobs()) {
+    for (const Blob<>& blob: state.getBlobs()) {
         for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
             int x_signed = particle->getPosition().getX();
             int y_signed = particle->getPosition().getY();

@@ -14,11 +14,11 @@ class State {
     void update();
     unsigned int getWidth() const;
     unsigned int getHeight() const;
-    const std::vector<Blob>& getBlobs() const;
+    const std::vector<Blob<>>& getBlobs() const;
     private:
     const unsigned int arena_width;
     const unsigned int arena_height;
-    std::vector<Blob> blobs;
+    std::vector<Blob<>> blobs;
 };
 
 }

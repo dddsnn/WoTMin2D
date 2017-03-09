@@ -1,17 +1,17 @@
-#include "Blob.hpp"
-
 namespace wotmin2d {
 
 using ParticlePtr = std::shared_ptr<Particle>;
 
-Blob::Blob(unsigned int arena_width, unsigned int arena_height) :
+template<class B>
+Blob<B>::Blob(unsigned int arena_width, unsigned int arena_height) :
     state(),
     arena_width(arena_width),
     arena_height(arena_height) {
 }
 
-Blob::Blob(const IntVector& center, float radius, unsigned int arena_width,
-           unsigned int arena_height) :
+template<class B>
+Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
+              unsigned int arena_height) :
     state(),
     arena_width(arena_width),
     arena_height(arena_height) {
@@ -40,18 +40,21 @@ Blob::Blob(const IntVector& center, float radius, unsigned int arena_width,
     }
 }
 
-const std::vector<ParticlePtr>& Blob::getParticles() const {
+template<class B>
+const std::vector<ParticlePtr>& Blob<B>::getParticles() const {
     return state.getParticles();
 }
 
-void Blob::advance() {
+template<class B>
+void Blob<B>::advance() {
     for (const ParticlePtr& particle: state.getParticles()) {
         assert(particle != nullptr && "Particle in blob was null.");
         advanceParticle(particle);
     }
 }
 
-void Blob::advanceParticle(const ParticlePtr& particle) {
+template<class B>
+void Blob<B>::advanceParticle(const ParticlePtr& particle) {
     // Advance particle to "refresh" pressure.
     // TODO Should I advance() all particles before I move any of them? Moving
     // one can entail moving another in order to avoid bubbles/disconnection.
@@ -76,8 +79,9 @@ void Blob::advanceParticle(const ParticlePtr& particle) {
 
 // Moves a particle and drags all particles behind it in the same direction so
 // that no bubbles appear and the blob stays connected.
-void Blob::moveParticleLine(ParticlePtr first_particle,
-                            Direction forward_direction) {
+template<class B>
+void Blob<B>::moveParticleLine(ParticlePtr first_particle,
+                               Direction forward_direction) {
     while (true) {
         ParticlePtr next_particle
             = first_particle->getNeighbor(forward_direction.opposite());
@@ -142,9 +146,10 @@ void Blob::moveParticleLine(ParticlePtr first_particle,
 // line_direction, which has the particle that was moved as a neighbor in
 // forward_direction.
 // Returns whether any particle was moved.
-bool Blob::dragParticlesBehindLine(ParticlePtr particle,
-                                   Direction forward_direction,
-                                   Direction line_direction) {
+template<class B>
+bool Blob<B>::dragParticlesBehindLine(ParticlePtr particle,
+                                      Direction forward_direction,
+                                      Direction line_direction) {
     bool has_moved = false;
     std::unordered_set<ParticlePtr> done_set;
     // TODO Does this always terminate?

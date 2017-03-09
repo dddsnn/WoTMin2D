@@ -24,7 +24,7 @@ unsigned int State::getHeight() const {
     return arena_height;
 }
 
-const std::vector<Blob>& State::getBlobs() const {
+const std::vector<Blob<>>& State::getBlobs() const {
     return blobs;
 }
 

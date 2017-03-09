@@ -16,6 +16,7 @@
 
 namespace wotmin2d {
 
+template<class BlobState = BlobState>
 class Blob {
     private:
     using ParticlePtr = std::shared_ptr<Particle>;
@@ -38,5 +39,7 @@ class Blob {
 };
 
 }
+
+#include "Blob.tpp"
 
 #endif
