@@ -1,9 +1,14 @@
 find_package(GTest REQUIRED)
-include_directories(${GTEST_INCLUDE_DIRS})
+find_package(GMock REQUIRED)
+include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
 add_executable(UnitTests "")
 target_compile_options(UnitTests PUBLIC ${COMPILE_OPTIONS})
-target_link_libraries(UnitTests Game ${GTEST_LIBRARIES} ${GTEST_MAIN_LIBRARIES})
+target_link_libraries(UnitTests
+    Game
+    ${GTEST_BOTH_LIBRARIES}
+    ${GMOCK_BOTH_LIBRARIES}
+)
 
 target_sources(UnitTests PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/DirectionTest.cpp
