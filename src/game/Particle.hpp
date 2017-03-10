@@ -1,16 +1,15 @@
 #ifndef PARTICLE_HPP
 #define PARTICLE_HPP
 
+#include "ParticlePositionState.hpp"
+#include "ParticlePressureState.hpp"
 #include "Vector.hpp"
 #include "Direction.hpp"
 
 #include <memory>
-#include <stdexcept>
 #include <array>
-#include <cmath>
 #include <utility>
 #include <algorithm>
-#include <bitset>
 #include <initializer_list>
 
 namespace wotmin2d {
@@ -25,25 +24,21 @@ class Particle {
         MoveKey& operator=(const MoveKey&) = delete;
     };
     public:
-    using Movement = std::pair<Direction, bool>;
+    using Movement = ParticlePressureState::Movement;
     Particle(IntVector position);
     const IntVector& getPosition() const;
     const std::shared_ptr<Particle>& getNeighbor(Direction direction) const;
+    void setNeighbor(MoveKey, Direction direction,
+                     const std::shared_ptr<Particle>& neighbor);
+    void move(MoveKey, Direction direction);
     bool hasPath(std::initializer_list<Direction> directions) const;
     Movement getMovement() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
-    void setNeighbor(MoveKey, Direction direction,
-                     const std::shared_ptr<Particle>& neighbor);
-    void move(MoveKey, Direction direction);
     private:
-    IntVector position;
-    IntVector target;
-    float target_pressure;
-    FloatVector pressure;
-    std::array<std::shared_ptr<Particle>, 4> neighbors;
-    Direction getPressureDirection() const;
+    ParticlePositionState position_state;
+    ParticlePressureState pressure_state;
 };
 
 }
