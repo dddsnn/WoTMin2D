@@ -1,18 +1,19 @@
 namespace wotmin2d {
 
-using ParticlePtr = std::shared_ptr<Particle>;
+template<class T>
+using Ptr = std::shared_ptr<T>;
 
-template<class B>
-Blob<B>::Blob(unsigned int arena_width, unsigned int arena_height,
-              std::shared_ptr<B> state) :
+template<class B, class P>
+Blob<B, P>::Blob(unsigned int arena_width, unsigned int arena_height,
+                 std::shared_ptr<B> state) :
     state(state),
     arena_width(arena_width),
     arena_height(arena_height) {
 }
 
-template<class B>
-Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
-              unsigned int arena_height, std::shared_ptr<B> state) :
+template<class B, class P>
+Blob<B, P>::Blob(const IntVector& center, float radius, unsigned int arena_width,
+                 unsigned int arena_height, std::shared_ptr<B> state) :
     state(state),
     arena_width(arena_width),
     arena_height(arena_height) {
@@ -41,21 +42,21 @@ Blob<B>::Blob(const IntVector& center, float radius, unsigned int arena_width,
     }
 }
 
-template<class B>
-const std::vector<ParticlePtr>& Blob<B>::getParticles() const {
+template<class B, class P>
+const std::vector<Ptr<P>>& Blob<B, P>::getParticles() const {
     return state->getParticles();
 }
 
-template<class B>
-void Blob<B>::advance() {
-    for (const ParticlePtr& particle: state->getParticles()) {
+template<class B, class P>
+void Blob<B, P>::advance() {
+    for (const Ptr<P>& particle: state->getParticles()) {
         assert(particle != nullptr && "Particle in blob was null.");
         advanceParticle(particle);
     }
 }
 
-template<class B>
-void Blob<B>::advanceParticle(const ParticlePtr& particle) {
+template<class B, class P>
+void Blob<B, P>::advanceParticle(const Ptr<P>& particle) {
     // Advance particle to "refresh" pressure.
     // TODO Should I advance() all particles before I move any of them? Moving
     // one can entail moving another in order to avoid bubbles/disconnection.
@@ -68,7 +69,7 @@ void Blob<B>::advanceParticle(const ParticlePtr& particle) {
         return;
     }
     const Direction& forward_direction = movement.first;
-    const ParticlePtr& forward_neighbor
+    const Ptr<P>& forward_neighbor
         = particle->getNeighbor(forward_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
@@ -80,11 +81,11 @@ void Blob<B>::advanceParticle(const ParticlePtr& particle) {
 
 // Moves a particle and drags all particles behind it in the same direction so
 // that no bubbles appear and the blob stays connected.
-template<class B>
-void Blob<B>::moveParticleLine(ParticlePtr first_particle,
-                               Direction forward_direction) {
+template<class B, class P>
+void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
+                                  Direction forward_direction) {
     while (true) {
-        ParticlePtr next_particle
+        Ptr<P> next_particle
             = first_particle->getNeighbor(forward_direction.opposite());
         if (next_particle == nullptr) {
             // We're at the end of the line, first_particle is now the last
@@ -92,7 +93,7 @@ void Blob<B>::moveParticleLine(ParticlePtr first_particle,
             // it and drag them in behind if that's the case.
             // We have to get both side neighbors before we can move the
             // particle so it still has its old neighbors.
-            using ParticleDirection = std::pair<ParticlePtr, Direction>;
+            using ParticleDirection = std::pair<Ptr<P>, Direction>;
             Direction left = forward_direction.left();
             Direction right = forward_direction.right();
             std::array<ParticleDirection, 2> side_neighbors_directions
@@ -103,7 +104,7 @@ void Blob<B>::moveParticleLine(ParticlePtr first_particle,
             for (const ParticleDirection& side_neighbor_direction:
                  side_neighbors_directions)
             {
-                const ParticlePtr& side_neighbor
+                const Ptr<P>& side_neighbor
                     = side_neighbor_direction.first;
                 const Direction side_direction = side_neighbor_direction.second;
                 if (side_neighbor == nullptr) {
@@ -147,12 +148,12 @@ void Blob<B>::moveParticleLine(ParticlePtr first_particle,
 // line_direction, which has the particle that was moved as a neighbor in
 // forward_direction.
 // Returns whether any particle was moved.
-template<class B>
-bool Blob<B>::dragParticlesBehindLine(ParticlePtr particle,
-                                      Direction forward_direction,
-                                      Direction line_direction) {
+template<class B, class P>
+bool Blob<B, P>::dragParticlesBehindLine(Ptr<P> particle,
+                                         Direction forward_direction,
+                                         Direction line_direction) {
     bool has_moved = false;
-    std::unordered_set<ParticlePtr> done_set;
+    std::unordered_set<Ptr<P>> done_set;
     // TODO Does this always terminate?
     while (particle != nullptr) {
         done_set.insert(particle);
@@ -181,14 +182,14 @@ bool Blob<B>::dragParticlesBehindLine(ParticlePtr particle,
             return has_moved;
         }
         // Check if there is a next particle that might also be disconnected.
-        ParticlePtr next_particle;
+        Ptr<P> next_particle;
         Direction next_direction = Direction::north();
         for (Direction direction: forward_direction.others()) {
             // Direction::others() returns directions always counter-clockwise
             // to the forward_direction, so there shouldn't be an infinite loop
             // since we always prefer to go to the left first, then back and
             // only then to the right.
-            const ParticlePtr& neighbor = particle->getNeighbor(direction);
+            const Ptr<P>& neighbor = particle->getNeighbor(direction);
             if (neighbor == nullptr) {
                 continue;
             }

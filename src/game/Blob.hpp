@@ -16,7 +16,7 @@
 
 namespace wotmin2d {
 
-template<class BlobState = BlobState>
+template<class BlobState = BlobState, class Particle = Particle>
 class Blob {
     private:
     using ParticlePtr = std::shared_ptr<Particle>;
