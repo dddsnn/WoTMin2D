@@ -2,7 +2,7 @@
 #define MOCKBLOBSTATE_HPP
 
 #include "../../game/Direction.hpp"
-#include "../../game/Particle.hpp"
+#include "MockParticle.hpp"
 
 #include <gmock/gmock.h>
 #include <vector>
@@ -11,10 +11,9 @@
 
 namespace wotmin2d {
 namespace mock {
-
 class MockBlobState {
     private:
-    using ParticlePtr = std::shared_ptr<Particle>;
+    using ParticlePtr = std::shared_ptr<MockParticle>;
     public:
     MOCK_CONST_METHOD0(getParticles, const std::vector<ParticlePtr>&());
     MOCK_METHOD1(addParticle, void(const IntVector& position));

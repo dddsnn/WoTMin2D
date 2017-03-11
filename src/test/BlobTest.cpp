@@ -1,4 +1,5 @@
 #include "mock/MockBlobState.hpp"
+#include "mock/MockParticle.hpp"
 #include "../game/BlobState.hpp"
 #include "../game/Blob.hpp"
 #include "../game/Vector.hpp"
@@ -7,24 +8,30 @@
 #include <memory>
 #include <vector>
 #include <initializer_list>
+#include <unordered_map>
+#include <algorithm>
+#include <iterator>
 
 namespace wotmin2d {
 namespace test {
 
 using mock::MockBlobState;
+using mock::MockParticle;
 
 using ::testing::AtLeast;
 using ::testing::_;
+using ::testing::ReturnRef;
 
-using ParticlePtr = std::shared_ptr<Particle>;
+using ParticlePtr = std::shared_ptr<MockParticle>;
 
 class BlobTest : public ::testing::Test {
     protected:
     BlobTest() :
         state(std::make_shared<MockBlobState>()),
-        inSouthWestCorner(IntVector(0, 0)),
-        onSouthBorder(IntVector(10, 0)),
-        inside(IntVector(15, 5)),
+        particles(),
+        inSouthWestCorner(0, 0),
+        onSouthBorder(10, 0),
+        inside(15, 5),
         lineA(),
         lineB(),
         block(),
@@ -52,27 +59,56 @@ class BlobTest : public ::testing::Test {
                 block.emplace_back(IntVector(i, j));
             }
         }
+        // Return the fixtures particles by default.
+        ON_CALL(*state, getParticles()).WillByDefault(ReturnRef(particles));
     }
-    static std::vector<ParticlePtr>
-        makeParticles(std::initializer_list<std::vector<IntVector>> vectors,
-                      std::initializer_list<IntVector> singles) {
-        // Use BlobState to create vectors of particles that have their neighbor
-        // pointers properly set.
-        auto b = std::unique_ptr<BlobState>(new BlobState());
+    virtual ~BlobTest() {
+        clearParticles();
+    }
+    virtual void clearParticles() {
+        // Unset neighbor pointers so no memory is leaked through cyclic
+        // dependencies.
+        for (auto& p: particles) {
+            for (auto d: Direction::all()) {
+                p->setNeighbor({}, d, nullptr);
+            }
+        }
+        particles.clear();
+    }
+    virtual void
+    makeParticles(std::initializer_list<std::vector<IntVector>> vectors,
+                  std::initializer_list<IntVector> singles)
+    {
+        clearParticles();
+        std::unordered_map<IntVector, ParticlePtr, IntVector::Hash> map;
         for (const auto& v: vectors) {
             for (const auto& p: v) {
-                b->addParticle(p);
+                map.emplace(p, std::make_shared<MockParticle>(p));
             }
         }
         for (const auto& p: singles) {
-            b->addParticle(p);
+            map.emplace(p, std::make_shared<MockParticle>(p));
         }
-        return b->getParticles();
+        auto getSecond = [] (std::pair<const IntVector, ParticlePtr>& v) {
+                           return v.second;
+                         };
+        std::transform(map.begin(), map.end(), std::back_inserter(particles),
+                       getSecond);
+        // Set neighbors.
+        for (const auto& p: particles) {
+            for (auto d: Direction::all()) {
+                auto i = map.find(p->getPosition() + d.vector());
+                if (i != map.end()) {
+                    p->setNeighbor(MockParticle::MoveKey(), d, i->second);
+                }
+            }
+        }
     }
     std::shared_ptr<MockBlobState> state;
-    Particle inSouthWestCorner;
-    Particle onSouthBorder;
-    Particle inside;
+    std::vector<ParticlePtr> particles;
+    IntVector inSouthWestCorner;
+    IntVector onSouthBorder;
+    IntVector inside;
     std::vector<IntVector> lineA;
     std::vector<IntVector> lineB;
     std::vector<IntVector> block;
@@ -82,20 +118,24 @@ class BlobTest : public ::testing::Test {
 };
 
 TEST_F(BlobTest, normalConstructorDoesntAddParticles) {
-    EXPECT_CALL(*state, addParticle(_))
-        .Times(0);
+    EXPECT_CALL(*state, addParticle(_)).Times(0);
     Blob<MockBlobState> blob(width, height, state);
 }
 
 // TODO Test with the exact number and position of particles.
 TEST_F(BlobTest, circleConstructorAddsParticles) {
-    EXPECT_CALL(*state, addParticle(_))
-        .Times(AtLeast(1));
+    EXPECT_CALL(*state, addParticle(_)).Times(AtLeast(1));
     Blob<MockBlobState> blob(IntVector(10, 20), 3.0f, width, height, state);
 }
 
 TEST_F(BlobTest, advancesEachParticleOnce) {
-// TODO Mock Particle to test each particle is advanced once.
+    makeParticles({ lineA, lineB, block, loop },
+                  { inSouthWestCorner, onSouthBorder, inside});
+    for (const auto& p: particles) {
+        EXPECT_CALL(*p, advance()).Times(1);
+    }
+    Blob<MockBlobState, MockParticle> blob(width, height, state);
+    blob.advance();
 }
 
 }
