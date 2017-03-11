@@ -62,24 +62,11 @@ class BlobTest : public ::testing::Test {
         // Return the fixtures particles by default.
         ON_CALL(*state, getParticles()).WillByDefault(ReturnRef(particles));
     }
-    virtual ~BlobTest() {
-        clearParticles();
-    }
-    virtual void clearParticles() {
-        // Unset neighbor pointers so no memory is leaked through cyclic
-        // dependencies.
-        for (auto& p: particles) {
-            for (auto d: Direction::all()) {
-                p->setNeighbor({}, d, nullptr);
-            }
-        }
-        particles.clear();
-    }
     virtual void
     makeParticles(std::initializer_list<std::vector<IntVector>> vectors,
                   std::initializer_list<IntVector> singles)
     {
-        clearParticles();
+        particles.clear();
         std::unordered_map<IntVector, ParticlePtr, IntVector::Hash> map;
         for (const auto& v: vectors) {
             for (const auto& p: v) {
