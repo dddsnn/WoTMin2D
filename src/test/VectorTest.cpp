@@ -49,7 +49,7 @@ TEST(VectorTest, assignment) {
 TEST(VectorTest, swap) {
     IntVector a(3, 5);
     IntVector b(7, 11);
-    std::swap(a, b);
+    swap(a, b);
     EXPECT_EQ(IntVector(7, 11), a);
     EXPECT_EQ(IntVector(3, 5), b);
 }

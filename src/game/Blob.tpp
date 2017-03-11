@@ -133,7 +133,8 @@ void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
         // updating particle information in the map for each individually.
         state->moveParticle(first_particle, forward_direction);
         // Swap and proceed with the next particle in line.
-        std::swap(first_particle, next_particle);
+        using std::swap;
+        swap(first_particle, next_particle);
     }
 }
 
