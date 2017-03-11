@@ -4,6 +4,11 @@ namespace wotmin2d {
 
 using ParticlePtr = std::shared_ptr<Particle>;
 
+BlobState::BlobState() :
+    particles(),
+    particle_map() {
+}
+
 const std::vector<ParticlePtr>& BlobState::getParticles() const {
     return particles;
 }

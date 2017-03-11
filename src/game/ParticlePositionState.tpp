@@ -12,10 +12,10 @@ const IntVector& ParticlePositionState<P>::getPosition() const {
 }
 
 template<class P>
-const std::shared_ptr<P>&
+std::shared_ptr<P>
 ParticlePositionState<P>::getNeighbor(Direction direction) const {
     // Direction is convertible to unsigned integers, starting at 0.
-    return neighbors[static_cast<Direction::val_t>(direction)];
+    return neighbors[static_cast<Direction::val_t>(direction)].lock();
 }
 
 template<class P>

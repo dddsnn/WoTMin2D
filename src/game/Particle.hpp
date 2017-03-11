@@ -27,7 +27,7 @@ class Particle {
     using Movement = ParticlePressureState::Movement;
     Particle(IntVector position);
     const IntVector& getPosition() const;
-    const std::shared_ptr<Particle>& getNeighbor(Direction direction) const;
+    std::shared_ptr<Particle> getNeighbor(Direction direction) const;
     void setNeighbor(MoveKey, Direction direction,
                      const std::shared_ptr<Particle>& neighbor);
     void move(MoveKey, Direction direction);

@@ -12,8 +12,7 @@ const IntVector& Particle::getPosition() const {
     return position_state.getPosition();
 }
 
-const std::shared_ptr<Particle>& Particle::getNeighbor(Direction direction)
-    const {
+std::shared_ptr<Particle> Particle::getNeighbor(Direction direction) const {
     return position_state.getNeighbor(direction);
 }
 
