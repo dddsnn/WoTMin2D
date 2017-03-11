@@ -14,6 +14,7 @@ namespace wotmin2d {
 
 class Particle;
 
+template<class Particle = Particle>
 class ParticlePositionState {
     public:
     ParticlePositionState(IntVector position);
@@ -29,5 +30,7 @@ class ParticlePositionState {
 };
 
 }
+
+#include "ParticlePositionState.tpp"
 
 #endif

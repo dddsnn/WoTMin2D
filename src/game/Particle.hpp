@@ -37,7 +37,7 @@ class Particle {
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
     private:
-    ParticlePositionState position_state;
+    ParticlePositionState<Particle> position_state;
     ParticlePressureState pressure_state;
 };
 
