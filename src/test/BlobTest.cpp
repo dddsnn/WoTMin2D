@@ -15,19 +15,19 @@
 namespace wotmin2d {
 namespace test {
 
-using mock::MockBlobState;
-using mock::MockParticle;
+using mock::NiceMockBlobState;
+using mock::NiceMockParticle;
 
 using ::testing::AtLeast;
 using ::testing::_;
 using ::testing::ReturnRef;
 
-using ParticlePtr = std::shared_ptr<MockParticle>;
+using ParticlePtr = std::shared_ptr<NiceMockParticle>;
 
 class BlobTest : public ::testing::Test {
     protected:
     BlobTest() :
-        state(std::make_shared<MockBlobState>()),
+        state(std::make_shared<NiceMockBlobState>()),
         particles(),
         inSouthWestCorner(0, 0),
         onSouthBorder(10, 0),
@@ -83,11 +83,11 @@ class BlobTest : public ::testing::Test {
         std::unordered_map<IntVector, ParticlePtr, IntVector::Hash> map;
         for (const auto& v: vectors) {
             for (const auto& p: v) {
-                map.emplace(p, std::make_shared<MockParticle>(p));
+                map.emplace(p, std::make_shared<NiceMockParticle>(p));
             }
         }
         for (const auto& p: singles) {
-            map.emplace(p, std::make_shared<MockParticle>(p));
+            map.emplace(p, std::make_shared<NiceMockParticle>(p));
         }
         auto getSecond = [] (std::pair<const IntVector, ParticlePtr>& v) {
                            return v.second;
@@ -99,12 +99,12 @@ class BlobTest : public ::testing::Test {
             for (auto d: Direction::all()) {
                 auto i = map.find(p->getPosition() + d.vector());
                 if (i != map.end()) {
-                    p->setNeighbor(MockParticle::MoveKey(), d, i->second);
+                    p->setNeighbor(NiceMockParticle::MoveKey(), d, i->second);
                 }
             }
         }
     }
-    std::shared_ptr<MockBlobState> state;
+    std::shared_ptr<NiceMockBlobState> state;
     std::vector<ParticlePtr> particles;
     IntVector inSouthWestCorner;
     IntVector onSouthBorder;
@@ -119,13 +119,13 @@ class BlobTest : public ::testing::Test {
 
 TEST_F(BlobTest, normalConstructorDoesntAddParticles) {
     EXPECT_CALL(*state, addParticle(_)).Times(0);
-    Blob<MockBlobState> blob(width, height, state);
+    Blob<NiceMockBlobState> blob(width, height, state);
 }
 
 // TODO Test with the exact number and position of particles.
 TEST_F(BlobTest, circleConstructorAddsParticles) {
     EXPECT_CALL(*state, addParticle(_)).Times(AtLeast(1));
-    Blob<MockBlobState> blob(IntVector(10, 20), 3.0f, width, height, state);
+    Blob<NiceMockBlobState> blob(IntVector(10, 20), 3.0f, width, height, state);
 }
 
 TEST_F(BlobTest, advancesEachParticleOnce) {
@@ -134,7 +134,7 @@ TEST_F(BlobTest, advancesEachParticleOnce) {
     for (const auto& p: particles) {
         EXPECT_CALL(*p, advance()).Times(1);
     }
-    Blob<MockBlobState, MockParticle> blob(width, height, state);
+    Blob<NiceMockBlobState, NiceMockParticle> blob(width, height, state);
     blob.advance();
 }
 

@@ -15,6 +15,9 @@
 namespace wotmin2d {
 namespace mock {
 
+class MockParticle;
+using NiceMockParticle = ::testing::NiceMock<MockParticle>;
+
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
@@ -24,7 +27,7 @@ class MockParticle {
     class MoveKey {};
     using Movement = std::pair<Direction, bool>;
     MockParticle(IntVector position) : position_state(position) {
-        using PPS = ParticlePositionState<MockParticle>;
+        using PPS = ParticlePositionState<NiceMockParticle>;
         ON_CALL(*this, getPosition())
             .WillByDefault(Invoke(&position_state, &PPS::getPosition));
         ON_CALL(*this, move(_, _))
@@ -39,10 +42,10 @@ class MockParticle {
             .WillByDefault(Return(std::make_pair(Direction::north(), false)));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
-    MOCK_CONST_METHOD1(getNeighbor, const std::shared_ptr<MockParticle>&
+    MOCK_CONST_METHOD1(getNeighbor, const std::shared_ptr<NiceMockParticle>&
                                         (Direction direction));
     MOCK_METHOD3(setNeighbor, void(MoveKey, Direction direction,
-                                   const std::shared_ptr<MockParticle>&
+                                   const std::shared_ptr<NiceMockParticle>&
                                        neighbor));
     MOCK_METHOD2(move, void(MoveKey, Direction direction));
     MOCK_METHOD1(hasPath, bool(std::initializer_list<Direction> directions));
@@ -50,11 +53,11 @@ class MockParticle {
     MOCK_METHOD0(advance, void());
     MOCK_METHOD2(setTarget, void(const IntVector& target,
                                  float target_pressure));
-    MOCK_METHOD1(collideWith, void(MockParticle& forward_neighbor));
+    MOCK_METHOD1(collideWith, void(NiceMockParticle& forward_neighbor));
     private:
-    ParticlePositionState<MockParticle> position_state;
+    ParticlePositionState<NiceMockParticle> position_state;
     void callSetNeighbor(MoveKey, Direction direction,
-                         const std::shared_ptr<MockParticle>& neighbor) {
+                         const std::shared_ptr<NiceMockParticle>& neighbor) {
         position_state.setNeighbor(direction, neighbor);
     }
     void callMove(MoveKey, Direction direction) {
