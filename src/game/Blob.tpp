@@ -12,8 +12,9 @@ Blob<B, P>::Blob(unsigned int arena_width, unsigned int arena_height,
 }
 
 template<class B, class P>
-Blob<B, P>::Blob(const IntVector& center, float radius, unsigned int arena_width,
-                 unsigned int arena_height, std::shared_ptr<B> state) :
+Blob<B, P>::Blob(const IntVector& center, float radius,
+                 unsigned int arena_width, unsigned int arena_height,
+                 std::shared_ptr<B> state) :
     state(state),
     arena_width(arena_width),
     arena_height(arena_height) {

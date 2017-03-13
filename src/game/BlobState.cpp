@@ -14,6 +14,7 @@ const std::vector<ParticlePtr>& BlobState::getParticles() const {
 }
 
 void BlobState::addParticle(const IntVector& position) {
+    // TODO Check that there isn't a particle at the position already.
     ParticlePtr particle = std::make_shared<Particle>(position);
     particles.push_back(particle);
     particle_map.emplace(position, particle);
