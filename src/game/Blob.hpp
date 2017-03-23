@@ -37,7 +37,9 @@ class Blob {
                           Direction movement_direction);
     bool dragParticlesBehindLine(ParticlePtr particle,
                                  Direction forward_direction,
-                                 Direction line_direction);
+                                 Direction line_direction,
+                                 ParticlePtr last_line_particle,
+                                 unsigned int line_length);
 };
 
 }

@@ -85,6 +85,7 @@ void Blob<B, P>::advanceParticle(const Ptr<P>& particle) {
 template<class B, class P>
 void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
                                   Direction forward_direction) {
+    unsigned int line_length = 1;
     while (true) {
         Ptr<P> next_particle
             = first_particle->getNeighbor(forward_direction.opposite());
@@ -115,7 +116,9 @@ void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
                 // necessary.
                 if (dragParticlesBehindLine(std::move(side_neighbor),
                                             side_direction.opposite(),
-                                            forward_direction)) {
+                                            forward_direction,
+                                            first_particle,
+                                            line_length)) {
                     // We've moved one particle, no need to also move the other
                     // one, since it can't be disconnected anymore (it's
                     // adjacent to the particle we just moved).
@@ -130,6 +133,7 @@ void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
             // Neither of the side neighbors had to be moved, we're done.
             return;
         }
+        line_length++;
         // TODO Implement a method in BlobState to move an entire line without
         // updating particle information in the map for each individually.
         state->moveParticle(first_particle, forward_direction);
@@ -145,7 +149,11 @@ void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
 // To be used after a particle (or a line of particles) has been moved in
 // line_direction to preserve connectivity. The position in forward_direction of
 // particle must be empty (it's the one where the particle that has been moved
-// was before).
+// was before). This implies that forward_direction and line_direction are
+// orthogonal.
+// last_line_particle is the last particle of the line that was moved and
+// requires particles to be moved in behind. line_length is the number of
+// particles in the line.
 // particle is said to have local connectivity if it has a neighbor in
 // line_direction, which has the particle that was moved as a neighbor in
 // forward_direction.
@@ -153,10 +161,21 @@ void Blob<B, P>::moveParticleLine(Ptr<P> first_particle,
 template<class B, class P>
 bool Blob<B, P>::dragParticlesBehindLine(Ptr<P> particle,
                                          Direction forward_direction,
-                                         Direction line_direction) {
+                                         Direction line_direction,
+                                         Ptr<P> last_line_particle,
+                                         unsigned int line_length) {
+    assert((forward_direction == line_direction.right()
+            || forward_direction == line_direction.left())
+           && "Line and forward direction aren't orthogonal.");
     bool has_moved = false;
     std::unordered_set<Ptr<P>> done_set;
-    // TODO Does this always terminate?
+    // Insert line particles into the set so we don't move the line.
+    for (unsigned int i = 0; i < line_length; i++) {
+        assert(last_line_particle != nullptr && "Line was shorter than given "
+               "length.");
+        done_set.insert(last_line_particle);
+        last_line_particle = last_line_particle->getNeighbor(line_direction);
+    }
     while (particle != nullptr) {
         done_set.insert(particle);
         // Figure out if we even need to move or if there is local connectivity
@@ -196,7 +215,8 @@ bool Blob<B, P>::dragParticlesBehindLine(Ptr<P> particle,
                 continue;
             }
             if (done_set.count(neighbor) > 0) {
-                // The neighbor is one that was already moved by this function.
+                // The neighbor is one that was already moved by this function
+                // or was part of the line that was moved in the first place.
                 // Don't consider it for moving, as that would lead to an
                 // infinite loop. It should have connectivity (though not
                 // necessarily local) because this should only happen if there
