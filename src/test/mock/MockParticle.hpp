@@ -48,7 +48,8 @@ class MockParticle {
                                    const std::shared_ptr<NiceMockParticle>&
                                        neighbor));
     MOCK_METHOD2(move, void(MoveKey, Direction direction));
-    MOCK_METHOD1(hasPath, bool(std::initializer_list<Direction> directions));
+    MOCK_CONST_METHOD1(hasPath,
+                       bool(std::initializer_list<Direction> directions));
     MOCK_CONST_METHOD0(getMovement, Movement());
     MOCK_METHOD0(advance, void());
     MOCK_METHOD2(setTarget, void(const IntVector& target,
