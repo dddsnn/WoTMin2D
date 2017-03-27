@@ -22,6 +22,7 @@ class BlobState {
     void addParticle(const IntVector& position);
     void moveParticle(const ParticlePtr& particle,
                       Direction movement_direction);
+    void collideParticles(const ParticlePtr& first, const ParticlePtr& second);
     private:
     std::vector<ParticlePtr> particles;
     ParticleMap particle_map;

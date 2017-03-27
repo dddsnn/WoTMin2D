@@ -105,7 +105,8 @@ TEST_F(BlobTest, onlyCollidesParticlesThatAreBlocked) {
     ParticlePtr blockingParticle = td.particle_map[IntVector(3, 10)];
     ON_CALL(*blockedParticle, getMovement())
         .WillByDefault(Return(std::make_pair(Direction::north(), true)));
-    EXPECT_CALL(*blockedParticle, collideWith(Ref(*blockingParticle))).Times(1);
+    EXPECT_CALL(*state, collideParticles(blockedParticle,
+                                         blockingParticle)).Times(1);
     for (const auto& p: td.particles) {
         EXPECT_CALL(*state, moveParticle(p, _)).Times(0);
     }

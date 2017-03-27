@@ -20,6 +20,8 @@ class MockBlobState {
     MOCK_METHOD1(addParticle, void(const IntVector& position));
     MOCK_METHOD2(moveParticle, void(const ParticlePtr& particle,
                                     Direction movement_direction));
+    MOCK_METHOD2(collideParticles, void(const ParticlePtr& first,
+                                        const ParticlePtr& second));
 };
 
 using NiceMockBlobState = ::testing::NiceMock<MockBlobState>;

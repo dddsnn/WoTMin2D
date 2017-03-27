@@ -74,7 +74,7 @@ void Blob<B, P>::advanceParticle(const Ptr<P>& particle) {
         = particle->getNeighbor(forward_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
-        particle->collideWith(*forward_neighbor);
+        state->collideParticles(particle, forward_neighbor);
         return;
     }
     moveParticleLine(particle, forward_direction);

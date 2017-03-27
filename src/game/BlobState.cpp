@@ -99,4 +99,9 @@ void BlobState::moveParticle(const ParticlePtr& first_particle,
     updateParticleInformation(first_particle, old_position);
 }
 
+void BlobState::collideParticles(const ParticlePtr& first,
+                                 const ParticlePtr& second) {
+    first->collideWith(*second);
+}
+
 }
