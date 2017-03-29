@@ -17,12 +17,6 @@ void ParticlePressureState::advance(const IntVector& current_position) {
     pressure += to_target_pressure;
 }
 
-ParticlePressureState::Movement ParticlePressureState::getMovement() const {
-    Direction pressure_direction = getPressureDirection();
-    return std::make_pair(pressure_direction,
-                          pressure != FloatVector(0.0f, 0.0f));
-}
-
 void ParticlePressureState::setTarget(const IntVector& target,
                                       float target_pressure) {
     this->target = target;
@@ -41,6 +35,10 @@ void ParticlePressureState::collideWith(
 {
     forward_neighbor_pressure_state.pressure += pressure;
     pressure = FloatVector(0.0f, 0.0f);
+}
+
+const FloatVector& ParticlePressureState::getPressure() const {
+    return pressure;
 }
 
 Direction ParticlePressureState::getPressureDirection() const {

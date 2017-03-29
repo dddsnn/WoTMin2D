@@ -21,11 +21,11 @@ using NiceMockParticle = ::testing::NiceMock<MockParticle>;
 using ::testing::_;
 using ::testing::Invoke;
 using ::testing::Return;
+using ::testing::ReturnRefOfCopy;
 
 class MockParticle {
     public:
     class MoveKey {};
-    using Movement = std::pair<Direction, bool>;
     MockParticle(IntVector position) : position_state(position) {
         using PPS = ParticlePositionState<NiceMockParticle>;
         ON_CALL(*this, getPosition())
@@ -38,8 +38,10 @@ class MockParticle {
             .WillByDefault(Invoke(this, &MockParticle::callSetNeighbor));
         ON_CALL(*this, hasPath(_))
             .WillByDefault(Invoke(&position_state, &PPS::hasPath));
-        ON_CALL(*this, getMovement())
-            .WillByDefault(Return(std::make_pair(Direction::north(), false)));
+        ON_CALL(*this, getPressure())
+            .WillByDefault(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
+        ON_CALL(*this, getPressureDirection())
+            .WillByDefault(Return(Direction::north()));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
     MOCK_CONST_METHOD1(getNeighbor, const std::shared_ptr<NiceMockParticle>&
@@ -50,11 +52,12 @@ class MockParticle {
     MOCK_METHOD2(move, void(MoveKey, Direction direction));
     MOCK_CONST_METHOD1(hasPath,
                        bool(std::initializer_list<Direction> directions));
-    MOCK_CONST_METHOD0(getMovement, Movement());
     MOCK_METHOD0(advance, void());
     MOCK_METHOD2(setTarget, void(const IntVector& target,
                                  float target_pressure));
     MOCK_METHOD1(collideWith, void(NiceMockParticle& forward_neighbor));
+    MOCK_CONST_METHOD0(getPressure, const FloatVector&());
+    MOCK_CONST_METHOD0(getPressureDirection, Direction());
     private:
     ParticlePositionState<NiceMockParticle> position_state;
     void callSetNeighbor(MoveKey, Direction direction,

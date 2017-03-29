@@ -32,7 +32,7 @@ class Blob {
     std::shared_ptr<BlobState> state;
     unsigned int arena_width;
     unsigned int arena_height;
-    void advanceParticle(const ParticlePtr& particle);
+    void handleParticle(const ParticlePtr& particle);
     void moveParticleLine(ParticlePtr first_particle,
                           Direction movement_direction);
     bool dragParticlesBehindLine(ParticlePtr particle,

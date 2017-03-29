@@ -24,7 +24,6 @@ class Particle {
         MoveKey& operator=(const MoveKey&) = delete;
     };
     public:
-    using Movement = ParticlePressureState::Movement;
     Particle(IntVector position);
     const IntVector& getPosition() const;
     std::shared_ptr<Particle> getNeighbor(Direction direction) const;
@@ -32,7 +31,8 @@ class Particle {
                      const std::shared_ptr<Particle>& neighbor);
     void move(MoveKey, Direction direction);
     bool hasPath(std::initializer_list<Direction> directions) const;
-    Movement getMovement() const;
+    const FloatVector& getPressure() const;
+    Direction getPressureDirection() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);

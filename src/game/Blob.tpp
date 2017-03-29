@@ -1,3 +1,4 @@
+#include <iostream>       
 namespace wotmin2d {
 
 template<class T>
@@ -50,34 +51,36 @@ const std::vector<Ptr<P>>& Blob<B, P>::getParticles() const {
 
 template<class B, class P>
 void Blob<B, P>::advance() {
-    for (const Ptr<P>& particle: state->getParticles()) {
-        assert(particle != nullptr && "Particle in blob was null.");
-        advanceParticle(particle);
+    state->advanceParticles();
+    while (true) {
+        const Ptr<P>& particle = state->getHighestPressureParticle();
+        std::cout << particle->getPosition().getX() << ":" <<
+            particle->getPosition().getY() << std::endl;             
+        assert(particle != nullptr && "Highest pressure particle in blob was "
+               "null.");
+        // TODO Maybe use a small threshold instead of zero? Or instead of just
+        // getting the pressure, ask the particle if it could still move with
+        // the pressure it has left.
+        if (particle->getPressure().squaredNorm() <= 0.0f) {
+            // Highest pressure particle doesn't have pressure, nothing left to
+            // do.
+            break;
+        }
+        handleParticle(particle);
     }
 }
 
 template<class B, class P>
-void Blob<B, P>::advanceParticle(const Ptr<P>& particle) {
-    // Advance particle to "refresh" pressure.
-    // TODO Should I advance() all particles before I move any of them? Moving
-    // one can entail moving another in order to avoid bubbles/disconnection.
-    particle->advance();
-    // Now, where does it want to go?
-    using Movement = Particle::Movement;
-    Movement movement = particle->getMovement();
-    if (!movement.second) {
-        // Particle doesn't want to move.
-        return;
-    }
-    const Direction& forward_direction = movement.first;
+void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
+    Direction movement_direction = particle->getPressureDirection();
     const Ptr<P>& forward_neighbor
-        = particle->getNeighbor(forward_direction);
+        = particle->getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
         state->collideParticles(particle, forward_neighbor);
         return;
     }
-    moveParticleLine(particle, forward_direction);
+    moveParticleLine(particle, movement_direction);
 }
 
 // Moves a particle and drags all particles behind it in the same direction so

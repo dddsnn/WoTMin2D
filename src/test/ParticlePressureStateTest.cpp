@@ -7,8 +7,6 @@
 namespace wotmin2d {
 namespace test {
 
-using Movement = ParticlePressureState::Movement;
-
 class ParticlePressureStateTest : public ::testing::Test {
     protected:
     ParticlePressureStateTest() :
@@ -18,24 +16,21 @@ class ParticlePressureStateTest : public ::testing::Test {
 
 TEST_F(ParticlePressureStateTest, doesntWantToMoveInitially) {
     ParticlePressureState pps;
-    Movement movement = pps.getMovement();
-    EXPECT_FALSE(movement.second);
+    EXPECT_EQ(FloatVector(0.0f, 0.0f), pps.getPressure());
 }
 
 TEST_F(ParticlePressureStateTest, doesntWantToMoveWithTargetBeforeAdvancing) {
     ParticlePressureState pps;
     pps.setTarget(start_position + IntVector(5, 0), 1.0f);
-    Movement movement = pps.getMovement();
-    EXPECT_FALSE(movement.second);
+    EXPECT_EQ(FloatVector(0.0f, 0.0f), pps.getPressure());
 }
 
 TEST_F(ParticlePressureStateTest, wantsToMoveAfterAdvancing) {
     ParticlePressureState pps;
     pps.setTarget(start_position + IntVector(5, 0), 1.0f);
     pps.advance(start_position);
-    Movement movement = pps.getMovement();
-    EXPECT_EQ(Direction::east(), movement.first);
-    EXPECT_TRUE(movement.second);
+    EXPECT_EQ(Direction::east(), pps.getPressureDirection());
+    EXPECT_GT(pps.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
 }
 
 TEST_F(ParticlePressureStateTest, canChangeDirection) {
@@ -45,23 +40,20 @@ TEST_F(ParticlePressureStateTest, canChangeDirection) {
     pps.updatePressureAfterMovement(Direction::east().vector());
     pps.setTarget(start_position - IntVector(5, 0), 1.0f);
     pps.advance(start_position + Direction::east().vector());
-    Movement movement = pps.getMovement();
-    EXPECT_EQ(Direction::west(), movement.first);
-    EXPECT_TRUE(movement.second);
+    EXPECT_EQ(Direction::west(), pps.getPressureDirection());
+    EXPECT_GT(pps.getPressure().dot(FloatVector(-1.0f, 0.0f)), 0.0f);
 }
 
 TEST_F(ParticlePressureStateTest, canMoveInNonStraightLines) {
     ParticlePressureState pps;
     pps.setTarget(start_position + IntVector(2, 1), 1.0f);
     pps.advance(start_position);
-    Movement movement = pps.getMovement();
-    EXPECT_EQ(Direction::east(), movement.first);
-    EXPECT_TRUE(movement.second);
+    EXPECT_EQ(Direction::east(), pps.getPressureDirection());
+    EXPECT_GT(pps.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
     pps.updatePressureAfterMovement(Direction::east().vector());
     pps.advance(start_position + Direction::east().vector());
-    movement = pps.getMovement();
-    EXPECT_EQ(Direction::north(), movement.first);
-    EXPECT_TRUE(movement.second);
+    EXPECT_EQ(Direction::north(), pps.getPressureDirection());
+    EXPECT_GT(pps.getPressure().dot(FloatVector(0.0f, 1.0f)), 0.0f);
 }
 
 TEST_F(ParticlePressureStateTest,
@@ -72,13 +64,11 @@ TEST_F(ParticlePressureStateTest,
     pps.updatePressureAfterMovement(Direction::east().vector());
     pps.setTarget(start_position, 0.0f);
     pps.advance(start_position + Direction::east().vector());
-    Movement movement = pps.getMovement();
-    EXPECT_EQ(Direction::east(), movement.first);
-    EXPECT_TRUE(movement.second);
+    EXPECT_EQ(Direction::east(), pps.getPressureDirection());
+    EXPECT_GT(pps.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
     pps.updatePressureAfterMovement(Direction::east().vector());
     pps.advance(start_position + Direction::east().vector() * 2);
-    movement = pps.getMovement();
-    EXPECT_FALSE(movement.second);
+    EXPECT_EQ(FloatVector(0.0f, 0.0f), pps.getPressure());
 }
 
 TEST_F(ParticlePressureStateTest, passesOnEntirePressureOnCollision) {
@@ -87,12 +77,13 @@ TEST_F(ParticlePressureStateTest, passesOnEntirePressureOnCollision) {
     pps.setTarget(start_position + IntVector(5, 0), 1.0f);
     pps.advance(start_position);
     neighbor.advance(start_position + IntVector(1, 0));
+    FloatVector pps_pressure_before = pps.getPressure();
+    FloatVector neighbor_pressure_before = neighbor.getPressure();
     pps.collideWith(neighbor);
-    Movement pps_movement = pps.getMovement();
-    Movement neighbor_movement = neighbor.getMovement();
-    EXPECT_FALSE(pps_movement.second);
-    EXPECT_TRUE(neighbor_movement.second);
-    EXPECT_EQ(Direction::east(), neighbor_movement.first);
+    EXPECT_EQ(FloatVector(0.0f, 0.0f), pps.getPressure());
+    EXPECT_EQ(pps_pressure_before + neighbor_pressure_before,
+              neighbor.getPressure());
+    EXPECT_EQ(Direction::east(), neighbor.getPressureDirection());
 }
 
 }

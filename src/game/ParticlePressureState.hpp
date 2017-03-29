@@ -14,18 +14,17 @@ class Particle;
 
 class ParticlePressureState {
     public:
-    using Movement = std::pair<Direction, bool>;
     ParticlePressureState();
-    Movement getMovement() const;
     void advance(const IntVector& current_position);
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(ParticlePressureState& forward_neighbor_pressure_state);
     void updatePressureAfterMovement(const IntVector& vector);
+    const FloatVector& getPressure() const;
+    Direction getPressureDirection() const;
     private:
     IntVector target;
     float target_pressure;
     FloatVector pressure;
-    Direction getPressureDirection() const;
 };
 
 }

@@ -29,8 +29,12 @@ void Particle::advance() {
     pressure_state.advance(position_state.getPosition());
 }
 
-Particle::Movement Particle::getMovement() const {
-    return pressure_state.getMovement();
+const FloatVector& Particle::getPressure() const {
+    return pressure_state.getPressure();
+}
+
+Direction Particle::getPressureDirection() const {
+    return pressure_state.getPressureDirection();
 }
 
 void Particle::setTarget(const IntVector& target, float target_pressure) {

@@ -78,7 +78,7 @@ void Screen::updateTexture(const State& state) {
     texture->setRange(0, texture->getWidth() * texture->getHeight(), 0xff, 0xff,
                       0xff);
     for (const Blob<>& blob: state.getBlobs()) {
-        for (const std::shared_ptr<Particle>& particle: blob.getParticles()) {
+        for (const auto& particle: blob.getParticles()) {
             int x_signed = particle->getPosition().getX();
             int y_signed = particle->getPosition().getY();
             assert(x_signed >= 0 && "X coordinate must be positive");

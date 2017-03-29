@@ -8,6 +8,7 @@
 #include <unordered_map>
 #include <memory>
 #include <cassert>
+#include <algorithm>
 
 namespace wotmin2d {
 
@@ -16,6 +17,11 @@ class BlobState {
     using ParticlePtr = std::shared_ptr<Particle>;
     using ParticleMap = std::unordered_map<IntVector, ParticlePtr,
                                            IntVector::Hash>;
+    class ParticlePressureLess {
+        public:
+        bool operator()(const ParticlePtr& first,
+                        const ParticlePtr& second) const;
+    };
     public:
     BlobState();
     const std::vector<ParticlePtr>& getParticles() const;
@@ -23,6 +29,8 @@ class BlobState {
     void moveParticle(const ParticlePtr& particle,
                       Direction movement_direction);
     void collideParticles(const ParticlePtr& first, const ParticlePtr& second);
+    void advanceParticles();
+    const ParticlePtr& getHighestPressureParticle() const;
     private:
     std::vector<ParticlePtr> particles;
     ParticleMap particle_map;

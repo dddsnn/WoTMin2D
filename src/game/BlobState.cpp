@@ -104,4 +104,28 @@ void BlobState::collideParticles(const ParticlePtr& first,
     first->collideWith(*second);
 }
 
+// Advances all particles to "refresh" pressure.
+void BlobState::advanceParticles() {
+    // TODO test
+    for (const ParticlePtr& particle: particles) {
+        particle->advance();
+    }
+}
+
+const ParticlePtr& BlobState::getHighestPressureParticle() const {
+    // TODO Make this faster by using a heap somehow. The problem is only that
+    // Blob may invalidate the heap and we don't know which particles it
+    // touches.
+    // TODO Handle empty particle vector.
+    return *std::max_element(particles.begin(), particles.end(),
+                             ParticlePressureLess());
+}
+
+bool BlobState::ParticlePressureLess::operator()(const ParticlePtr& first,
+                                                 const ParticlePtr& second)
+    const {
+    return first->getPressure().squaredNorm()
+        < second->getPressure().squaredNorm();
+}
+
 }
