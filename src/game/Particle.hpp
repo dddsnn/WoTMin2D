@@ -49,6 +49,7 @@ class Particle {
     void addLeader(BlobStateKey, const std::shared_ptr<Particle>& leader,
                    const FloatVector& pressure);
     ParticlePressureState& getPressureState(PressureStateKey);
+    bool canMove() const;
     private:
     ParticlePositionState<Particle> position_state;
     ParticlePressureState pressure_state;

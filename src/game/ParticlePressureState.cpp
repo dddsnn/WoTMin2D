@@ -130,4 +130,9 @@ void ParticlePressureState::addLeader(const std::shared_ptr<Particle>& leader,
     this->pressure += pressure;
 }
 
+bool ParticlePressureState::canMove() const {
+    // TODO Unhardcode
+    return pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
+}
+
 }

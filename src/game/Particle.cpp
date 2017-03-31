@@ -73,4 +73,8 @@ ParticlePressureState& Particle::getPressureState(PressureStateKey) {
     return pressure_state;
 }
 
+bool Particle::canMove() const {
+    return pressure_state.canMove();
+}
+
 }

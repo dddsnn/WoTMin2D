@@ -47,6 +47,7 @@ class ParticlePressureState {
     void addFollowers(const std::vector<std::shared_ptr<Particle>>& followers);
     void addLeader(const std::shared_ptr<Particle>& leader,
                    const FloatVector& pressure);
+    bool canMove() const;
     private:
     void dividePressure(FloatVector new_pressure);
     IntVector target;

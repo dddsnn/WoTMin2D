@@ -58,9 +58,9 @@ void Blob<B, P>::advance() {
         // TODO Maybe use a small threshold instead of zero? Or instead of just
         // getting the pressure, ask the particle if it could still move with
         // the pressure it has left.
-        if (particle->getPressure().squaredNorm() <= 5.0f) {
-            // Highest pressure particle doesn't have pressure, nothing left to
-            // do.
+        if (!particle->canMove()) {
+            // Highest pressure particle doesn't have enough pressure to move,
+            // nothing left to do.
             break;
         }
         handleParticle(particle);
