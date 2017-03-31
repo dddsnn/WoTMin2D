@@ -130,8 +130,4 @@ void ParticlePressureState::addLeader(const std::shared_ptr<Particle>& leader,
     this->pressure += pressure;
 }
 
-void ParticlePressureState::addPressure(const FloatVector& pressure) {
-    this->pressure += pressure;
-}
-
 }
