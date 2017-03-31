@@ -33,13 +33,6 @@ class Blob {
     unsigned int arena_width;
     unsigned int arena_height;
     void handleParticle(const ParticlePtr& particle);
-    void moveParticleLine(ParticlePtr first_particle,
-                          Direction movement_direction);
-    bool dragParticlesBehindLine(ParticlePtr particle,
-                                 Direction forward_direction,
-                                 Direction line_direction,
-                                 ParticlePtr last_line_particle,
-                                 unsigned int line_length);
 };
 
 }

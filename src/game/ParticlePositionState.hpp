@@ -22,6 +22,7 @@ class ParticlePositionState {
     std::shared_ptr<Particle> getNeighbor(Direction direction) const;
     void setNeighbor(Direction direction,
                      const std::shared_ptr<Particle>& neighbor);
+    bool hasNeighbor() const;
     bool hasPath(std::initializer_list<Direction> directions) const;
     void move(const IntVector& vector);
     private:

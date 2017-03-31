@@ -21,6 +21,10 @@ void Particle::setNeighbor(MoveKey, Direction direction,
     position_state.setNeighbor(direction, neighbor);
 }
 
+bool Particle::hasNeighbor() const {
+    return position_state.hasNeighbor();
+}
+
 bool Particle::hasPath(std::initializer_list<Direction> directions) const {
     return position_state.hasPath(directions);
 }
@@ -51,6 +55,22 @@ void Particle::collideWith(Particle& forward_neighbor) {
     ParticlePressureState& forward_neighbor_pressure_state
         = forward_neighbor.pressure_state;
     pressure_state.collideWith(forward_neighbor_pressure_state);
+}
+
+void Particle::addFollowers(MoveKey,
+                            const std::vector<std::shared_ptr<Particle>>&
+                                followers)
+{
+    pressure_state.addFollowers(followers);
+}
+
+void Particle::addLeader(MoveKey, const std::shared_ptr<Particle>& leader,
+                         const FloatVector& pressure) {
+    pressure_state.addLeader(leader, pressure);
+}
+
+ParticlePressureState& Particle::getPressureState(PressureStateKey) {
+    return pressure_state;
 }
 
 }

@@ -25,6 +25,14 @@ void ParticlePositionState<P>::setNeighbor(Direction direction,
 }
 
 template<class P>
+bool ParticlePositionState<P>::hasNeighbor() const {
+    return std::any_of(neighbors.begin(), neighbors.end(),
+                       [](const std::weak_ptr<P>& p) {
+                           return p.lock() != nullptr;
+                       });
+}
+
+template<class P>
 bool ParticlePositionState<P>::hasPath(std::initializer_list<Direction>
     directions) const {
     if (directions.size() == 0) {

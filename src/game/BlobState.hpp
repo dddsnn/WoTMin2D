@@ -9,6 +9,7 @@
 #include <memory>
 #include <cassert>
 #include <algorithm>
+#include <array>
 
 namespace wotmin2d {
 
@@ -31,6 +32,8 @@ class BlobState {
     void collideParticles(const ParticlePtr& first, const ParticlePtr& second);
     void advanceParticles();
     const ParticlePtr& getHighestPressureParticle() const;
+    void addParticleFollowers(const ParticlePtr& particle,
+                              const std::vector<ParticlePtr>& followers);
     private:
     std::vector<ParticlePtr> particles;
     ParticleMap particle_map;
