@@ -16,7 +16,7 @@ std::shared_ptr<Particle> Particle::getNeighbor(Direction direction) const {
     return position_state.getNeighbor(direction);
 }
 
-void Particle::setNeighbor(MoveKey, Direction direction,
+void Particle::setNeighbor(BlobStateKey, Direction direction,
                            const std::shared_ptr<Particle>& neighbor) {
     position_state.setNeighbor(direction, neighbor);
 }
@@ -45,7 +45,7 @@ void Particle::setTarget(const IntVector& target, float target_pressure) {
     pressure_state.setTarget(target, target_pressure);
 }
 
-void Particle::move(MoveKey, Direction direction) {
+void Particle::move(BlobStateKey, Direction direction) {
     const IntVector& vector = direction.vector();
     position_state.move(vector);
     pressure_state.updatePressureAfterMovement(vector);
@@ -57,14 +57,14 @@ void Particle::collideWith(Particle& forward_neighbor) {
     pressure_state.collideWith(forward_neighbor_pressure_state);
 }
 
-void Particle::addFollowers(MoveKey,
+void Particle::addFollowers(BlobStateKey,
                             const std::vector<std::shared_ptr<Particle>>&
                                 followers)
 {
     pressure_state.addFollowers(followers);
 }
 
-void Particle::addLeader(MoveKey, const std::shared_ptr<Particle>& leader,
+void Particle::addLeader(BlobStateKey, const std::shared_ptr<Particle>& leader,
                          const FloatVector& pressure) {
     pressure_state.addLeader(leader, pressure);
 }
