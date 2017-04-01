@@ -55,12 +55,12 @@ void Blob<B, P>::advance() {
         const Ptr<P>& particle = state->getHighestPressureParticle();
         assert(particle != nullptr && "Highest pressure particle in blob was "
                "null.");
-        // TODO Maybe use a small threshold instead of zero? Or instead of just
-        // getting the pressure, ask the particle if it could still move with
-        // the pressure it has left.
         if (!particle->canMove()) {
             // Highest pressure particle doesn't have enough pressure to move,
             // nothing left to do.
+            // TODO canMove() also returns false if the particle is waiting for
+            // followers. In that case, we should proceed with the next highest
+            // pressure particle.
             break;
         }
         handleParticle(particle);
@@ -91,7 +91,8 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
     if (!particle->hasNeighbor()) {
         // We've disconnected the particle by moving, make the previous
         // neighbors follow it to catch up.
-        state->addParticleFollowers(particle, neighbors);
+        state->addParticleFollowers(particle, neighbors,
+                                    movement_direction.opposite());
     }
 }
 

@@ -11,6 +11,7 @@
 #include <utility>
 #include <algorithm>
 #include <initializer_list>
+#include <iterator>
 
 namespace wotmin2d {
 
@@ -22,13 +23,6 @@ class Particle {
         BlobStateKey() {}
         BlobStateKey(const BlobStateKey&) = delete;
         BlobStateKey& operator=(const BlobStateKey&) = delete;
-    };
-    class PressureStateKey {
-        friend class ParticlePressureState;
-        private:
-        PressureStateKey() {}
-        PressureStateKey(const PressureStateKey&) = delete;
-        PressureStateKey& operator=(const PressureStateKey&) = delete;
     };
     public:
     Particle(IntVector position);
@@ -45,11 +39,11 @@ class Particle {
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
     void addFollowers(BlobStateKey,
-                      const std::vector<std::shared_ptr<Particle>>& followers);
+                      const std::vector<std::shared_ptr<Particle>>& followers,
+                      Direction follower_direction);
     void addLeader(BlobStateKey, const std::shared_ptr<Particle>& leader,
                    const FloatVector& pressure);
-    ParticlePressureState& getPressureState(PressureStateKey);
-    bool canMove() const;
+    bool canMove();
     private:
     ParticlePositionState<Particle> position_state;
     ParticlePressureState pressure_state;

@@ -121,16 +121,12 @@ const ParticlePtr& BlobState::getHighestPressureParticle() const {
                              ParticlePressureLess());
 }
 
-void BlobState::addParticleFollowers(const ParticlePtr& particle,
-                                     const std::vector<ParticlePtr>& followers)
+void BlobState::addParticleFollowers(const ParticlePtr& leader,
+                                     const std::vector<ParticlePtr>& followers,
+                                     Direction follower_direction)
 {
     // TODO Do I need to prevent particles from following each other?
-    particle->addFollowers({}, followers);
-    for (const ParticlePtr& follower: followers) {
-        // Use the current pressure of particle, because addFollowers() divides
-        // the original pressure.
-        follower->addLeader({}, particle, particle->getPressure());
-    }
+    leader->addFollowers({}, followers, follower_direction);
 }
 
 bool BlobState::ParticlePressureLess::operator()(const ParticlePtr& first,

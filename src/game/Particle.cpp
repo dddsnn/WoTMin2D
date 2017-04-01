@@ -52,28 +52,33 @@ void Particle::move(BlobStateKey, Direction direction) {
 }
 
 void Particle::collideWith(Particle& forward_neighbor) {
-    ParticlePressureState& forward_neighbor_pressure_state
-        = forward_neighbor.pressure_state;
-    pressure_state.collideWith(forward_neighbor_pressure_state);
+    pressure_state.collideWith(forward_neighbor.pressure_state);
 }
 
 void Particle::addFollowers(BlobStateKey,
                             const std::vector<std::shared_ptr<Particle>>&
-                                followers)
+                                followers,
+                            Direction follower_direction)
 {
-    pressure_state.addFollowers(followers);
+    // TODO This is just wasteful. Use a lazy-eval adapter.
+    std::vector<ParticlePressureState*> followers_pps;
+    followers_pps.reserve(followers.size());
+    std::transform(followers.begin(), followers.end(),
+                   std::back_inserter(followers_pps),
+                   [](const std::shared_ptr<Particle>& p) {
+                       return &(p->pressure_state);
+                   });
+    pressure_state.addFollowers(followers_pps, follower_direction);
 }
 
-void Particle::addLeader(BlobStateKey, const std::shared_ptr<Particle>& leader,
-                         const FloatVector& pressure) {
-    pressure_state.addLeader(leader, pressure);
-}
-
-ParticlePressureState& Particle::getPressureState(PressureStateKey) {
-    return pressure_state;
-}
-
-bool Particle::canMove() const {
+bool Particle::canMove() {
+    if (getNeighbor(pressure_state.getBubbleDirection()) != nullptr) {
+        // If there was a bubble that the particles followers are catching up to
+        // fill, it's now gone. Inform pressure_state.
+        // TODO It's a bit ugly having to do this here. This function really
+        // should be const.
+        pressure_state.removeFollowers();
+    }
     return pressure_state.canMove();
 }
 

@@ -8,7 +8,8 @@ ParticlePressureState::ParticlePressureState() :
     target_pressure(0.0f),
     pressure(0.0f, 0.0f),
     followers(),
-    leaders() {
+    leaders(),
+    bubble_direction(Direction::north()) {
 }
 
 void ParticlePressureState::advance(const IntVector& current_position) {
@@ -29,9 +30,9 @@ void ParticlePressureState::dividePressure(FloatVector new_pressure) {
     pressure += new_pressure;
     // TODO Instead of giving followers pressure in the same direction, maybe
     // they should get pressure in the direction towards their leader.
-    for (const std::weak_ptr<Particle>& follower: followers) {
-        assert(follower.lock() != nullptr);
-        follower.lock()->getPressureState({}).pressure += new_pressure;
+    for (ParticlePressureState* follower: followers) {
+        assert(follower != nullptr);
+        follower->pressure += new_pressure;
     }
 }
 
@@ -51,42 +52,18 @@ void ParticlePressureState::updatePressureAfterMovement(const IntVector& vector)
 void ParticlePressureState::collideWith(
     ParticlePressureState& forward_neighbor_pressure_state)
 {
-    using std::swap;
     forward_neighbor_pressure_state.pressure += pressure;
     pressure = FloatVector(0.0f, 0.0f);
-    // Stop following leaders after collision, unless they have no one else
-    // following them.
-    // TODO This means that, once a particle is followed, it will always have at
-    // least one follower.
-    ParticleSet new_leaders;
-    for (const std::weak_ptr<Particle>& l: leaders) {
-        std::shared_ptr<Particle> leader = l.lock();
-        ParticlePressureState& leader_pps = leader->getPressureState({});
-        // Make a new set containing all of the leader's followers.
-        ParticleSet new_followers;
-        std::weak_ptr<Particle> me;
-        for (const std::weak_ptr<Particle>& follower: leader_pps.followers) {
-            ParticlePressureState* follower_pps
-                = &follower.lock()->getPressureState({});
-            if (follower_pps == this) {
-                me = follower;
-                // Don't keep this particle. We may have to add it back in case
-                // there are no other followers.
-            } else if (follower.lock().get() != nullptr) {
-                new_followers.insert(follower);
-            }
+    // Pass on our leaders to the particle we collided with, unless it's one of
+    // the leaders, then just unfollow.
+    for (ParticlePressureState* leader: leaders) {
+        leader->removeFollower(*this);
+        if (leader != &forward_neighbor_pressure_state) {
+            forward_neighbor_pressure_state.addLeader(*leader);
+            leader->addFollower(forward_neighbor_pressure_state);
         }
-        assert(me.lock() != nullptr && "Leader didn't maintain following "
-               "particle as a follower.");
-        if (new_followers.empty()) {
-            // The leader has no other followers than the current particle, keep
-            // following it.
-            new_followers.insert(me);
-            new_leaders.insert(leader);
-        }
-        swap(leader_pps.followers, new_followers);
     }
-    swap(leaders, new_leaders);
+    leaders.clear();
 }
 
 const FloatVector& ParticlePressureState::getPressure() const {
@@ -114,25 +91,57 @@ Direction ParticlePressureState::getPressureDirection() const {
 }
 
 void ParticlePressureState::addFollowers(
-    const std::vector<std::shared_ptr<Particle>>& followers)
+    const std::vector<ParticlePressureState*>& followers,
+    Direction follower_direction)
 {
+    bubble_direction = follower_direction;
     // TODO Do I need this initial "boost", giving the new followers a part of
     // the pressure immediately? Or should I just let them get some on the next
     // updates?
     float divisor = static_cast<float>(followers.size() + 1);
     pressure /= divisor;
     this->followers.insert(followers.begin(), followers.end());
+    for (ParticlePressureState* follower: followers) {
+        follower->addLeader(*this);
+        // Give the new follower a boost.
+        follower->pressure += pressure;
+    }
 }
 
-void ParticlePressureState::addLeader(const std::shared_ptr<Particle>& leader,
-                                      const FloatVector& pressure) {
-    leaders.insert(leader);
-    this->pressure += pressure;
+void ParticlePressureState::removeFollowers() {
+    for (ParticlePressureState* follower: followers) {
+        follower->removeLeader(*this);
+    }
+    followers.clear();
+}
+
+Direction ParticlePressureState::getBubbleDirection() const {
+    return bubble_direction;
+}
+
+void ParticlePressureState::addLeader(ParticlePressureState& leader) {
+    leaders.insert(&leader);
+}
+
+void ParticlePressureState::addFollower(ParticlePressureState& follower) {
+    followers.insert(&follower);
+}
+
+void ParticlePressureState::removeLeader(ParticlePressureState& leader) {
+    leaders.erase(&leader);
+}
+
+void ParticlePressureState::removeFollower(ParticlePressureState& follower) {
+    followers.erase(&follower);
 }
 
 bool ParticlePressureState::canMove() const {
     // TODO Unhardcode
-    return pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
+    bool has_pressure = pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
+    bool has_bubble = !followers.empty();
+    // We need pressure, and as long as we have followers we need to wait for
+    // them (or another particle) to catch up and fill the bubble behind us.
+    return has_pressure && !has_bubble;
 }
 
 }
