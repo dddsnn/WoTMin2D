@@ -52,15 +52,11 @@ template<class B, class P>
 void Blob<B, P>::advance() {
     state->advanceParticles();
     while (true) {
-        const Ptr<P>& particle = state->getHighestPressureParticle();
+        const Ptr<P>& particle = state->getHighestMobilityParticle();
         assert(particle != nullptr && "Highest pressure particle in blob was "
                "null.");
         if (!particle->canMove()) {
-            // Highest pressure particle doesn't have enough pressure to move,
-            // nothing left to do.
-            // TODO canMove() also returns false if the particle is waiting for
-            // followers. In that case, we should proceed with the next highest
-            // pressure particle.
+            // Highest mobility particle can't move, nothing left to do.
             break;
         }
         handleParticle(particle);
@@ -91,7 +87,7 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
     if (!particle->hasNeighbor()) {
         // We've disconnected the particle by moving, make the previous
         // neighbors follow it to catch up.
-        state->addParticleFollowers(particle, neighbors,
+        state->setParticleFollowers(particle, neighbors,
                                     movement_direction.opposite());
     }
 }

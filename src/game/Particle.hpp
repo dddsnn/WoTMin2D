@@ -38,11 +38,9 @@ class Particle {
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
-    void addFollowers(BlobStateKey,
+    void setFollowers(BlobStateKey,
                       const std::vector<std::shared_ptr<Particle>>& followers,
                       Direction follower_direction);
-    void addLeader(BlobStateKey, const std::shared_ptr<Particle>& leader,
-                   const FloatVector& pressure);
     bool canMove();
     private:
     ParticlePositionState<Particle> position_state;

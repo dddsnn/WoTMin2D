@@ -18,7 +18,7 @@ class BlobState {
     using ParticlePtr = std::shared_ptr<Particle>;
     using ParticleMap = std::unordered_map<IntVector, ParticlePtr,
                                            IntVector::Hash>;
-    class ParticlePressureLess {
+    class ParticleMobilityLess {
         public:
         bool operator()(const ParticlePtr& first,
                         const ParticlePtr& second) const;
@@ -31,8 +31,8 @@ class BlobState {
                       Direction movement_direction);
     void collideParticles(const ParticlePtr& first, const ParticlePtr& second);
     void advanceParticles();
-    const ParticlePtr& getHighestPressureParticle() const;
-    void addParticleFollowers(const ParticlePtr& leader,
+    const ParticlePtr& getHighestMobilityParticle() const;
+    void setParticleFollowers(const ParticlePtr& leader,
                               const std::vector<ParticlePtr>& followers,
                               Direction follower_direction);
     private:

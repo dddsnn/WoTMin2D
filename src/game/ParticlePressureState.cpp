@@ -90,10 +90,12 @@ Direction ParticlePressureState::getPressureDirection() const {
     }
 }
 
-void ParticlePressureState::addFollowers(
+void ParticlePressureState::setFollowers(
     const std::vector<ParticlePressureState*>& followers,
     Direction follower_direction)
 {
+    assert(this->followers.empty() && "Attempt to add followers, but there "
+           "already are some.");
     bubble_direction = follower_direction;
     // TODO Do I need this initial "boost", giving the new followers a part of
     // the pressure immediately? Or should I just let them get some on the next
@@ -108,7 +110,7 @@ void ParticlePressureState::addFollowers(
     }
 }
 
-void ParticlePressureState::removeFollowers() {
+void ParticlePressureState::clearFollowers() {
     for (ParticlePressureState* follower: followers) {
         follower->removeLeader(*this);
     }
@@ -142,6 +144,12 @@ bool ParticlePressureState::canMove() const {
     // We need pressure, and as long as we have followers we need to wait for
     // them (or another particle) to catch up and fill the bubble behind us.
     return has_pressure && !has_bubble;
+}
+
+void ParticlePressureState::setBlocked(bool blocked) {
+    if (!blocked) {
+        clearFollowers();
+    }
 }
 
 }

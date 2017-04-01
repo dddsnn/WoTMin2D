@@ -25,17 +25,18 @@ class ParticlePressureState {
     void updatePressureAfterMovement(const IntVector& vector);
     const FloatVector& getPressure() const;
     Direction getPressureDirection() const;
-    void addFollowers(const std::vector<ParticlePressureState*>& followers,
+    void setFollowers(const std::vector<ParticlePressureState*>& followers,
                       Direction follower_direction);
-    void removeFollowers();
     Direction getBubbleDirection() const;
     bool canMove() const;
+    void setBlocked(bool blocked);
     private:
     void dividePressure(FloatVector new_pressure);
     void addLeader(ParticlePressureState& leader);
     void addFollower(ParticlePressureState& follower);
     void removeLeader(ParticlePressureState& leader);
     void removeFollower(ParticlePressureState& follower);
+    void clearFollowers();
     IntVector target;
     float target_pressure;
     FloatVector pressure;

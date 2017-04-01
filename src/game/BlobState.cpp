@@ -112,28 +112,38 @@ void BlobState::advanceParticles() {
     }
 }
 
-const ParticlePtr& BlobState::getHighestPressureParticle() const {
+const ParticlePtr& BlobState::getHighestMobilityParticle() const {
     // TODO Make this faster by using a heap somehow. The problem is only that
     // Blob may invalidate the heap and we don't know which particles it
     // touches.
     // TODO Handle empty particle vector.
     return *std::max_element(particles.begin(), particles.end(),
-                             ParticlePressureLess());
+                             ParticleMobilityLess());
 }
 
-void BlobState::addParticleFollowers(const ParticlePtr& leader,
+void BlobState::setParticleFollowers(const ParticlePtr& leader,
                                      const std::vector<ParticlePtr>& followers,
                                      Direction follower_direction)
 {
     // TODO Do I need to prevent particles from following each other?
-    leader->addFollowers({}, followers, follower_direction);
+    leader->setFollowers({}, followers, follower_direction);
 }
 
-bool BlobState::ParticlePressureLess::operator()(const ParticlePtr& first,
+// Returns whether first is less mobile than second, i.e. compares pressure and
+// treats a particle whose canMove() returns false as having no pressure.
+bool BlobState::ParticleMobilityLess::operator()(const ParticlePtr& first,
                                                  const ParticlePtr& second)
     const {
-    return first->getPressure().squaredNorm()
-        < second->getPressure().squaredNorm();
+    bool first_can_move = first->canMove();
+    bool second_can_move = second->canMove();
+    if (first_can_move && second_can_move) {
+        return first->getPressure().squaredNorm()
+            < second->getPressure().squaredNorm();
+    } else if (second_can_move) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 }

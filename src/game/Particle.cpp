@@ -55,7 +55,7 @@ void Particle::collideWith(Particle& forward_neighbor) {
     pressure_state.collideWith(forward_neighbor.pressure_state);
 }
 
-void Particle::addFollowers(BlobStateKey,
+void Particle::setFollowers(BlobStateKey,
                             const std::vector<std::shared_ptr<Particle>>&
                                 followers,
                             Direction follower_direction)
@@ -68,17 +68,14 @@ void Particle::addFollowers(BlobStateKey,
                    [](const std::shared_ptr<Particle>& p) {
                        return &(p->pressure_state);
                    });
-    pressure_state.addFollowers(followers_pps, follower_direction);
+    pressure_state.setFollowers(followers_pps, follower_direction);
 }
 
 bool Particle::canMove() {
-    if (getNeighbor(pressure_state.getBubbleDirection()) != nullptr) {
-        // If there was a bubble that the particles followers are catching up to
-        // fill, it's now gone. Inform pressure_state.
-        // TODO It's a bit ugly having to do this here. This function really
-        // should be const.
-        pressure_state.removeFollowers();
-    }
+    // Inform pressure_state whether there the particle is blocked by a bubble,
+    // i.e. there is no particle in the direction it has saved.
+    Direction bubble_direction = pressure_state.getBubbleDirection();
+    pressure_state.setBlocked(getNeighbor(bubble_direction) == nullptr);
     return pressure_state.canMove();
 }
 
