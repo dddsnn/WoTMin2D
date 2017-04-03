@@ -9,8 +9,7 @@ Particle::Particle(IntVector position) :
     target_pressure(0.0f),
     pressure(0.0f, 0.0f),
     followers(),
-    leaders(),
-    bubble_direction(Direction::north()) {
+    leaders() {
     setTarget(IntVector(50, 30), 1.0f); // TODO here for testing
 }
 
@@ -112,12 +111,10 @@ void Particle::collideWith(Particle& forward_neighbor) {
 }
 
 void Particle::setFollowers(BlobStateKey,
-                            const std::vector<Particle*> followers,
-                            Direction follower_direction)
+                            const std::vector<Particle*> followers)
 {
     // Clear out any old followers there may be.
     clearFollowers();
-    bubble_direction = follower_direction;
     // TODO Do I need this initial "boost", giving the new followers a part of
     // the pressure immediately? Or should I just let them get some on the next
     // updates?
@@ -131,16 +128,9 @@ void Particle::setFollowers(BlobStateKey,
     }
 }
 
-bool Particle::isBlocked() const {
-    return getNeighbor(bubble_direction) == nullptr;
-}
-
 bool Particle::canMove() const {
     // TODO Unhardcode
-    bool has_pressure = pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
-    // We need pressure, and as long as we have followers we need to wait for
-    // them (or another particle) to catch up and fill the bubble behind us.
-    return has_pressure && !isBlocked();
+    return pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
 }
 
 void Particle::dividePressure(FloatVector new_pressure) {

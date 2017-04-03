@@ -38,11 +38,9 @@ class Particle {
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
-    void setFollowers(BlobStateKey, const std::vector<Particle*> followers,
-                      Direction follower_direction);
+    void setFollowers(BlobStateKey, const std::vector<Particle*> followers);
     bool canMove() const;
     private:
-    bool isBlocked() const;
     void dividePressure(FloatVector new_pressure);
     void addLeader(Particle& leader);
     void addFollower(Particle& follower);
@@ -56,7 +54,6 @@ class Particle {
     FloatVector pressure;
     std::unordered_set<Particle*> followers;
     std::unordered_set<Particle*> leaders;
-    Direction bubble_direction;
 };
 
 }

@@ -122,11 +122,10 @@ const ParticlePtr& BlobState::getHighestMobilityParticle() const {
 }
 
 void BlobState::setParticleFollowers(const ParticlePtr& leader,
-                                     const std::vector<Particle*>& followers,
-                                     Direction follower_direction)
+                                     const std::vector<Particle*>& followers)
 {
     // TODO Do I need to prevent particles from following each other?
-    leader->setFollowers({}, followers, follower_direction);
+    leader->setFollowers({}, followers);
 }
 
 // Returns whether first is less mobile than second, i.e. compares pressure and
