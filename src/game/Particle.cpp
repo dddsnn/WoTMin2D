@@ -93,6 +93,7 @@ void Particle::setTarget(const IntVector& target, float target_pressure) {
 }
 
 void Particle::move(BlobStateKey, Direction direction) {
+    assert(canMove() && "Particle was asked to move but can't.");
     const IntVector& vector = direction.vector();
     position += vector;
     // TODO Damp based on time step/distance traveled. Right now this just
@@ -115,11 +116,9 @@ void Particle::collideWith(Particle& forward_neighbor) {
     leaders.clear();
 }
 
-void Particle::setFollowers(BlobStateKey,
+void Particle::addFollowers(BlobStateKey,
                             const std::vector<Particle*> followers)
 {
-    // Clear out any old followers there may be.
-    clearFollowers();
     // TODO Do I need this initial "boost", giving the new followers a part of
     // the pressure immediately? Or should I just let them get some on the next
     // updates?
@@ -152,13 +151,6 @@ void Particle::dividePressure(FloatVector new_pressure) {
         assert(follower != nullptr);
         follower->pressure += new_pressure;
     }
-}
-
-void Particle::clearFollowers() {
-    for (Particle* follower: followers) {
-        follower->removeLeader(*this);
-    }
-    followers.clear();
 }
 
 void Particle::addLeader(Particle& leader) {

@@ -38,7 +38,7 @@ class Particle {
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
-    void setFollowers(BlobStateKey, const std::vector<Particle*> followers);
+    void addFollowers(BlobStateKey, const std::vector<Particle*> followers);
     bool canMove() const;
     private:
     void dividePressure(FloatVector new_pressure);
@@ -46,7 +46,6 @@ class Particle {
     void addFollower(Particle& follower);
     void removeLeader(Particle& leader);
     void removeFollower(Particle& follower);
-    void clearFollowers();
     void reevaluateFollowership();
     IntVector position;
     std::array<std::weak_ptr<Particle>, 4> neighbors;

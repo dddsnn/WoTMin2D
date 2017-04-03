@@ -87,7 +87,7 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
     if (!particle->hasNeighbor()) {
         // We've disconnected the particle by moving, make the previous
         // neighbors follow it to catch up.
-        state->setParticleFollowers(particle, neighbors);
+        state->addParticleFollowers(particle, neighbors);
     }
 }
 
