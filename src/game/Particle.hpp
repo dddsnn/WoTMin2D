@@ -41,7 +41,7 @@ class Particle {
     void addFollowers(BlobStateKey, const std::vector<Particle*> followers);
     bool canMove() const;
     private:
-    void dividePressure(FloatVector new_pressure);
+    void dividePressure(float pressure_part);
     void addLeader(Particle& leader);
     void addFollower(Particle& follower);
     void removeLeader(Particle& leader);

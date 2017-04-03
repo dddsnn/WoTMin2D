@@ -51,16 +51,34 @@ bool Particle::hasPath(std::initializer_list<Direction> directions) const {
 }
 
 void Particle::advance() {
+    float divisor = static_cast<float>(followers.size() + 1);
+    float pressure_part = target_pressure / divisor;
     // TODO make dependent on time step
     FloatVector to_target = static_cast<FloatVector>(target - position);
     FloatVector to_target_pressure = to_target
-                                     * (target_pressure / to_target.norm());
-    dividePressure(std::move(to_target_pressure));
+                                     * (pressure_part / to_target.norm());
+    pressure += to_target_pressure;
+    dividePressure(pressure_part);
     // TODO Calling this here means that some of the followers/leaders will not
     // yet have their pressures updated (as it hasn't been their turn to be
     // updated). This isn't ideal, but doing it properly means having BlobState
     // iterate over particles twice.
     reevaluateFollowership();
+}
+
+void Particle::dividePressure(float pressure_part) {
+    // TODO Clean out nulls from the follower set. This will be necessary when
+    // particles can be removed by external means.
+    // TODO Make it possible to give more of the pressure to the followers, so
+    // they can follow more closely.
+    for (Particle* follower: followers) {
+        assert(follower != nullptr);
+        FloatVector to_this = static_cast<FloatVector>(position
+                                                       - follower->position);
+        FloatVector to_this_pressure = to_this
+                                       * (pressure_part / to_this.norm());
+        follower->pressure += to_this_pressure;
+    }
 }
 
 const FloatVector& Particle::getPressure() const {
@@ -102,6 +120,7 @@ void Particle::move(BlobStateKey, Direction direction) {
 }
 
 void Particle::collideWith(Particle& forward_neighbor) {
+    // TODO Parameterize how much of the pressure is passed on.
     forward_neighbor.pressure += pressure;
     pressure = FloatVector(0.0f, 0.0f);
     // Pass on our leaders to the particle we collided with, unless it's one of
@@ -135,22 +154,6 @@ void Particle::addFollowers(BlobStateKey,
 bool Particle::canMove() const {
     // TODO Unhardcode
     return pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
-}
-
-void Particle::dividePressure(FloatVector new_pressure) {
-    // TODO Clean out nulls from the follower set. This will be necessary when
-    // particles can be removed by external means.
-    // TODO Make it possible to give more of the pressure to the followers, so
-    // they can follow more closely.
-    float divisor = static_cast<float>(followers.size() + 1);
-    new_pressure /= divisor;
-    pressure += new_pressure;
-    // TODO Instead of giving followers pressure in the same direction, maybe
-    // they should get pressure in the direction towards their leader.
-    for (Particle* follower: followers) {
-        assert(follower != nullptr);
-        follower->pressure += new_pressure;
-    }
 }
 
 void Particle::addLeader(Particle& leader) {

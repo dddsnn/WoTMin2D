@@ -52,6 +52,9 @@ template<class B, class P>
 void Blob<B, P>::advance() {
     state->advanceParticles();
     while (true) {
+        // TODO There's optimization potential if we know that the highest
+        // pressure particle will remain the highest pressure one even after
+        // moving n times.
         const Ptr<P>& particle = state->getHighestMobilityParticle();
         assert(particle != nullptr && "Highest pressure particle in blob was "
                "null.");
