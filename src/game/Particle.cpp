@@ -56,6 +56,11 @@ void Particle::advance() {
     FloatVector to_target_pressure = to_target
                                      * (target_pressure / to_target.norm());
     dividePressure(std::move(to_target_pressure));
+    // TODO Calling this here means that some of the followers/leaders will not
+    // yet have their pressures updated (as it hasn't been their turn to be
+    // updated). This isn't ideal, but doing it properly means having BlobState
+    // iterate over particles twice.
+    reevaluateFollowership();
 }
 
 const FloatVector& Particle::getPressure() const {
@@ -170,6 +175,44 @@ void Particle::removeLeader(Particle& leader) {
 
 void Particle::removeFollower(Particle& follower) {
     followers.erase(&follower);
+}
+
+void Particle::reevaluateFollowership() {
+    std::vector<Particle*> to_remove;
+    std::vector<Particle*> to_switch;
+    for (Particle* leader: leaders) {
+        assert(leader != nullptr);
+        if (pressure.dot(leader->pressure) < 0) {
+            // The particles are trying to go in opposing directions and neither
+            // should try to catch up to the other.
+            to_remove.push_back(leader);
+            continue;
+        }
+        IntVector to_leader = leader->position - position;
+        if (to_leader.squaredNorm() <= 1) {
+            // We're right next to the leader, stop following.
+            to_remove.push_back(leader);
+            continue;
+        }
+        FloatVector to_leader_float = static_cast<FloatVector>(to_leader);
+        FloatVector pressures = pressure + leader->pressure;
+        if (to_leader_float.dot(pressures) < 0) {
+            // Both particles are going roughly the same way, but the follower
+            // is ahead of the leader relative to the pressure direction. Switch
+            // the leader-follower relationship.
+            to_switch.push_back(leader);
+        }
+    }
+    for (Particle* leader: to_remove) {
+        leader->removeFollower(*this);
+        removeLeader(*leader);
+    }
+    for (Particle* leader: to_switch) {
+        leader->removeFollower(*this);
+        removeLeader(*leader);
+        addFollower(*leader);
+        leader->addLeader(*this);
+    }
 }
 
 }

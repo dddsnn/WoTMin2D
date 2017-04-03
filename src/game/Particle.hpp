@@ -47,6 +47,7 @@ class Particle {
     void removeLeader(Particle& leader);
     void removeFollower(Particle& follower);
     void clearFollowers();
+    void reevaluateFollowership();
     IntVector position;
     std::array<std::weak_ptr<Particle>, 4> neighbors;
     IntVector target;
