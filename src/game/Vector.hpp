@@ -6,6 +6,7 @@
 #include <cstdint>
 #include <algorithm>
 #include <cmath>
+#include <cstdlib>
 
 namespace wotmin2d {
 
@@ -35,6 +36,7 @@ class Vector {
     T dot(const Vector<T>& other) const;
     float norm() const;
     T squaredNorm() const;
+    T manhattanDistance(const Vector<T>& other) const;
     const T& getX() const;
     const T& getY() const;
     void setX(const T& x);
@@ -161,6 +163,11 @@ float Vector<T>::norm() const {
 template<typename T>
 T Vector<T>::squaredNorm() const {
     return this->dot(*this);
+}
+
+template<typename T>
+T Vector<T>::manhattanDistance(const Vector<T>& other) const {
+    return std::abs(x - other.x) + std::abs(y - other.y);
 }
 
 template<typename T>

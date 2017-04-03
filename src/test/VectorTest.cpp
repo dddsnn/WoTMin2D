@@ -145,5 +145,16 @@ TEST(VectorTest, intHashDoesntCollideForSmallPositiveValues) {
     EXPECT_EQ(limit * limit, hashes.size());
 }
 
+TEST(VectorTest, manhattanDistance) {
+    IntVector a(3, 5);
+    IntVector b(4, 5);
+    IntVector c(3, 6);
+    IntVector d(5, -8);
+    EXPECT_EQ(0, a.manhattanDistance(a));
+    EXPECT_EQ(1, a.manhattanDistance(b));
+    EXPECT_EQ(1, a.manhattanDistance(c));
+    EXPECT_EQ(15, a.manhattanDistance(d));
+}
+
 }
 }
