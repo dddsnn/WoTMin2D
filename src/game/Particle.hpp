@@ -1,8 +1,6 @@
 #ifndef PARTICLE_HPP
 #define PARTICLE_HPP
 
-#include "ParticlePositionState.hpp"
-#include "ParticlePressureState.hpp"
 #include "Vector.hpp"
 #include "Direction.hpp"
 
@@ -12,6 +10,8 @@
 #include <algorithm>
 #include <initializer_list>
 #include <iterator>
+#include <unordered_set>
+#include <cassert>
 
 namespace wotmin2d {
 
@@ -38,13 +38,25 @@ class Particle {
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
     void collideWith(Particle& forward_neighbor);
-    void setFollowers(BlobStateKey,
-                      const std::vector<std::shared_ptr<Particle>>& followers,
+    void setFollowers(BlobStateKey, const std::vector<Particle*> followers,
                       Direction follower_direction);
-    bool canMove();
+    bool canMove() const;
     private:
-    ParticlePositionState<Particle> position_state;
-    ParticlePressureState pressure_state;
+    bool isBlocked() const;
+    void dividePressure(FloatVector new_pressure);
+    void addLeader(Particle& leader);
+    void addFollower(Particle& follower);
+    void removeLeader(Particle& leader);
+    void removeFollower(Particle& follower);
+    void clearFollowers();
+    IntVector position;
+    std::array<std::weak_ptr<Particle>, 4> neighbors;
+    IntVector target;
+    float target_pressure;
+    FloatVector pressure;
+    std::unordered_set<Particle*> followers;
+    std::unordered_set<Particle*> leaders;
+    Direction bubble_direction;
 };
 
 }

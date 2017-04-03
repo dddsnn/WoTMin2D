@@ -75,10 +75,10 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
     }
     // TODO Maybe add more than the immediate neighbors? Maybe also their
     // neighbors?
-    std::vector<Ptr<P>> neighbors;
+    std::vector<P*> neighbors;
     neighbors.reserve(3);
     for (Direction direction: movement_direction.others()) {
-        const Ptr<P>& neighbor = particle->getNeighbor(direction);
+        P* neighbor = particle->getNeighbor(direction).get();
         if (neighbor != nullptr) {
             neighbors.push_back(neighbor);
         }

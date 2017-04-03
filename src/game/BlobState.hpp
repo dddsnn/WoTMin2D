@@ -33,7 +33,7 @@ class BlobState {
     void advanceParticles();
     const ParticlePtr& getHighestMobilityParticle() const;
     void setParticleFollowers(const ParticlePtr& leader,
-                              const std::vector<ParticlePtr>& followers,
+                              const std::vector<Particle*>& followers,
                               Direction follower_direction);
     private:
     std::vector<ParticlePtr> particles;

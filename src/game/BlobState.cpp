@@ -122,7 +122,7 @@ const ParticlePtr& BlobState::getHighestMobilityParticle() const {
 }
 
 void BlobState::setParticleFollowers(const ParticlePtr& leader,
-                                     const std::vector<ParticlePtr>& followers,
+                                     const std::vector<Particle*>& followers,
                                      Direction follower_direction)
 {
     // TODO Do I need to prevent particles from following each other?
