@@ -108,10 +108,10 @@ void BlobState::collideParticles(Particle& first, Particle& second,
 }
 
 // Advances all particles to "refresh" pressure.
-void BlobState::advanceParticles() {
+void BlobState::advanceParticles(std::chrono::milliseconds time_delta) {
     // TODO test
     for (Particle* particle: particles) {
-        particle->advance();
+        particle->advance(time_delta);
     }
 }
 

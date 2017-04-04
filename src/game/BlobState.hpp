@@ -9,6 +9,7 @@
 #include <cassert>
 #include <algorithm>
 #include <array>
+#include <chrono>
 
 namespace wotmin2d {
 
@@ -29,7 +30,7 @@ class BlobState {
     void moveParticle(Particle& particle, Direction movement_direction);
     void collideParticles(Particle& first, Particle& second,
                           Direction collision_direction);
-    void advanceParticles();
+    void advanceParticles(std::chrono::milliseconds time_delta);
     Particle* getHighestMobilityParticle();
     void addParticleFollowers(Particle& leader,
                               const std::vector<Particle*>& followers);

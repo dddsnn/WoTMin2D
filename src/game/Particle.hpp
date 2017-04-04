@@ -11,6 +11,8 @@
 #include <iterator>
 #include <unordered_set>
 #include <cassert>
+#include <chrono>
+#include <ratio>
 
 namespace wotmin2d {
 
@@ -35,8 +37,8 @@ class Particle {
     bool hasPath(std::initializer_list<Direction> directions) const;
     const FloatVector& getPressure() const;
     Direction getPressureDirection() const;
-    void advance();
-    void setTarget(const IntVector& target, float target_pressure);
+    void advance(std::chrono::milliseconds time_delta);
+    void setTarget(const IntVector& target, float target_pressure_per_second);
     void collideWith(Particle& forward_neighbor, Direction collision_direction);
     void addFollowers(BlobStateKey, const std::vector<Particle*> followers);
     bool canMove() const;
@@ -50,7 +52,7 @@ class Particle {
     IntVector position;
     std::array<Particle*, 4> neighbors;
     IntVector target;
-    float target_pressure;
+    float target_pressure_per_second;
     FloatVector pressure;
     std::unordered_set<Particle*> followers;
     std::unordered_set<Particle*> leaders;

@@ -5,13 +5,14 @@
 #include "Vector.hpp"
 
 #include <vector>
+#include <chrono>
 
 namespace wotmin2d {
 
 class State {
     public:
     State(unsigned int arena_width, unsigned int arena_height);
-    void update();
+    void update(std::chrono::milliseconds time_delta);
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     const std::vector<Blob<>>& getBlobs() const;

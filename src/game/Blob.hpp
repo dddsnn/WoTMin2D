@@ -13,6 +13,7 @@
 #include <utility>
 #include <array>
 #include <unordered_set>
+#include <chrono>
 
 namespace wotmin2d {
 
@@ -25,7 +26,7 @@ class Blob {
          unsigned int arena_height,
          std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
     const std::vector<Particle*>& getParticles() const;
-    void advance();
+    void advance(std::chrono::milliseconds time_delta);
     private:
     // TODO Store by value and make the tests a friend so they can replace it.
     std::shared_ptr<BlobState> state;

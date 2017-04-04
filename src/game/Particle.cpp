@@ -6,11 +6,11 @@ Particle::Particle(IntVector position) :
     position(position),
     neighbors(),
     target(0, 0),
-    target_pressure(0.0f),
+    target_pressure_per_second(0.0f),
     pressure(0.0f, 0.0f),
     followers(),
     leaders() {
-    setTarget(IntVector(50, 30), 1.0f); // TODO here for testing
+    setTarget(IntVector(50, 30), 20.0f); // TODO here for testing
 }
 
 const IntVector& Particle::getPosition() const {
@@ -52,10 +52,12 @@ bool Particle::hasPath(std::initializer_list<Direction> directions) const {
     return neighbor != nullptr;
 }
 
-void Particle::advance() {
+void Particle::advance(std::chrono::milliseconds time_delta) {
+    std::chrono::duration<float, std::ratio<1>> second_fraction = time_delta;
+    float target_pressure = second_fraction.count()
+                            * target_pressure_per_second;
     float divisor = static_cast<float>(followers.size() + 1);
     float pressure_part = target_pressure / divisor;
-    // TODO make dependent on time step
     FloatVector to_target = static_cast<FloatVector>(target - position);
     FloatVector to_target_pressure = to_target
                                      * (pressure_part / to_target.norm());
@@ -105,9 +107,10 @@ Direction Particle::getPressureDirection() const {
     }
 }
 
-void Particle::setTarget(const IntVector& target, float target_pressure) {
+void Particle::setTarget(const IntVector& target,
+                         float target_pressure_per_second) {
     this->target = target;
-    this->target_pressure = target_pressure;
+    this->target_pressure_per_second = target_pressure_per_second;
 }
 
 void Particle::move(BlobStateKey, Direction direction) {

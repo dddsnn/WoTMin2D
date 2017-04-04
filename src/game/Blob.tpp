@@ -46,8 +46,8 @@ const std::vector<P*>& Blob<B, P>::getParticles() const {
 }
 
 template<class B, class P>
-void Blob<B, P>::advance() {
-    state->advanceParticles();
+void Blob<B, P>::advance(std::chrono::milliseconds time_delta) {
+    state->advanceParticles(time_delta);
     while (true) {
         // TODO There's optimization potential if we know that the highest
         // pressure particle will remain the highest pressure one even after
