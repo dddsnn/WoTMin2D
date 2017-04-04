@@ -18,21 +18,20 @@ namespace wotmin2d {
 
 template<class BlobState = BlobState, class Particle = Particle>
 class Blob {
-    private:
-    using ParticlePtr = std::shared_ptr<Particle>;
     public:
     Blob(unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
     Blob(const IntVector& center, float radius, unsigned int arena_width,
          unsigned int arena_height,
          std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
-    const std::vector<ParticlePtr>& getParticles() const;
+    const std::vector<Particle*>& getParticles() const;
     void advance();
     private:
+    // TODO Store by value and make the tests a friend so they can replace it.
     std::shared_ptr<BlobState> state;
     unsigned int arena_width;
     unsigned int arena_height;
-    void handleParticle(const ParticlePtr& particle);
+    void handleParticle(Particle& particle);
 };
 
 }

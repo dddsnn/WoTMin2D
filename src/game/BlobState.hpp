@@ -6,7 +6,6 @@
 
 #include <vector>
 #include <unordered_map>
-#include <memory>
 #include <cassert>
 #include <algorithm>
 #include <array>
@@ -15,34 +14,32 @@ namespace wotmin2d {
 
 class BlobState {
     private:
-    using ParticlePtr = std::shared_ptr<Particle>;
-    using ParticleMap = std::unordered_map<IntVector, ParticlePtr,
+    using ParticleMap = std::unordered_map<IntVector, Particle*,
                                            IntVector::Hash>;
     class ParticleMobilityLess {
         public:
-        bool operator()(const ParticlePtr& first,
-                        const ParticlePtr& second) const;
+        bool operator()(const Particle* first,
+                        const Particle* second) const;
     };
     public:
     BlobState();
-    const std::vector<ParticlePtr>& getParticles() const;
+    ~BlobState();
+    const std::vector<Particle*>& getParticles() const;
     void addParticle(const IntVector& position);
-    void moveParticle(const ParticlePtr& particle,
-                      Direction movement_direction);
-    void collideParticles(const ParticlePtr& first, const ParticlePtr& second,
+    void moveParticle(Particle& particle, Direction movement_direction);
+    void collideParticles(Particle& first, Particle& second,
                           Direction collision_direction);
     void advanceParticles();
-    const ParticlePtr& getHighestMobilityParticle() const;
-    void addParticleFollowers(const ParticlePtr& leader,
+    Particle& getHighestMobilityParticle();
+    void addParticleFollowers(Particle& leader,
                               const std::vector<Particle*>& followers);
     private:
-    std::vector<ParticlePtr> particles;
+    std::vector<Particle*> particles;
     ParticleMap particle_map;
-    void updateParticleInformation(const ParticlePtr& particle,
+    void updateParticleInformation(Particle& particle,
                                    const IntVector& old_position);
-    void updateParticleMap(const ParticlePtr& particle,
-                           const IntVector& old_position);
-    void updateParticleNeighbors(const ParticlePtr& particle);
+    void updateParticleMap(Particle& particle, const IntVector& old_position);
+    void updateParticleNeighbors(Particle& particle);
 };
 
 }

@@ -1,8 +1,5 @@
 namespace wotmin2d {
 
-template<class T>
-using Ptr = std::shared_ptr<T>;
-
 template<class B, class P>
 Blob<B, P>::Blob(unsigned int arena_width, unsigned int arena_height,
                  std::shared_ptr<B> state) :
@@ -44,7 +41,7 @@ Blob<B, P>::Blob(const IntVector& center, float radius,
 }
 
 template<class B, class P>
-const std::vector<Ptr<P>>& Blob<B, P>::getParticles() const {
+const std::vector<P*>& Blob<B, P>::getParticles() const {
     return state->getParticles();
 }
 
@@ -55,25 +52,25 @@ void Blob<B, P>::advance() {
         // TODO There's optimization potential if we know that the highest
         // pressure particle will remain the highest pressure one even after
         // moving n times.
-        const Ptr<P>& particle = state->getHighestMobilityParticle();
+        P* particle = &(state->getHighestMobilityParticle());
         assert(particle != nullptr && "Highest pressure particle in blob was "
                "null.");
         if (!particle->canMove()) {
             // Highest mobility particle can't move, nothing left to do.
             break;
         }
-        handleParticle(particle);
+        handleParticle(*particle);
     }
 }
 
 template<class B, class P>
-void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
-    Direction movement_direction = particle->getPressureDirection();
-    const Ptr<P>& forward_neighbor
-        = particle->getNeighbor(movement_direction);
+void Blob<B, P>::handleParticle(P& particle) {
+    Direction movement_direction = particle.getPressureDirection();
+    P* forward_neighbor = particle.getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
-        state->collideParticles(particle, forward_neighbor, movement_direction);
+        state->collideParticles(particle, *forward_neighbor,
+                                movement_direction);
         return;
     }
     // TODO Maybe add more than the immediate neighbors? Maybe also their
@@ -81,13 +78,13 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
     std::vector<P*> neighbors;
     neighbors.reserve(3);
     for (Direction direction: movement_direction.others()) {
-        P* neighbor = particle->getNeighbor(direction).get();
+        P* neighbor = particle.getNeighbor(direction);
         if (neighbor != nullptr) {
             neighbors.push_back(neighbor);
         }
     }
     state->moveParticle(particle, movement_direction);
-    if (!particle->hasNeighbor()) {
+    if (!particle.hasNeighbor()) {
         // We've disconnected the particle by moving, make the previous
         // neighbors follow it to catch up.
         state->addParticleFollowers(particle, neighbors);

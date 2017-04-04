@@ -4,7 +4,6 @@
 #include "Vector.hpp"
 #include "Direction.hpp"
 
-#include <memory>
 #include <array>
 #include <utility>
 #include <algorithm>
@@ -27,9 +26,10 @@ class Particle {
     public:
     Particle(IntVector position);
     const IntVector& getPosition() const;
-    std::shared_ptr<Particle> getNeighbor(Direction direction) const;
+    Particle* getNeighbor(Direction direction);
+    const Particle* getConstNeighbor(Direction direction) const;
     void setNeighbor(BlobStateKey, Direction direction,
-                     const std::shared_ptr<Particle>& neighbor);
+                     Particle* neighbor);
     bool hasNeighbor() const;
     void move(BlobStateKey, Direction direction);
     bool hasPath(std::initializer_list<Direction> directions) const;
@@ -48,7 +48,7 @@ class Particle {
     void removeFollower(Particle& follower);
     void reevaluateFollowership();
     IntVector position;
-    std::array<std::weak_ptr<Particle>, 4> neighbors;
+    std::array<Particle*, 4> neighbors;
     IntVector target;
     float target_pressure;
     FloatVector pressure;

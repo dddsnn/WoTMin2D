@@ -17,21 +17,23 @@ const IntVector& Particle::getPosition() const {
     return position;
 }
 
-std::shared_ptr<Particle> Particle::getNeighbor(Direction direction) const {
+Particle* Particle::getNeighbor(Direction direction) {
     // Direction is convertible to unsigned integers, starting at 0.
-    return neighbors[static_cast<Direction::val_t>(direction)].lock();
+    return neighbors[static_cast<Direction::val_t>(direction)];
+}
+
+const Particle* Particle::getConstNeighbor(Direction direction) const {
+    return neighbors[static_cast<Direction::val_t>(direction)];
 }
 
 void Particle::setNeighbor(BlobStateKey, Direction direction,
-                           const std::shared_ptr<Particle>& neighbor) {
+                           Particle* neighbor) {
     neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
 }
 
 bool Particle::hasNeighbor() const {
     return std::any_of(neighbors.begin(), neighbors.end(),
-                       [](const std::weak_ptr<Particle>& p) {
-                           return p.lock() != nullptr;
-                       });
+                       [](const Particle* p) { return p != nullptr; });
 }
 
 bool Particle::hasPath(std::initializer_list<Direction> directions) const {
@@ -39,13 +41,13 @@ bool Particle::hasPath(std::initializer_list<Direction> directions) const {
         return true;
     }
     auto direction_iter = directions.begin();
-    std::shared_ptr<Particle> neighbor = getNeighbor(*direction_iter);
+    const Particle* neighbor = getConstNeighbor(*direction_iter);
     direction_iter++;
     for (; direction_iter != directions.end(); direction_iter++) {
         if (neighbor == nullptr) {
             return false;
         }
-        neighbor = neighbor->getNeighbor(*direction_iter);
+        neighbor = neighbor->getConstNeighbor(*direction_iter);
     }
     return neighbor != nullptr;
 }
