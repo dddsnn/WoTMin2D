@@ -69,8 +69,6 @@ void Particle::advance() {
 }
 
 void Particle::dividePressure(float pressure_part) {
-    // TODO Clean out nulls from the follower set. This will be necessary when
-    // particles can be removed by external means.
     // TODO Make it possible to give more of the pressure to the followers, so
     // they can follow more closely.
     for (Particle* follower: followers) {

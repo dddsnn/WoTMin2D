@@ -30,7 +30,7 @@ class BlobState {
     void collideParticles(Particle& first, Particle& second,
                           Direction collision_direction);
     void advanceParticles();
-    Particle& getHighestMobilityParticle();
+    Particle* getHighestMobilityParticle();
     void addParticleFollowers(Particle& leader,
                               const std::vector<Particle*>& followers);
     private:

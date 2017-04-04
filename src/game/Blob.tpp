@@ -52,7 +52,7 @@ void Blob<B, P>::advance() {
         // TODO There's optimization potential if we know that the highest
         // pressure particle will remain the highest pressure one even after
         // moving n times.
-        P* particle = &(state->getHighestMobilityParticle());
+        P* particle = state->getHighestMobilityParticle();
         assert(particle != nullptr && "Highest pressure particle in blob was "
                "null.");
         if (!particle->canMove()) {

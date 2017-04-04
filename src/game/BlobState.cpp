@@ -115,12 +115,14 @@ void BlobState::advanceParticles() {
     }
 }
 
-Particle& BlobState::getHighestMobilityParticle() {
+Particle* BlobState::getHighestMobilityParticle() {
     // TODO Make this faster by using a heap somehow. The problem is only that
     // Blob may invalidate the heap and we don't know which particles it
     // touches.
-    // TODO Handle empty particle vector.
-    return **std::max_element(particles.begin(), particles.end(),
+    if (particles.empty()) {
+        return nullptr;
+    }
+    return *std::max_element(particles.cbegin(), particles.cend(),
                              ParticleMobilityLess());
 }
 
