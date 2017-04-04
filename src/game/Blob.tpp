@@ -73,7 +73,7 @@ void Blob<B, P>::handleParticle(const Ptr<P>& particle) {
         = particle->getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
-        state->collideParticles(particle, forward_neighbor);
+        state->collideParticles(particle, forward_neighbor, movement_direction);
         return;
     }
     // TODO Maybe add more than the immediate neighbors? Maybe also their

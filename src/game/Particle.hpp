@@ -37,7 +37,7 @@ class Particle {
     Direction getPressureDirection() const;
     void advance();
     void setTarget(const IntVector& target, float target_pressure);
-    void collideWith(Particle& forward_neighbor);
+    void collideWith(Particle& forward_neighbor, Direction collision_direction);
     void addFollowers(BlobStateKey, const std::vector<Particle*> followers);
     bool canMove() const;
     private:

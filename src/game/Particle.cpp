@@ -119,10 +119,21 @@ void Particle::move(BlobStateKey, Direction direction) {
     pressure -= static_cast<FloatVector>(vector);
 }
 
-void Particle::collideWith(Particle& forward_neighbor) {
+void Particle::collideWith(Particle& forward_neighbor,
+                           Direction collision_direction) {
     // TODO Parameterize how much of the pressure is passed on.
-    forward_neighbor.pressure += pressure;
-    pressure = FloatVector(0.0f, 0.0f);
+    switch (collision_direction) {
+    case Direction::north():
+    case Direction::south():
+        forward_neighbor.pressure += FloatVector(0.0f, pressure.getY());
+        pressure.setY(0.0f);
+        break;
+    case Direction::east():
+    case Direction::west():
+        forward_neighbor.pressure += FloatVector(pressure.getX(), 0.0f);
+        pressure.setX(0.0f);
+        break;
+    }
     // Pass on our leaders to the particle we collided with, unless it's one of
     // the leaders, then just unfollow.
     for (Particle* leader: leaders) {

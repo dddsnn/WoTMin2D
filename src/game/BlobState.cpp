@@ -100,8 +100,11 @@ void BlobState::moveParticle(const ParticlePtr& first_particle,
 }
 
 void BlobState::collideParticles(const ParticlePtr& first,
-                                 const ParticlePtr& second) {
-    first->collideWith(*second);
+                                 const ParticlePtr& second,
+                                 Direction collision_direction) {
+    assert(first->getPosition().manhattanDistance(second->getPosition()) == 1
+           && "Attempted to collide non-neighboring particles.");
+    first->collideWith(*second, collision_direction);
 }
 
 // Advances all particles to "refresh" pressure.
