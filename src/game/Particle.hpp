@@ -40,10 +40,11 @@ class Particle {
     void advance(std::chrono::milliseconds time_delta);
     void setTarget(const IntVector& target, float target_pressure_per_second);
     void collideWith(Particle& forward_neighbor, Direction collision_direction);
-    void addFollowers(BlobStateKey, const std::vector<Particle*> followers);
+    void addFollowers(BlobStateKey, const std::vector<Particle*> new_followers);
     bool canMove() const;
     private:
-    void dividePressure(float pressure_part);
+    template<class C>
+    void addPressureToFollowers(const C&, float magnitude);
     void addLeader(Particle& leader);
     void addFollower(Particle& follower);
     void removeLeader(Particle& leader);
@@ -57,6 +58,18 @@ class Particle {
     std::unordered_set<Particle*> followers;
     std::unordered_set<Particle*> leaders;
 };
+
+template<class C>
+void Particle::addPressureToFollowers(const C& followers,
+                                      float magnitude) {
+    for (Particle* follower: followers) {
+        assert(follower != nullptr);
+        FloatVector to_this = static_cast<FloatVector>(position
+                                                       - follower->position);
+        FloatVector to_this_pressure = to_this * (magnitude / to_this.norm());
+        follower->pressure += to_this_pressure;
+    }
+}
 
 }
 

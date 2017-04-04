@@ -62,25 +62,12 @@ void Particle::advance(std::chrono::milliseconds time_delta) {
     FloatVector to_target_pressure = to_target
                                      * (pressure_part / to_target.norm());
     pressure += to_target_pressure;
-    dividePressure(pressure_part);
+    addPressureToFollowers(followers, pressure_part);
     // TODO Calling this here means that some of the followers/leaders will not
     // yet have their pressures updated (as it hasn't been their turn to be
     // updated). This isn't ideal, but doing it properly means having BlobState
     // iterate over particles twice.
     reevaluateFollowership();
-}
-
-void Particle::dividePressure(float pressure_part) {
-    // TODO Make it possible to give more of the pressure to the followers, so
-    // they can follow more closely.
-    for (Particle* follower: followers) {
-        assert(follower != nullptr);
-        FloatVector to_this = static_cast<FloatVector>(position
-                                                       - follower->position);
-        FloatVector to_this_pressure = to_this
-                                       * (pressure_part / to_this.norm());
-        follower->pressure += to_this_pressure;
-    }
 }
 
 const FloatVector& Particle::getPressure() const {
@@ -150,19 +137,15 @@ void Particle::collideWith(Particle& forward_neighbor,
 }
 
 void Particle::addFollowers(BlobStateKey,
-                            const std::vector<Particle*> followers)
+                            const std::vector<Particle*> new_followers)
 {
     // TODO Do I need this initial "boost", giving the new followers a part of
     // the pressure immediately? Or should I just let them get some on the next
     // updates?
     float divisor = static_cast<float>(followers.size() + 1);
     pressure /= divisor;
-    this->followers.insert(followers.begin(), followers.end());
-    for (Particle* follower: followers) {
-        follower->addLeader(*this);
-        // Give the new follower a boost.
-        follower->pressure += pressure;
-    }
+    this->followers.insert(new_followers.begin(), new_followers.end());
+    addPressureToFollowers(new_followers, pressure.norm());
 }
 
 bool Particle::canMove() const {
