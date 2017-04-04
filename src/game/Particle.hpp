@@ -1,6 +1,7 @@
 #ifndef PARTICLE_HPP
 #define PARTICLE_HPP
 
+#include "../Config.hpp"
 #include "Vector.hpp"
 #include "Direction.hpp"
 

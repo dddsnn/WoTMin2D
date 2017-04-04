@@ -53,14 +53,24 @@ bool Particle::hasPath(std::initializer_list<Direction> directions) const {
 }
 
 void Particle::advance(std::chrono::milliseconds time_delta) {
+    // How much target pressure do we need to apply?
     std::chrono::duration<float, std::ratio<1>> second_fraction = time_delta;
     float target_pressure = second_fraction.count()
                             * target_pressure_per_second;
-    float divisor = static_cast<float>(followers.size() + 1);
+    // How much of it does each particle get?
+    static_assert(Config::target_pressure_share <= 1.0f
+                  && Config::target_pressure_share >= 0.0f,
+                  "A share outside of [0, 1] may artificially inflate or "
+                  "deflate the pressure.");
+    float divisor = static_cast<float>(followers.size())
+                    + Config::target_pressure_share;
     float pressure_part = target_pressure / divisor;
     FloatVector to_target = static_cast<FloatVector>(target - position);
+    // Possibly give this particle a smaller share so the followers can have
+    // more.
+    float this_part = pressure_part * Config::target_pressure_share;
     FloatVector to_target_pressure = to_target
-                                     * (pressure_part / to_target.norm());
+                                     * (this_part / to_target.norm());
     pressure += to_target_pressure;
     addPressureToFollowers(followers, pressure_part);
     // TODO Calling this here means that some of the followers/leaders will not
@@ -104,24 +114,23 @@ void Particle::move(BlobStateKey, Direction direction) {
     assert(canMove() && "Particle was asked to move but can't.");
     const IntVector& vector = direction.vector();
     position += vector;
-    // TODO Damp based on time step/distance traveled. Right now this just
-    // subtracts the unit vector in movement direction.
     pressure -= static_cast<FloatVector>(vector);
 }
 
 void Particle::collideWith(Particle& forward_neighbor,
                            Direction collision_direction) {
-    // TODO Parameterize how much of the pressure is passed on.
     switch (collision_direction) {
     case Direction::north():
     case Direction::south():
-        forward_neighbor.pressure += FloatVector(0.0f, pressure.getY());
-        pressure.setY(0.0f);
+        forward_neighbor.pressure
+            += FloatVector(0.0f, pressure.getY() * Config::collision_pass_on);
+        pressure.setY(pressure.getY() * (1.0f - Config::collision_pass_on));
         break;
     case Direction::east():
     case Direction::west():
-        forward_neighbor.pressure += FloatVector(pressure.getX(), 0.0f);
-        pressure.setX(0.0f);
+        forward_neighbor.pressure
+            += FloatVector(pressure.getX() * Config::collision_pass_on, 0.0f);
+        pressure.setX(pressure.getX() * (1.0f - Config::collision_pass_on));
         break;
     }
     // Pass on our leaders to the particle we collided with, unless it's one of
@@ -139,18 +148,26 @@ void Particle::collideWith(Particle& forward_neighbor,
 void Particle::addFollowers(BlobStateKey,
                             const std::vector<Particle*> new_followers)
 {
-    // TODO Do I need this initial "boost", giving the new followers a part of
-    // the pressure immediately? Or should I just let them get some on the next
-    // updates?
-    float divisor = static_cast<float>(followers.size() + 1);
-    pressure /= divisor;
+    static_assert(Config::boost_fraction >= 0.0f
+                  && Config::boost_fraction <= 1.0f,
+                  "A boost fraction outside [0, 1] will artificially inflate or"
+                  " deflate the pressure.");
     this->followers.insert(new_followers.begin(), new_followers.end());
-    addPressureToFollowers(new_followers, pressure.norm());
+    float pressure_magnitude = pressure.norm();
+    float boost_magnitude = Config::boost_fraction * pressure_magnitude;
+    float divisor = static_cast<float>(followers.size());
+    pressure *= (1.0f - Config::boost_fraction);
+    addPressureToFollowers(new_followers, boost_magnitude / divisor);
 }
 
 bool Particle::canMove() const {
-    // TODO Unhardcode
-    return pressure.getX() >= 1.0f || pressure.getY() >= 1.0f;
+    // TODO Using a constant here only works as long as the movements a particle
+    // is asked to make have fixed length (of 1). If that ever changes, this
+    // needs to be parameterized on the length of the movement, i.e. "can this
+    // particle move 6 to the east?".
+    return std::abs(pressure.getX()) >= Config::min_directed_movement_pressure
+           || std::abs(pressure.getY())
+              >= Config::min_directed_movement_pressure;
 }
 
 void Particle::addLeader(Particle& leader) {

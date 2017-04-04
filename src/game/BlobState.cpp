@@ -18,7 +18,11 @@ const std::vector<Particle*>& BlobState::getParticles() const {
 }
 
 void BlobState::addParticle(const IntVector& position) {
-    // TODO Check that there isn't a particle at the position already.
+    #ifndef NDEBUG
+        ParticleMap::iterator position_iter = particle_map.find(position);
+        assert(position_iter == particle_map.end()
+               && "Attempt to add particle on top of another one.");
+    #endif
     Particle* particle = new Particle(position);
     particles.push_back(particle);
     particle_map.emplace(position, particle);
