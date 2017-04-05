@@ -6,7 +6,6 @@
 #include "../game/Vector.hpp"
 #include "../game/Direction.hpp"
 
-#include <memory>
 #include <vector>
 #include <initializer_list>
 #include <unordered_map>
@@ -20,8 +19,6 @@ namespace test {
 
 using mock::NiceMockBlobState;
 using mock::NiceMockParticle;
-
-using ParticlePtr = std::shared_ptr<NiceMockParticle>;
 
 /**
  * The test particle positions look as follows:
@@ -61,6 +58,13 @@ using ParticlePtr = std::shared_ptr<NiceMockParticle>;
  * calling makeParticles() with positions.
  */
 class TestData {
+    private:
+    using P = NiceMockParticle;
+    void deallocateParticles() {
+        for (P* p: particles) {
+            delete p;
+        }
+    }
     public:
     TestData() :
         particles(),
@@ -74,16 +78,16 @@ class TestData {
         loop() {
         // lineA: from (3, 4) to (3, 10)
         for (int i = 4; i <= 10; i++) {
-            lineA.emplace_back(IntVector(3, i));
+            lineA.emplace_back(3, i);
         }
         // lineB: from (4, 10) to (10, 10)
         for (int i = 4; i <= 10; i++) {
-            lineB.emplace_back(IntVector(i, 10));
+            lineB.emplace_back(i, 10);
         }
         // block: square from (4, 1) to (7, 4)
         for (int i = 4; i <= 7; i++) {
             for (int j = 1; j <= 4; j++) {
-                block.emplace_back(IntVector(i, j));
+                block.emplace_back(i, j);
             }
         }
         // loop: square from (10, 11) to (12, 13) with middle particle missing
@@ -92,40 +96,44 @@ class TestData {
                 if (i == 11 && j == 12) {
                     continue;
                 }
-                loop.emplace_back(IntVector(i, j));
+                loop.emplace_back(i, j);
             }
         }
+    }
+    ~TestData() {
+        deallocateParticles();
     }
     void makeParticles(std::initializer_list<std::vector<IntVector>> vectors,
                        std::initializer_list<IntVector> singles)
     {
+        deallocateParticles();
         particles.clear();
         particle_map.clear();
-        for (const auto& v: vectors) {
-            for (const auto& p: v) {
-                particle_map.emplace(p, std::make_shared<NiceMockParticle>(p));
+        for (const auto& vector: vectors) {
+            for (const auto& position: vector) {
+                P* particle = new P(position);
+                particles.push_back(particle);
+                particle_map.emplace(position, particle);
             }
         }
-        for (const auto& p: singles) {
-            particle_map.emplace(p, std::make_shared<NiceMockParticle>(p));
+        for (const auto& position: singles) {
+            P* particle = new P(position);
+            particles.push_back(particle);
+            particle_map.emplace(position, particle);
         }
-        auto getSecond = [] (std::pair<const IntVector, ParticlePtr>& v) {
-                           return v.second;
-                         };
-        std::transform(particle_map.begin(), particle_map.end(),
-                       std::back_inserter(particles), getSecond);
         // Set neighbors.
-        for (const auto& p: particles) {
-            for (auto d: Direction::all()) {
-                auto i = particle_map.find(p->getPosition() + d.vector());
+        for (P* particle: particles) {
+            for (auto direction: Direction::all()) {
+                auto i = particle_map.find(particle->getPosition()
+                                           + direction.vector());
                 if (i != particle_map.end()) {
-                    p->setNeighbor(NiceMockParticle::MoveKey(), d, i->second);
+                    particle->setNeighbor({}, direction, i->second);
                 }
             }
         }
     }
-    std::vector<ParticlePtr> particles;
-    std::unordered_map<IntVector, ParticlePtr, IntVector::Hash> particle_map;
+    std::vector<P*> particles;
+    std::unordered_map<IntVector, P*, IntVector::Hash> particle_map;
     IntVector inSouthWestCorner;
     IntVector onSouthBorder;
     IntVector inside;

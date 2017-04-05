@@ -17,10 +17,16 @@
 
 namespace wotmin2d {
 
+namespace mock {
+// Forward declaration so we can make it our friend.
+class MockParticle;
+}
+
 class Particle {
     private:
     class BlobStateKey {
         friend class BlobState;
+        friend class wotmin2d::mock::MockParticle;
         private:
         BlobStateKey() {}
         BlobStateKey(const BlobStateKey&) = delete;
@@ -31,8 +37,7 @@ class Particle {
     const IntVector& getPosition() const;
     Particle* getNeighbor(Direction direction);
     const Particle* getConstNeighbor(Direction direction) const;
-    void setNeighbor(BlobStateKey, Direction direction,
-                     Particle* neighbor);
+    void setNeighbor(BlobStateKey, Direction direction, Particle* neighbor);
     bool hasNeighbor() const;
     void move(BlobStateKey, Direction direction);
     bool hasPath(std::initializer_list<Direction> directions) const;

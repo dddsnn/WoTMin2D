@@ -13,15 +13,15 @@ target_link_libraries(UnitTests
 target_sources(UnitTests PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/DirectionTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/VectorTest.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/BlobTest.cpp
     # TODO Add back         
-    #    ${CMAKE_CURRENT_LIST_DIR}/BlobTest.cpp
     #    ${CMAKE_CURRENT_LIST_DIR}/ParticlePositionStateTest.cpp
     #    ${CMAKE_CURRENT_LIST_DIR}/ParticlePressureStateTest.cpp
 )
 add_test(NAME Direction COMMAND UnitTests --gtest_filter=Direction*)
 add_test(NAME Vector COMMAND UnitTests --gtest_filter=Vector*)
+add_test(NAME Blob COMMAND UnitTests --gtest_filter=Blob*)
 # TODO Add back         
-#add_test(NAME Blob COMMAND UnitTests --gtest_filter=Blob*)
 #add_test(NAME ParticlePositionState
 #         COMMAND UnitTests --gtest_filter=ParticlePositionState*)
 #add_test(NAME ParticlePressureState

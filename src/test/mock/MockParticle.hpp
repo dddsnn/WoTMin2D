@@ -4,13 +4,12 @@
 #include "../../game/Direction.hpp"
 #include "../../game/Vector.hpp"
 #include "../../game/Particle.hpp"
-#include "../../game/ParticlePositionState.hpp"
 
 #include <gmock/gmock.h>
-#include <memory>
 #include <array>
 #include <initializer_list>
 #include <utility>
+#include <chrono>
 
 namespace wotmin2d {
 namespace mock {
@@ -25,48 +24,70 @@ using ::testing::ReturnRefOfCopy;
 
 class MockParticle {
     public:
-    class MoveKey {};
-    MockParticle(IntVector position) : position_state(position) {
-        using PPS = ParticlePositionState<NiceMockParticle>;
+    class BlobStateKey {};
+    MockParticle(IntVector position) :
+        real_particle(position),
+        mock_neighbors()
+    {
         ON_CALL(*this, getPosition())
-            .WillByDefault(Invoke(&position_state, &PPS::getPosition));
-        ON_CALL(*this, move(_, _))
-            .WillByDefault(Invoke(this, &MockParticle::callMove));
+            .WillByDefault(Invoke(&real_particle, &Particle::getPosition));
         ON_CALL(*this, getNeighbor(_))
-            .WillByDefault(Invoke(&position_state, &PPS::getNeighbor));
+            .WillByDefault(Invoke(this, &MockParticle::callGetNeighbor));
+        ON_CALL(*this, getConstNeighbor(_))
+            .WillByDefault(Invoke(this, &MockParticle::callGetNeighbor));
         ON_CALL(*this, setNeighbor(_, _, _))
             .WillByDefault(Invoke(this, &MockParticle::callSetNeighbor));
+        ON_CALL(*this, hasNeighbor())
+            .WillByDefault(Invoke(&real_particle, &Particle::hasNeighbor));
+        ON_CALL(*this, move(_, _))
+            .WillByDefault(Invoke(this, &MockParticle::callMove));
         ON_CALL(*this, hasPath(_))
-            .WillByDefault(Invoke(&position_state, &PPS::hasPath));
+            .WillByDefault(Invoke(&real_particle, &Particle::hasPath));
         ON_CALL(*this, getPressure())
             .WillByDefault(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
         ON_CALL(*this, getPressureDirection())
             .WillByDefault(Return(Direction::north()));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
-    MOCK_CONST_METHOD1(getNeighbor, const std::shared_ptr<NiceMockParticle>&
-                                        (Direction direction));
-    MOCK_METHOD3(setNeighbor, void(MoveKey, Direction direction,
-                                   const std::shared_ptr<NiceMockParticle>&
-                                       neighbor));
-    MOCK_METHOD2(move, void(MoveKey, Direction direction));
+    MOCK_METHOD1(getNeighbor, NiceMockParticle*(Direction direction));
+    MOCK_CONST_METHOD1(getConstNeighbor,
+                       const NiceMockParticle*(Direction direction));
+    MOCK_METHOD3(setNeighbor, void(BlobStateKey, Direction direction,
+                                   NiceMockParticle* neighbor));
+    MOCK_CONST_METHOD0(hasNeighbor, bool());
+    MOCK_METHOD2(move, void(BlobStateKey, Direction direction));
     MOCK_CONST_METHOD1(hasPath,
                        bool(std::initializer_list<Direction> directions));
-    MOCK_METHOD0(advance, void());
-    MOCK_METHOD2(setTarget, void(const IntVector& target,
-                                 float target_pressure));
-    MOCK_METHOD1(collideWith, void(NiceMockParticle& forward_neighbor));
     MOCK_CONST_METHOD0(getPressure, const FloatVector&());
     MOCK_CONST_METHOD0(getPressureDirection, Direction());
+    MOCK_METHOD1(advance, void(std::chrono::milliseconds time_delta));
+    MOCK_METHOD2(setTarget, void(const IntVector& target,
+                                 float target_pressure_per_second));
+    MOCK_METHOD2(collideWith, void(NiceMockParticle& forward_neighbor,
+                                   Direction collision_direction));
+    MOCK_METHOD2(addFollowers, void(BlobStateKey,
+                                    const std::vector<NiceMockParticle*>
+                                        new_followers));
+    MOCK_CONST_METHOD0(canMove, bool());
     private:
-    ParticlePositionState<NiceMockParticle> position_state;
-    void callSetNeighbor(MoveKey, Direction direction,
-                         const std::shared_ptr<NiceMockParticle>& neighbor) {
-        position_state.setNeighbor(direction, neighbor);
+    Particle real_particle;
+    std::array<NiceMockParticle*, 4> mock_neighbors;
+    NiceMockParticle* callGetNeighbor(Direction direction) {
+        return mock_neighbors[static_cast<Direction::val_t>(direction)];
     }
-    void callMove(MoveKey, Direction direction) {
-        const IntVector& vector = direction.vector();
-        position_state.move(vector);
+    void callSetNeighbor(BlobStateKey, Direction direction,
+                         NiceMockParticle* neighbor) {
+        mock_neighbors[static_cast<Direction::val_t>(direction)] = neighbor;
+        if (neighbor == nullptr) {
+            real_particle.setNeighbor({}, direction, nullptr);
+        }
+        else {
+            real_particle.setNeighbor({}, direction,
+                                      &(neighbor->real_particle));
+        }
+    }
+    void callMove(BlobStateKey, Direction direction) {
+        real_particle.move({}, direction);
     }
 };
 
