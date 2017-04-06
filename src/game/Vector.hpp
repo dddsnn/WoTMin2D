@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdlib>
+#include <iostream>
 
 namespace wotmin2d {
 
@@ -188,6 +189,11 @@ void Vector<T>::setX(const T& x) {
 template<typename T>
 void Vector<T>::setY(const T& y) {
     this->y = y;
+}
+
+template<typename T>
+::std::ostream& operator<<(::std::ostream& stream, const Vector<T>& vector) {
+    return stream << "(" << vector.getX() << ", " << vector.getY() << ")";
 }
 
 }
