@@ -45,25 +45,6 @@ class BlobTest : public ::testing::Test {
         // Return the test data particles by default.
         ON_CALL(*state, getParticles()).WillByDefault(ReturnRef(td.particles));
     }
-    void expectConnected() {
-        std::unordered_set<P*> reachable;
-        std::deque<P*> queue;
-        queue.push_back(td.particles[0]);
-        reachable.insert(td.particles[0]);
-        while (!queue.empty()) {
-            P* particle = queue.front();
-            queue.pop_front();
-            for (Direction direction: Direction::all()) {
-                P* neighbor = particle->getNeighbor(direction);
-                if (neighbor == nullptr || reachable.count(neighbor) > 0) {
-                    continue;
-                }
-                queue.push_back(neighbor);
-                reachable.insert(neighbor);
-            }
-        }
-        EXPECT_EQ(td.particles.size(), reachable.size());
-    }
     std::shared_ptr<NiceMockBlobState> state;
     TestData td;
     std::chrono::milliseconds time_delta;
@@ -74,10 +55,81 @@ TEST_F(BlobTest, normalConstructorDoesntAddParticles) {
     Blob<NiceMockBlobState> blob(td.width, td.height, state);
 }
 
-// TODO Test with the exact number and position of particles.
 TEST_F(BlobTest, circleConstructorAddsParticles) {
-    EXPECT_CALL(*state, addParticle(_)).Times(AtLeast(1));
-    Blob<NiceMockBlobState> blob(IntVector(10, 20), 3.0f, td.width, td.height,
+    IntVector center(7, 11);
+    FloatVector center_float = static_cast<FloatVector>(center);
+    float radius = 3.0f;
+    int radius_ceil = static_cast<int>(std::ceil(radius) + 1);
+    for (int x = center.getX() - radius_ceil; x < center.getX() + radius_ceil;
+         x++)
+    {
+        for (int y = center.getY() - radius_ceil;
+             y < center.getY() + radius_ceil; y++)
+        {
+            IntVector position(x, y);
+            FloatVector position_float = static_cast<FloatVector>(position);
+            if ((center_float - position_float).norm() <= radius) {
+                EXPECT_CALL(*state, addParticle(position)).Times(1);
+            } else {
+                EXPECT_CALL(*state, addParticle(position)).Times(0);
+            }
+        }
+    }
+    Blob<NiceMockBlobState> blob(center, radius, td.width, td.height,
+                                 state);
+}
+
+TEST_F(BlobTest, circleConstructorDoesntAddParticlesWithNegativeCoordinates) {
+    IntVector center(1, 1);
+    float radius = 3.0f;
+    int radius_ceil = static_cast<int>(std::ceil(radius) + 1);
+    for (int x = center.getX() - radius_ceil; x < center.getX() + radius_ceil;
+         x++)
+    {
+        for (int y = center.getY() - radius_ceil;
+             y < center.getY() + radius_ceil; y++)
+        {
+            IntVector position(x, y);
+            if (x < 0 || y < 0) {
+                EXPECT_CALL(*state, addParticle(position)).Times(0);
+            } else {
+                EXPECT_CALL(*state, addParticle(position)).Times(AnyNumber());
+            }
+        }
+    }
+    Blob<NiceMockBlobState> blob(center, radius, td.width, td.height,
+                                 state);
+}
+
+TEST_F(BlobTest, circleConstructorDoesntAddParticlesOutOfBounds) {
+    IntVector center(td.width - 2, td.height - 2);
+    float radius = 3.0f;
+    int radius_ceil = static_cast<int>(std::ceil(radius) + 1);
+    int max_x = td.width - 1;
+    int max_y = td.height - 1;
+    for (int x = center.getX() - radius_ceil; x < center.getX() + radius_ceil;
+         x++)
+    {
+        for (int y = center.getY() - radius_ceil;
+             y < center.getY() + radius_ceil; y++)
+        {
+            IntVector position(x, y);
+            if (x > max_x || y > max_y) {
+                EXPECT_CALL(*state, addParticle(position)).Times(0);
+            } else {
+                EXPECT_CALL(*state, addParticle(position)).Times(AnyNumber());
+            }
+        }
+    }
+    Blob<NiceMockBlobState> blob(center, radius, td.width, td.height,
+                                 state);
+}
+
+TEST_F(BlobTest, circleConstructorDoesntAddParticlesIfCenterIsOutOfBounds) {
+    IntVector center(td.width + 4, td.height + 4);
+    float radius = 3.0f;
+    EXPECT_CALL(*state, addParticle(_)).Times(0);
+    Blob<NiceMockBlobState> blob(center, radius, td.width, td.height,
                                  state);
 }
 

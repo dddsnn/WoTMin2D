@@ -32,8 +32,8 @@ Blob<B, P>::Blob(const IntVector& center, float radius,
         for (int x = left; x <= right; x++) {
             IntVector coordinate(x, y);
             IntVector center_to_coordinate = coordinate - center;
-            int dot_product = center_to_coordinate.dot(center_to_coordinate);
-            if (dot_product < squared_radius) {
+            int squaredNorm = center_to_coordinate.squaredNorm();
+            if (squaredNorm <= squared_radius) {
                 state->addParticle(coordinate);
             }
         }
