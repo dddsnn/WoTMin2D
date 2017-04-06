@@ -17,9 +17,14 @@
 
 namespace wotmin2d {
 
+// Forward declaration so we can make them our friends.
 namespace mock {
-// Forward declaration so we can make it our friend.
 class MockParticle;
+}
+namespace test {
+template<class P>
+class TestData;
+class ParticleTest;
 }
 
 class Particle {
@@ -27,6 +32,8 @@ class Particle {
     class BlobStateKey {
         friend class BlobState;
         friend class wotmin2d::mock::MockParticle;
+        friend class wotmin2d::test::TestData<Particle>;
+        friend class wotmin2d::test::ParticleTest;
         private:
         BlobStateKey() {}
         BlobStateKey(const BlobStateKey&) = delete;

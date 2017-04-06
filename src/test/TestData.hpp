@@ -57,9 +57,9 @@ using mock::NiceMockParticle;
  * Particles can be made available in the particles and particle_map members by
  * calling makeParticles() with positions.
  */
+template<class P>
 class TestData {
     private:
-    using P = NiceMockParticle;
     void deallocateParticles() {
         for (P* p: particles) {
             delete p;

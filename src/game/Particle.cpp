@@ -112,6 +112,8 @@ void Particle::setTarget(const IntVector& target,
 
 void Particle::move(BlobStateKey, Direction direction) {
     assert(canMove() && "Particle was asked to move but can't.");
+    assert(direction == getPressureDirection() && "Particle was asked to move "
+           "in a different direction than the pressure.");
     const IntVector& vector = direction.vector();
     position += vector;
     pressure -= static_cast<FloatVector>(vector);

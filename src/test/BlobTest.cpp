@@ -46,7 +46,7 @@ class BlobTest : public ::testing::Test {
         ON_CALL(*state, getParticles()).WillByDefault(ReturnRef(td.particles));
     }
     std::shared_ptr<NiceMockBlobState> state;
-    TestData td;
+    TestData<P> td;
     std::chrono::milliseconds time_delta;
 };
 
