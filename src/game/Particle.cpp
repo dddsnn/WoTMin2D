@@ -64,14 +64,20 @@ void Particle::advance(std::chrono::milliseconds time_delta) {
                   "deflate the pressure.");
     float divisor = static_cast<float>(followers.size())
                     + Config::target_pressure_share;
+    if (divisor < 1.0f) {
+        // There are no followers, take all the pressure.
+        divisor = 1.0f;
+    }
     float pressure_part = target_pressure / divisor;
     FloatVector to_target = static_cast<FloatVector>(target - position);
-    // Possibly give this particle a smaller share so the followers can have
-    // more.
-    float this_part = pressure_part * Config::target_pressure_share;
-    FloatVector to_target_pressure = to_target
-                                     * (this_part / to_target.norm());
-    pressure += to_target_pressure;
+    if (to_target != FloatVector(0.0f, 0.0f)) {
+        // Possibly give this particle a smaller share so the followers can have
+        // more.
+        float this_part = pressure_part * Config::target_pressure_share;
+        FloatVector to_target_pressure = to_target
+                                         * (this_part / to_target.norm());
+        pressure += to_target_pressure;
+    }
     addPressureToFollowers(followers, pressure_part);
     // TODO Calling this here means that some of the followers/leaders will not
     // yet have their pressures updated (as it hasn't been their turn to be
@@ -155,6 +161,9 @@ void Particle::addFollowers(BlobStateKey,
                   "A boost fraction outside [0, 1] will artificially inflate or"
                   " deflate the pressure.");
     this->followers.insert(new_followers.begin(), new_followers.end());
+    for (Particle* new_follower: new_followers) {
+        new_follower->addLeader(*this);
+    }
     float pressure_magnitude = pressure.norm();
     float boost_magnitude = Config::boost_fraction * pressure_magnitude;
     float divisor = static_cast<float>(followers.size());
