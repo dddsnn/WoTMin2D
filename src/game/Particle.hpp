@@ -30,7 +30,7 @@ class ParticleTest;
 class Particle {
     private:
     class BlobStateKey {
-        friend class BlobState;
+        template<class P> friend class BlobState;
         friend class wotmin2d::mock::MockParticle;
         friend class wotmin2d::test::TestData<Particle>;
         friend class wotmin2d::test::ParticleTest;

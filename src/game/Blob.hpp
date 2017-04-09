@@ -17,22 +17,22 @@
 
 namespace wotmin2d {
 
-template<class BlobState = BlobState, class Particle = Particle>
+template<class P = Particle, class B = BlobState<P>>
 class Blob {
     public:
     Blob(unsigned int arena_width, unsigned int arena_height,
-         std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
+         std::shared_ptr<B> state = std::make_shared<B>());
     Blob(const IntVector& center, float radius, unsigned int arena_width,
          unsigned int arena_height,
-         std::shared_ptr<BlobState> state = std::make_shared<BlobState>());
-    const std::vector<Particle*>& getParticles() const;
+         std::shared_ptr<B> state = std::make_shared<B>());
+    const std::vector<P*>& getParticles() const;
     void advance(std::chrono::milliseconds time_delta);
     private:
     // TODO Store by value and make the tests a friend so they can replace it.
-    std::shared_ptr<BlobState> state;
+    std::shared_ptr<B> state;
     unsigned int arena_width;
     unsigned int arena_height;
-    void handleParticle(Particle& particle);
+    void handleParticle(P& particle);
 };
 
 }

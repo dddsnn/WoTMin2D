@@ -1,15 +1,15 @@
 namespace wotmin2d {
 
-template<class B, class P>
-Blob<B, P>::Blob(unsigned int arena_width, unsigned int arena_height,
+template<class P, class B>
+Blob<P, B>::Blob(unsigned int arena_width, unsigned int arena_height,
                  std::shared_ptr<B> state) :
     state(state),
     arena_width(arena_width),
     arena_height(arena_height) {
 }
 
-template<class B, class P>
-Blob<B, P>::Blob(const IntVector& center, float radius,
+template<class P, class B>
+Blob<P, B>::Blob(const IntVector& center, float radius,
                  unsigned int arena_width, unsigned int arena_height,
                  std::shared_ptr<B> state) :
     state(state),
@@ -40,13 +40,13 @@ Blob<B, P>::Blob(const IntVector& center, float radius,
     }
 }
 
-template<class B, class P>
-const std::vector<P*>& Blob<B, P>::getParticles() const {
+template<class P, class B>
+const std::vector<P*>& Blob<P, B>::getParticles() const {
     return state->getParticles();
 }
 
-template<class B, class P>
-void Blob<B, P>::advance(std::chrono::milliseconds time_delta) {
+template<class P, class B>
+void Blob<P, B>::advance(std::chrono::milliseconds time_delta) {
     state->advanceParticles(time_delta);
     while (true) {
         // TODO There's optimization potential if we know that the highest
@@ -63,8 +63,8 @@ void Blob<B, P>::advance(std::chrono::milliseconds time_delta) {
     }
 }
 
-template<class B, class P>
-void Blob<B, P>::handleParticle(P& particle) {
+template<class P, class B>
+void Blob<P, B>::handleParticle(P& particle) {
     Direction movement_direction = particle.getPressureDirection();
     P* forward_neighbor = particle.getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {

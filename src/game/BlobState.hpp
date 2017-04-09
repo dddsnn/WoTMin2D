@@ -13,36 +13,35 @@
 
 namespace wotmin2d {
 
+template<class P = Particle>
 class BlobState {
     private:
-    using ParticleMap = std::unordered_map<IntVector, Particle*,
-                                           IntVector::Hash>;
+    using ParticleMap = std::unordered_map<IntVector, P*, IntVector::Hash>;
     class ParticleMobilityLess {
         public:
-        bool operator()(const Particle* first,
-                        const Particle* second) const;
+        bool operator()(const P* first, const P* second) const;
     };
     public:
     BlobState();
     ~BlobState();
-    const std::vector<Particle*>& getParticles() const;
+    const std::vector<P*>& getParticles() const;
     void addParticle(const IntVector& position);
-    void moveParticle(Particle& particle, Direction movement_direction);
-    void collideParticles(Particle& first, Particle& second,
-                          Direction collision_direction);
+    void moveParticle(P& particle, Direction movement_direction);
+    void collideParticles(P& first, P& second, Direction collision_direction);
     void advanceParticles(std::chrono::milliseconds time_delta);
-    Particle* getHighestMobilityParticle();
-    void addParticleFollowers(Particle& leader,
-                              const std::vector<Particle*>& followers);
+    P* getHighestMobilityParticle();
+    void addParticleFollowers(P& leader, const std::vector<P*>& followers);
     private:
-    std::vector<Particle*> particles;
+    std::vector<P*> particles;
     ParticleMap particle_map;
-    void updateParticleInformation(Particle& particle,
+    void updateParticleInformation(P& particle,
                                    const IntVector& old_position);
-    void updateParticleMap(Particle& particle, const IntVector& old_position);
-    void updateParticleNeighbors(Particle& particle);
+    void updateParticleMap(P& particle, const IntVector& old_position);
+    void updateParticleNeighbors(P& particle);
 };
 
 }
+
+#include "BlobState.tpp"
 
 #endif

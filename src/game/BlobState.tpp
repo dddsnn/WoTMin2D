@@ -1,29 +1,32 @@
-#include "BlobState.hpp"
-
 namespace wotmin2d {
 
-BlobState::BlobState() :
+template<class P>
+BlobState<P>::BlobState() :
     particles(),
     particle_map() {
 }
 
-BlobState::~BlobState() {
-    for (const Particle* particle: particles) {
+template<class P>
+BlobState<P>::~BlobState() {
+    for (const P* particle: particles) {
         delete particle;
     }
 }
 
-const std::vector<Particle*>& BlobState::getParticles() const {
+template<class P>
+const std::vector<P*>& BlobState<P>::getParticles() const {
     return particles;
 }
 
-void BlobState::addParticle(const IntVector& position) {
+template<class P>
+void BlobState<P>::addParticle(const IntVector& position) {
     #ifndef NDEBUG
-        ParticleMap::iterator position_iter = particle_map.find(position);
+        typename ParticleMap::iterator position_iter
+            = particle_map.find(position);
         assert(position_iter == particle_map.end()
                && "Attempt to add particle on top of another one.");
     #endif
-    Particle* particle = new Particle(position);
+    P* particle = new P(position);
     particles.push_back(particle);
     particle_map.emplace(position, particle);
     // Make potential neighbors aware of the new particle and vice versa.
@@ -32,26 +35,28 @@ void BlobState::addParticle(const IntVector& position) {
         if (neighbor_iter == particle_map.end()) {
             continue;
         }
-        Particle& neighbor = *(neighbor_iter->second);
+        P& neighbor = *(neighbor_iter->second);
         particle->setNeighbor({}, direction, &neighbor);
         neighbor.setNeighbor({}, direction.opposite(), particle);
     }
 }
 
-void BlobState::updateParticleInformation(Particle& particle,
-                                          const IntVector& old_position) {
+template<class P>
+void BlobState<P>::updateParticleInformation(P& particle,
+                                             const IntVector& old_position) {
     updateParticleMap(particle, old_position);
     updateParticleNeighbors(particle);
 }
 
-void BlobState::updateParticleMap(Particle& particle,
-                                  const IntVector& old_position) {
+template<class P>
+void BlobState<P>::updateParticleMap(P& particle,
+                                     const IntVector& old_position) {
     #ifndef NDEBUG
-        ParticleMap::iterator old_position_iter
+        typename ParticleMap::iterator old_position_iter
             = particle_map.find(old_position);
         assert(old_position_iter != particle_map.end()
                && old_position_iter->second == &particle
-               && "Particle not found at the position it's supposed to be.");
+               && "P not found at the position it's supposed to be.");
     #endif
     // Delete particle at old position.
     particle_map.erase(old_position);
@@ -66,9 +71,10 @@ void BlobState::updateParticleMap(Particle& particle,
            "position in the map.");
 }
 
-void BlobState::updateParticleNeighbors(Particle& particle) {
+template<class P>
+void BlobState<P>::updateParticleNeighbors(P& particle) {
     for (Direction direction: Direction::all()) {
-        Particle* neighbor = particle.getNeighbor(direction);
+        P* neighbor = particle.getNeighbor(direction);
         if (neighbor != nullptr) {
             // Unset the old neighbor's neighbor (since the particle just left).
             neighbor->setNeighbor({}, direction.opposite(), nullptr);
@@ -77,7 +83,7 @@ void BlobState::updateParticleNeighbors(Particle& particle) {
         // TODO Can this be done more efficiently?
         IntVector new_neighbor_position = particle.getPosition()
                                           + direction.vector();
-        ParticleMap::iterator new_neighbor_iter
+        typename ParticleMap::iterator new_neighbor_iter
             = particle_map.find(new_neighbor_position);
         if (new_neighbor_iter == particle_map.end()) {
             // No neighbor in that direction at the new position.
@@ -88,9 +94,9 @@ void BlobState::updateParticleNeighbors(Particle& particle) {
     }
     // Iterate over the neighbors of the particle again to set the particle as
     // the neighbor's neighbor. We can only do this now since we only now know
-    // for sure via which directions our particle can reach the entire BlobState.
+    // for sure via which directions our particle can reach the entire BlobState<P>.
     for (Direction direction: Direction::all()) {
-        Particle* neighbor = particle.getNeighbor(direction);
+        P* neighbor = particle.getNeighbor(direction);
         if (neighbor == nullptr) {
             continue;
         }
@@ -98,28 +104,32 @@ void BlobState::updateParticleNeighbors(Particle& particle) {
     }
 }
 
-void BlobState::moveParticle(Particle& particle, Direction forward_direction) {
+template<class P>
+void BlobState<P>::moveParticle(P& particle, Direction forward_direction) {
     const IntVector old_position = particle.getPosition();
     particle.move({}, forward_direction);
     updateParticleInformation(particle, old_position);
 }
 
-void BlobState::collideParticles(Particle& first, Particle& second,
-                                 Direction collision_direction) {
+template<class P>
+void BlobState<P>::collideParticles(P& first, P& second,
+                                    Direction collision_direction) {
     assert(first.getPosition().manhattanDistance(second.getPosition()) == 1
            && "Attempted to collide non-neighboring particles.");
     first.collideWith(second, collision_direction);
 }
 
 // Advances all particles to "refresh" pressure.
-void BlobState::advanceParticles(std::chrono::milliseconds time_delta) {
+template<class P>
+void BlobState<P>::advanceParticles(std::chrono::milliseconds time_delta) {
     // TODO test
-    for (Particle* particle: particles) {
+    for (P* particle: particles) {
         particle->advance(time_delta);
     }
 }
 
-Particle* BlobState::getHighestMobilityParticle() {
+template<class P>
+P* BlobState<P>::getHighestMobilityParticle() {
     // TODO Make this faster by using a heap somehow. The problem is only that
     // Blob may invalidate the heap and we don't know which particles it
     // touches.
@@ -130,17 +140,18 @@ Particle* BlobState::getHighestMobilityParticle() {
                              ParticleMobilityLess());
 }
 
-void BlobState::addParticleFollowers(Particle& leader,
-                                     const std::vector<Particle*>& followers)
-{
+template<class P>
+void BlobState<P>::addParticleFollowers(P& leader,
+                                        const std::vector<P*>& followers) {
     // TODO Do I need to prevent particles from following each other?
     leader.addFollowers({}, followers);
 }
 
 // Returns whether first is less mobile than second, i.e. compares pressure and
 // treats a particle whose canMove() returns false as having no pressure.
-bool BlobState::ParticleMobilityLess::operator()(const Particle* first,
-                                                 const Particle* second)
+template<class P>
+bool BlobState<P>::ParticleMobilityLess::operator()(const P* first,
+                                                    const P* second)
     const {
     bool first_can_move = first->canMove();
     bool second_can_move = second->canMove();
