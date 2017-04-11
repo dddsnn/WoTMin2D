@@ -14,10 +14,12 @@ target_sources(UnitTests PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/DirectionTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/VectorTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/BlobTest.cpp
+    ${CMAKE_CURRENT_LIST_DIR}/BlobStateTest.cpp
     ${CMAKE_CURRENT_LIST_DIR}/ParticleTest.cpp
 )
 add_test(NAME Direction COMMAND UnitTests --gtest_filter=Direction*)
 add_test(NAME Vector COMMAND UnitTests --gtest_filter=Vector*)
-add_test(NAME Blob COMMAND UnitTests --gtest_filter=Blob*)
+add_test(NAME Blob COMMAND UnitTests --gtest_filter=Blob*:-BlobState*)
+add_test(NAME BlobState COMMAND UnitTests --gtest_filter=BlobState*)
 add_test(NAME Particle
          COMMAND UnitTests --gtest_filter=Particle*)

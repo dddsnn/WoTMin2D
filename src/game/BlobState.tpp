@@ -116,6 +116,10 @@ void BlobState<P>::collideParticles(P& first, P& second,
                                     Direction collision_direction) {
     assert(first.getPosition().manhattanDistance(second.getPosition()) == 1
            && "Attempted to collide non-neighboring particles.");
+    assert(collision_direction.vector()
+               == second.getPosition() - first.getPosition()
+           && "Collision direction doesn't correspond to relative particle "
+              "positions.");
     first.collideWith(second, collision_direction);
 }
 

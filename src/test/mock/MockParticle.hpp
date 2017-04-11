@@ -47,6 +47,8 @@ class MockParticle {
             .WillByDefault(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
         ON_CALL(*this, getPressureDirection())
             .WillByDefault(Return(Direction::north()));
+        ON_CALL(*this, advance(_))
+            .WillByDefault(Invoke(&real_particle, &Particle::advance));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
     MOCK_METHOD1(getNeighbor, NiceMockParticle*(Direction direction));
