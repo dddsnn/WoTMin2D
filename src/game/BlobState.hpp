@@ -23,6 +23,8 @@ class BlobState {
     };
     public:
     BlobState();
+    BlobState(const BlobState&) = delete;
+    BlobState& operator=(const BlobState&) = delete;
     ~BlobState();
     const std::vector<P*>& getParticles() const;
     void addParticle(const IntVector& position);
