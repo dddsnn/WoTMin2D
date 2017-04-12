@@ -72,6 +72,28 @@ void Screen::draw(const State& state) {
     presentTexture();
 }
 
+IntVector Screen::displayToArenaCoordinates(const IntVector& coordinate) const {
+    int window_width_int, window_height_int;
+    SDL_GetWindowSize(window, &window_width_int, &window_height_int);
+    assert(coordinate.getX() >= 0 && coordinate.getX() < window_width_int);
+    assert(coordinate.getY() >= 0 && coordinate.getY() < window_height_int);
+    float window_width = static_cast<float>(window_width_int);
+    float window_height = static_cast<float>(window_height_int);
+    float arena_width = static_cast<float>(texture->getWidth());
+    float arena_height = static_cast<float>(texture->getHeight());
+    float width_multiplier = arena_width / window_width;
+    float height_multiplier = arena_height / window_height;
+    // X is simply scaled.
+    float display_x = static_cast<float>(coordinate.getX());
+    int arena_x = static_cast<int>(display_x * width_multiplier);
+    // Y also needs to be inverted, since display coordinates go top down but
+    // arena coordinates go bottom up.
+    int display_y_inv_int = window_height_int - coordinate.getY() - 1;
+    float display_y_inv = static_cast<float>(display_y_inv_int);
+    int arena_y = static_cast<int>(display_y_inv * height_multiplier);
+    return IntVector(arena_x, arena_y);
+}
+
 void Screen::updateTexture(const State& state) {
     texture->lockForWriting();
     // Make everything white to begin with.

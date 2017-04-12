@@ -9,9 +9,7 @@ Particle::Particle(IntVector position) :
     target_pressure_per_second(0.0f),
     pressure(0.0f, 0.0f),
     followers(),
-    leaders() {
-    setTarget(IntVector(50, 30), 20.0f); // TODO here for testing
-}
+    leaders() {}
 
 const IntVector& Particle::getPosition() const {
     return position;

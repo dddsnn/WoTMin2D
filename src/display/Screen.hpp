@@ -23,6 +23,7 @@ class Screen {
     ~Screen();
     friend void swap(Screen& first, Screen& second) noexcept;
     void draw(const State& state);
+    IntVector displayToArenaCoordinates(const IntVector& coordinate) const;
     private:
     void construct(unsigned int arena_width, unsigned int arena_height,
                    unsigned int display_width, unsigned int display_height);

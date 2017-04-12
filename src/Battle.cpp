@@ -20,7 +20,7 @@ void Battle::start() {
     using time_point = high_resolution_clock::time_point;
     while (running) {
         time_point start_time = high_resolution_clock::now();
-        state.update(frame_time);
+        state.advance(frame_time);
         screen.draw(state);
         std::vector<std::unique_ptr<InputAction>> input
             = input_parser.parseInput();
@@ -52,8 +52,8 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
 }
 
 void Battle::handleMouseDown(const IntVector& coordinate) {
-    // TODO
-    std::cout<<"mouse down at "<<coordinate<<std::endl;
+    IntVector position = screen.displayToArenaCoordinates(coordinate);
+    state.setTarget(position);
 }
 
 }

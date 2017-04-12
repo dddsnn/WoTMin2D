@@ -64,6 +64,14 @@ void Blob<P, B>::advance(std::chrono::milliseconds time_delta) {
 }
 
 template<class P, class B>
+void Blob<P, B>::setTarget(const IntVector& target) {
+    for (P* particle: getParticles()) {
+        // TODO Unhardcode pressure per second.
+        particle->setTarget(target, 20.0f);
+    }
+}
+
+template<class P, class B>
 void Blob<P, B>::handleParticle(P& particle) {
     Direction movement_direction = particle.getPressureDirection();
     P* forward_neighbor = particle.getNeighbor(movement_direction);

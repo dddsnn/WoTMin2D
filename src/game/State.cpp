@@ -10,7 +10,7 @@ State::State(unsigned int arena_width, unsigned int arena_height) :
     blobs.emplace_back(IntVector(20, 20), 10, arena_width, arena_height);
 }
 
-void State::update(std::chrono::milliseconds time_delta) {
+void State::advance(std::chrono::milliseconds time_delta) {
     for (auto& blob: blobs) {
         blob.advance(time_delta);
     }
@@ -26,6 +26,12 @@ unsigned int State::getHeight() const {
 
 const std::vector<Blob<>>& State::getBlobs() const {
     return blobs;
+}
+
+void State::setTarget(const IntVector& target) {
+    for (Blob<> blob: blobs) {
+        blob.setTarget(target);
+    }
 }
 
 }
