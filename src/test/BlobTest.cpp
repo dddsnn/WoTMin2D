@@ -53,7 +53,7 @@ class BlobTest : public ::testing::Test {
 
 TEST_F(BlobTest, normalConstructorDoesntAddParticles) {
     EXPECT_CALL(*state, addParticle(_)).Times(0);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
 }
 
 TEST_F(BlobTest, circleConstructorAddsParticles) {
@@ -76,7 +76,7 @@ TEST_F(BlobTest, circleConstructorAddsParticles) {
             }
         }
     }
-    Blob<P, B> blob(center, radius, td.width, td.height,
+    Blob<P, B> blob(0, center, radius, td.width, td.height,
                                  state);
 }
 
@@ -98,7 +98,7 @@ TEST_F(BlobTest, circleConstructorDoesntAddParticlesWithNegativeCoordinates) {
             }
         }
     }
-    Blob<P, B> blob(center, radius, td.width, td.height,
+    Blob<P, B> blob(0, center, radius, td.width, td.height,
                                  state);
 }
 
@@ -122,7 +122,7 @@ TEST_F(BlobTest, circleConstructorDoesntAddParticlesOutOfBounds) {
             }
         }
     }
-    Blob<P, B> blob(center, radius, td.width, td.height,
+    Blob<P, B> blob(0, center, radius, td.width, td.height,
                                  state);
 }
 
@@ -130,7 +130,7 @@ TEST_F(BlobTest, circleConstructorDoesntAddParticlesIfCenterIsOutOfBounds) {
     IntVector center(td.width + 4, td.height + 4);
     float radius = 3.0f;
     EXPECT_CALL(*state, addParticle(_)).Times(0);
-    Blob<P, B> blob(center, radius, td.width, td.height,
+    Blob<P, B> blob(0, center, radius, td.width, td.height,
                                  state);
 }
 
@@ -140,7 +140,7 @@ TEST_F(BlobTest, advancesParticles) {
     ON_CALL(*state, getHighestMobilityParticle())
         .WillByDefault(Return(td.particles.front()));
     EXPECT_CALL(*state, advanceParticles(time_delta)).Times(1);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -161,7 +161,7 @@ TEST_F(BlobTest, advancesParticlesBeforeMoving) {
         EXPECT_CALL(*state, advanceParticles(time_delta)).Times(1);
         EXPECT_CALL(*state, moveParticle(_, _)).Times(AnyNumber());
     }
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -184,7 +184,7 @@ TEST_F(BlobTest, onlyCollidesParticlesThatAreBlocked) {
     for (const P* p: td.particles) {
         EXPECT_CALL(*state, moveParticle(Ref(*p), _)).Times(0);
     }
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -197,7 +197,7 @@ TEST_F(BlobTest, quitsWhenHighestMobilityParticleCantMove) {
     }
     EXPECT_CALL(*state, collideParticles(_, _, _)).Times(0);
     EXPECT_CALL(*state, moveParticle(_, _)).Times(0);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -214,7 +214,7 @@ TEST_F(BlobTest, movesSingleParticles) {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*state, moveParticle(Ref(*particle), Direction::north()))
         .Times(1);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -233,7 +233,7 @@ TEST_F(BlobTest, movesSingleParticlesMultipleTimes) {
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*state, moveParticle(Ref(*particle), Direction::north()))
         .Times(3);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -268,7 +268,7 @@ TEST_F(BlobTest, movesParticlesIndependently) {
         .Times(1);
     EXPECT_CALL(*state, moveParticle(Ref(*sb), Direction::east()))
         .Times(1);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -295,7 +295,7 @@ TEST_F(BlobTest, addsSingleNeighborAsFollowerIfParticleGetsDisconnected) {
     EXPECT_CALL(*state, addParticleFollowers(Ref(*firstParticle),
                                              ElementsAre(secondParticle)))
         .Times(1);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -326,7 +326,7 @@ TEST_F(BlobTest, addsThreeNeighborsAsFollowersIfParticleGetsDisconnected) {
                 addParticleFollowers(Ref(*firstParticle),
                                      UnorderedElementsAreArray(neighbors)))
         .Times(1);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 
@@ -349,7 +349,7 @@ TEST_F(BlobTest, doesnAddFollowersIfParticleDoesntGetDisconnected) {
     EXPECT_CALL(*state, moveParticle(Ref(*firstParticle), Direction::north()))
         .Times(1);
     EXPECT_CALL(*state, addParticleFollowers(_, _)).Times(0);
-    Blob<P, B> blob(td.width, td.height, state);
+    Blob<P, B> blob(0, td.width, td.height, state);
     blob.advance(time_delta);
 }
 

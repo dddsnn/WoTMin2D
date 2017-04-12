@@ -6,8 +6,10 @@ State::State(unsigned int arena_width, unsigned int arena_height) :
     arena_width(arena_width),
     arena_height(arena_height),
     blobs() {
-    // TODO some blobs for testing     
-    blobs.emplace_back(IntVector(20, 20), 10, arena_width, arena_height);
+    static_assert(Config::num_players == 1, "Can only handle exactly 1 "
+                  "player.");
+    blobs.emplace_back(0, IntVector(20, 20), 10.0f, arena_width, arena_height);
+    blobs.shrink_to_fit();
 }
 
 void State::advance(std::chrono::milliseconds time_delta) {
@@ -28,10 +30,9 @@ const std::vector<Blob<>>& State::getBlobs() const {
     return blobs;
 }
 
-void State::setTarget(const IntVector& target) {
-    for (Blob<> blob: blobs) {
-        blob.setTarget(target);
-    }
+void State::setTarget(PlayerId player, const IntVector& target) {
+    assert(player < Config::num_players);
+    blobs[player].setTarget(target);
 }
 
 }

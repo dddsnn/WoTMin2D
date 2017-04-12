@@ -53,7 +53,7 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
 
 void Battle::handleMouseDown(const IntVector& coordinate) {
     IntVector position = screen.displayToArenaCoordinates(coordinate);
-    state.setTarget(position);
+    state.setTarget(0, position);
 }
 
 }

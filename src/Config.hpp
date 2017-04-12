@@ -29,6 +29,7 @@ class Config {
      * direction in the next time step.
      */
     constexpr static float min_directed_movement_pressure = 1.0f;
+    constexpr static unsigned int num_players = 1;
 };
 
 }

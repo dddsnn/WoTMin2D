@@ -4,6 +4,7 @@
 #include "BlobState.hpp"
 #include "Particle.hpp"
 #include "Vector.hpp"
+#include "../Config.hpp"
 
 #include <vector>
 #include <memory>
@@ -14,22 +15,26 @@
 #include <array>
 #include <unordered_set>
 #include <chrono>
+#include <cstdint>
 
 namespace wotmin2d {
 
 template<class P = Particle, class B = BlobState<P>>
 class Blob {
     public:
-    Blob(unsigned int arena_width, unsigned int arena_height,
-         std::shared_ptr<B> state = std::make_shared<B>());
-    Blob(const IntVector& center, float radius, unsigned int arena_width,
+    using PlayerId = std::uint_fast8_t;
+    Blob(PlayerId player_id, unsigned int arena_width,
          unsigned int arena_height,
+         std::shared_ptr<B> state = std::make_shared<B>());
+    Blob(PlayerId player_id, const IntVector& center, float radius,
+         unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<B> state = std::make_shared<B>());
     const std::vector<P*>& getParticles() const;
     void advance(std::chrono::milliseconds time_delta);
     void setTarget(const IntVector& target);
     private:
     // TODO Store by value and make the tests a friend so they can replace it.
+    const PlayerId player_id;
     std::shared_ptr<B> state;
     unsigned int arena_width;
     unsigned int arena_height;
