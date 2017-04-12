@@ -27,6 +27,7 @@ target_sources(Game PUBLIC
 # target_link_library() in subdirectories only works this way.
 include(game/CMakeLists.txt)
 include(display/CMakeLists.txt)
+include(input/CMakeLists.txt)
 
 if(NOT ${CMAKE_BUILD_TYPE} STREQUAL Release)
     enable_testing()

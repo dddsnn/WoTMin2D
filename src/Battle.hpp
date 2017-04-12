@@ -3,10 +3,14 @@
 
 #include "game/State.hpp"
 #include "display/Screen.hpp"
+#include "input/InputParser.hpp"
+#include "input/InputAction.hpp"
 
 #include <cstdint>
 #include <chrono>
 #include <thread>
+#include <vector>
+#include <memory>
 
 namespace wotmin2d {
 
@@ -18,8 +22,12 @@ class Battle {
     void stop();
     const static std::chrono::milliseconds frame_time;
     private:
+    void handleInput(std::vector<std::unique_ptr<InputAction>>& actions);
+    void handleMouseDown(const IntVector& coordinate);
     Screen screen;
     State state;
+    InputParser input_parser;
+    bool running;
 };
 
 }
