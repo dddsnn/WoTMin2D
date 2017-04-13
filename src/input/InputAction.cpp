@@ -18,11 +18,8 @@ const IntVector& AbstractCoordinateAction::getCoordinate() const {
 ParticleSelectionAction::ParticleSelectionAction(const IntVector& coordinate):
     AbstractCoordinateAction(coordinate) {}
 
-ParticleSelectionAction::~ParticleSelectionAction() {}
-
 TargetSettingAction::TargetSettingAction(const IntVector& coordinate):
     AbstractCoordinateAction(coordinate) {}
 
-TargetSettingAction::~TargetSettingAction() {}
 
 }

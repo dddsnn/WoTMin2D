@@ -27,13 +27,11 @@ class AbstractCoordinateAction : public InputAction {
 class ParticleSelectionAction : public AbstractCoordinateAction {
     public:
     ParticleSelectionAction(const IntVector& coordinate);
-    virtual ~ParticleSelectionAction();
 };
 
 class TargetSettingAction : public AbstractCoordinateAction {
     public:
     TargetSettingAction(const IntVector& coordinate);
-    virtual ~TargetSettingAction();
 };
 
 }
