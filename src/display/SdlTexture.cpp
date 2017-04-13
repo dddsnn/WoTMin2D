@@ -66,19 +66,37 @@ void SdlTexture::unlock() {
     pitch = 0;
 }
 
-void SdlTexture::setPixel(unsigned int index, std::uint8_t red,
-                          std::uint8_t green, std::uint8_t blue) {
-    assert(pixels != nullptr &&
-           "Attempting to set pixels on unlocked texture.");
+bool SdlTexture::isLocked() const {
+    return pixels != nullptr;
+}
 
+void SdlTexture::setPixel(unsigned int x, unsigned int y, std::uint8_t red,
+                          std::uint8_t green, std::uint8_t blue) {
+    if (x >= texture_width || y >= texture_height) {
+        // Coordinates out of bounds, return gracefully.
+        return;
+    }
+    unsigned int index = texture_width * y + x;
+    setPixelIndex(index, red, green, blue);
+}
+
+void SdlTexture::setPixelIndex(unsigned int index, std::uint8_t red,
+                               std::uint8_t green, std::uint8_t blue) {
+    assert(isLocked() && "Attempt to set pixels on unlocked texture.");
+    assert(index < texture_width * texture_height && "Pixel index out of "
+           "range.");
     std::uint32_t pixel_value = SDL_MapRGB(pixel_format, red, green, blue);
     std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
     pixels32[index] = pixel_value;
 }
 
-void SdlTexture::setRange(unsigned int start, unsigned int end,
-                          std::uint8_t red, std::uint8_t green,
-                          std::uint8_t blue) {
+void SdlTexture::setPixelRange(unsigned int start, unsigned int end,
+                               std::uint8_t red, std::uint8_t green,
+                               std::uint8_t blue) {
+    assert(isLocked() && "Attempt to set pixels on unlocked texture.");
+    assert(start <= texture_width * texture_height && "Start index out of "
+           "range.");
+    assert(end <= texture_width * texture_height && "End index out of range.");
     if (start > end) {
         return;
     }

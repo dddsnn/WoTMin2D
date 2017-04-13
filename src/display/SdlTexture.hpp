@@ -19,10 +19,13 @@ class SdlTexture {
     ~SdlTexture();
     void lockForWriting();
     void unlock();
-    void setPixel(unsigned int index, std::uint8_t red, std::uint8_t green,
-                  std::uint8_t blue);
-    void setRange(unsigned int start, unsigned int end, std::uint8_t red,
+    bool isLocked() const;
+    void setPixel(unsigned int x, unsigned int y, std::uint8_t red,
                   std::uint8_t green, std::uint8_t blue);
+    void setPixelIndex(unsigned int index, std::uint8_t red, std::uint8_t green,
+                       std::uint8_t blue);
+    void setPixelRange(unsigned int start, unsigned int end, std::uint8_t red,
+                       std::uint8_t green, std::uint8_t blue);
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     SDL_Texture* getTexture() const;

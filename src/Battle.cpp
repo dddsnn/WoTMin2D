@@ -56,13 +56,13 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
 }
 
 void Battle::selectParticles(const IntVector& coordinate) {
-    IntVector position = screen.displayToArenaCoordinates(coordinate);
+    IntVector position = screen.sdlToArenaCoordinates(coordinate);
     // TODO Unhardcode radius.
     state.selectParticles(0, position, 5.0f);
 }
 
 void Battle::setTarget(const IntVector& coordinate) {
-    IntVector position = screen.displayToArenaCoordinates(coordinate);
+    IntVector position = screen.sdlToArenaCoordinates(coordinate);
     state.setTarget(0, position);
 }
 

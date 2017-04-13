@@ -80,6 +80,7 @@ void Blob<P, B>::setTarget(const IntVector& target, float pressure_per_second,
 
 template<class P, class B>
 void Blob<P, B>::handleParticle(P& particle) {
+    // TODO Prevent particles from moving outside bounds.
     Direction movement_direction = particle.getPressureDirection();
     P* forward_neighbor = particle.getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
