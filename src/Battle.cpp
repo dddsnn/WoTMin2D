@@ -51,14 +51,17 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
             TargetSettingAction& set
                 = *(dynamic_cast<TargetSettingAction*>(action.get()));
             setTarget(set.getCoordinate());
+        } else if (dynamic_cast<SelectionSizeChangeAction*>(action.get())) {
+            SelectionSizeChangeAction& size_change
+                = *(dynamic_cast<SelectionSizeChangeAction*>(action.get()));
+            state.changeSelectionRadius(size_change.getDifference());
         }
     }
 }
 
 void Battle::selectParticles(const IntVector& coordinate) {
     IntVector position = screen.sdlToArenaCoordinates(coordinate);
-    // TODO Unhardcode radius.
-    state.selectParticles(0, position, 5.0f);
+    state.selectParticles(0, position);
 }
 
 void Battle::setTarget(const IntVector& coordinate) {

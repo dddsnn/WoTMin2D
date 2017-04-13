@@ -34,6 +34,14 @@ class TargetSettingAction : public AbstractCoordinateAction {
     TargetSettingAction(const IntVector& coordinate);
 };
 
+class SelectionSizeChangeAction : public InputAction {
+    public:
+    SelectionSizeChangeAction(float difference);
+    float getDifference() const;
+    private:
+    const float difference;
+};
+
 }
 
 #endif

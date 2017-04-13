@@ -121,6 +121,8 @@ void Screen::updateTexture(const State& state) {
     texture->setPixelRange(0, texture->getWidth() * texture->getHeight(), 0xff,
                            0xff, 0xff);
     putBlobs(state);
+    // TODO Getting the mouse state here means it may be a bit old (since
+    // rendering the blobs takes time).
     putSelectionCircleAndAimPoint(state);
     texture->unlock();
 }
@@ -156,8 +158,7 @@ void Screen::putSelectionCircleAndAimPoint(const State& state) {
     SDL_GetMouseState(&mouse_x, &mouse_y);
     IntVector mouse_position
         = scaleWindowToArenaCoordinates(IntVector(mouse_x, mouse_y));
-    // TODO Unhardcode.
-    float radius = 5.0f;
+    float radius = state.getSelectionRadius();
     assert(radius >= 0.0f);
     int radius_int = static_cast<int>(radius);
     int squared_radius = static_cast<int>(radius * radius);

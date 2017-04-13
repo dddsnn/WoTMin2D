@@ -21,5 +21,11 @@ ParticleSelectionAction::ParticleSelectionAction(const IntVector& coordinate):
 TargetSettingAction::TargetSettingAction(const IntVector& coordinate):
     AbstractCoordinateAction(coordinate) {}
 
+SelectionSizeChangeAction::SelectionSizeChangeAction(float difference):
+    difference(difference) {}
+
+float SelectionSizeChangeAction::getDifference() const {
+    return difference;
+}
 
 }

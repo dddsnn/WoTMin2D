@@ -8,6 +8,7 @@
 #include <memory>
 #include <cstdint>
 #include <iterator>
+#include <initializer_list>
 
 namespace wotmin2d {
 
@@ -20,9 +21,10 @@ class InputParser {
     // Needs to be called from the main loop.
     std::vector<std::unique_ptr<InputAction>> parseInput();
     private:
-    static int isMouseOrKeyDownEvent(void*, SDL_Event* event);
+    static int isAnyOf(void*, SDL_Event* event);
     static std::unique_ptr<InputAction> parseMouseDown(SDL_Event& event);
     static std::unique_ptr<InputAction> parseKeyDown(SDL_Event& event);
+    static std::unique_ptr<InputAction> parseMouseWheel(SDL_Event& event);
     template<class P, class I>
     void addActions(std::uint32_t type, P parser, I inserter);
     int getEvents(std::uint32_t type);
