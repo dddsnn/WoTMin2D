@@ -43,15 +43,25 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
     for (std::unique_ptr<InputAction>& action: actions) {
         if (dynamic_cast<ExitAction*>(action.get())) {
             stop();
-        } else if (dynamic_cast<MouseDownAction*>(action.get())) {
-            MouseDownAction& mouse_down
-                = *(dynamic_cast<MouseDownAction*>(action.get()));
-            handleMouseDown(mouse_down.getCoordinate());
+        } else if (dynamic_cast<ParticleSelectionAction*>(action.get())) {
+            ParticleSelectionAction& select
+                = *(dynamic_cast<ParticleSelectionAction*>(action.get()));
+            selectParticles(select.getCoordinate());
+        } else if (dynamic_cast<TargetSettingAction*>(action.get())) {
+            TargetSettingAction& set
+                = *(dynamic_cast<TargetSettingAction*>(action.get()));
+            setTarget(set.getCoordinate());
         }
     }
 }
 
-void Battle::handleMouseDown(const IntVector& coordinate) {
+void Battle::selectParticles(const IntVector& coordinate) {
+    IntVector position = screen.displayToArenaCoordinates(coordinate);
+    // TODO Unhardcode radius.
+    state.selectParticles(0, position, 5.0f);
+}
+
+void Battle::setTarget(const IntVector& coordinate) {
     IntVector position = screen.displayToArenaCoordinates(coordinate);
     state.setTarget(0, position);
 }

@@ -23,7 +23,8 @@ class Battle {
     const static std::chrono::milliseconds frame_time;
     private:
     void handleInput(std::vector<std::unique_ptr<InputAction>>& actions);
-    void handleMouseDown(const IntVector& coordinate);
+    void selectParticles(const IntVector& coordinate);
+    void setTarget(const IntVector& coordinate);
     Screen screen;
     State state;
     InputParser input_parser;

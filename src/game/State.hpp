@@ -18,11 +18,15 @@ class State {
     unsigned int getWidth() const;
     unsigned int getHeight() const;
     const std::vector<Blob<>>& getBlobs() const;
+    void selectParticles(PlayerId player, const IntVector& center,
+                         float radius);
     void setTarget(PlayerId player, const IntVector& target);
     private:
     const unsigned int arena_width;
     const unsigned int arena_height;
     std::vector<Blob<>> blobs;
+    IntVector selected_center;
+    float selected_radius;
 };
 
 }

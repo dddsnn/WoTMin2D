@@ -37,7 +37,17 @@ std::unique_ptr<InputAction> InputParser::parseMouseDown(SDL_Event& event) {
     SDL_MouseButtonEvent& mouse_event = event.button;
     int x = mouse_event.x;
     int y = mouse_event.y;
-    return std::unique_ptr<InputAction>(new MouseDownAction(IntVector(x, y)));
+    switch (mouse_event.button) {
+    case SDL_BUTTON_LEFT:
+        return std::unique_ptr<InputAction>(
+            new ParticleSelectionAction(IntVector(x, y)));
+        break;
+    case SDL_BUTTON_RIGHT:
+        return std::unique_ptr<InputAction>(
+            new TargetSettingAction(IntVector(x, y)));
+        break;
+    }
+    return nullptr;
 }
 
 int InputParser::getEvents(std::uint32_t type) {

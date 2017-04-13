@@ -15,13 +15,25 @@ class ExitAction : public InputAction {
     virtual ~ExitAction();
 };
 
-class MouseDownAction : public InputAction {
+class AbstractCoordinateAction : public InputAction {
     public:
-    MouseDownAction(const IntVector& coordinate);
-    virtual ~MouseDownAction();
+    AbstractCoordinateAction(const IntVector& coordinate);
+    virtual ~AbstractCoordinateAction() = 0;
     const IntVector& getCoordinate() const;
     private:
     const IntVector coordinate;
+};
+
+class ParticleSelectionAction : public AbstractCoordinateAction {
+    public:
+    ParticleSelectionAction(const IntVector& coordinate);
+    virtual ~ParticleSelectionAction();
+};
+
+class TargetSettingAction : public AbstractCoordinateAction {
+    public:
+    TargetSettingAction(const IntVector& coordinate);
+    virtual ~TargetSettingAction();
 };
 
 }

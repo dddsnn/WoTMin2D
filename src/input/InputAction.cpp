@@ -6,13 +6,23 @@ InputAction::~InputAction() {}
 
 ExitAction::~ExitAction() {}
 
-MouseDownAction::MouseDownAction(const IntVector& coordinate):
+AbstractCoordinateAction::AbstractCoordinateAction(const IntVector& coordinate):
     coordinate(coordinate) {}
 
-MouseDownAction::~MouseDownAction() {}
+AbstractCoordinateAction::~AbstractCoordinateAction() {}
 
-const IntVector& MouseDownAction::getCoordinate() const {
+const IntVector& AbstractCoordinateAction::getCoordinate() const {
     return coordinate;
 }
+
+ParticleSelectionAction::ParticleSelectionAction(const IntVector& coordinate):
+    AbstractCoordinateAction(coordinate) {}
+
+ParticleSelectionAction::~ParticleSelectionAction() {}
+
+TargetSettingAction::TargetSettingAction(const IntVector& coordinate):
+    AbstractCoordinateAction(coordinate) {}
+
+TargetSettingAction::~TargetSettingAction() {}
 
 }
