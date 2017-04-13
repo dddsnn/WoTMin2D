@@ -70,10 +70,11 @@ void Blob<P, B>::advance(std::chrono::milliseconds time_delta) {
 }
 
 template<class P, class B>
-void Blob<P, B>::setTarget(const IntVector& target) {
-    for (P* particle: getParticles()) {
-        // TODO Unhardcode pressure per second.
-        particle->setTarget(target, 20.0f);
+void Blob<P, B>::setTarget(const IntVector& target, float pressure_per_second,
+                           const IntVector& center, float radius) {
+    const std::vector<P*> particles = state->getParticles(center, radius);
+    for (P* particle: particles) {
+        particle->setTarget(target, pressure_per_second);
     }
 }
 

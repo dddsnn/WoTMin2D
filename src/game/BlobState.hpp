@@ -27,6 +27,8 @@ class BlobState {
     BlobState& operator=(const BlobState&) = delete;
     ~BlobState();
     const std::vector<P*>& getParticles() const;
+    const std::vector<P*> getParticles(const IntVector& center,
+                                       float radius) const;
     void addParticle(const IntVector& position);
     void moveParticle(P& particle, Direction movement_direction);
     void collideParticles(P& first, P& second, Direction collision_direction);

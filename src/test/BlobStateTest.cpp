@@ -4,6 +4,7 @@
 #include "../Config.hpp"
 
 #include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <chrono>
 
 namespace wotmin2d {
@@ -13,6 +14,7 @@ using ::testing::_;
 using ::testing::Ref;
 using ::testing::ReturnRefOfCopy;
 using ::testing::Return;
+using ::testing::UnorderedElementsAre;
 
 using P = mock::NiceMockParticle;
 
@@ -176,6 +178,30 @@ TEST_F(BlobStateTest, getsHighestMobilityParticle) {
         .WillByDefault(ReturnRefOfCopy(FloatVector(-1.0f, 0.5f)));
     // Now particle 2.
     EXPECT_EQ(particle2, state.getHighestMobilityParticle());
+}
+
+TEST_F(BlobStateTest, getsParticlesAroundCenter) {
+    IntVector center(5, 5);
+    IntVector pos1 = center + IntVector(0, 2);
+    IntVector pos2 = center + IntVector(-1, 1);
+    IntVector pos3 = center + IntVector(-2, -2);
+    state.addParticle(center);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    state.addParticle(pos3);
+    P* particle_c = particleAt(center);
+    P* particle_1 = particleAt(pos1);
+    P* particle_2 = particleAt(pos2);
+    P* particle_3 = particleAt(pos3);
+    EXPECT_THAT(state.getParticles(center, 0.0f),
+                UnorderedElementsAre(particle_c));
+    EXPECT_THAT(state.getParticles(center, 1.9f),
+                UnorderedElementsAre(particle_c, particle_2));
+    EXPECT_THAT(state.getParticles(center, 2.0f),
+                UnorderedElementsAre(particle_c, particle_2, particle_1));
+    EXPECT_THAT(state.getParticles(center, 3.0f),
+                UnorderedElementsAre(particle_c, particle_2, particle_1,
+                                     particle_3));
 }
 
 }

@@ -19,6 +19,44 @@ const std::vector<P*>& BlobState<P>::getParticles() const {
 }
 
 template<class P>
+const std::vector<P*> BlobState<P>::getParticles(const IntVector& center,
+                                                 float radius) const {
+    // TODO If particle_map were two nested one-dimensional maps, this could go
+    // faster (just using lower_bound() and upper_bound()).
+    if (radius < 0.0f) {
+        return {};
+    }
+    std::vector<P*> particles;
+    // Add center already. We can't do that in the loop, or else we'd add it
+    // four times.
+    auto center_iter = particle_map.find(center);
+    if (center_iter != particle_map.end()) {
+        particles.push_back(center_iter->second);
+    }
+    int radius_int = static_cast<int>(radius);
+    int squared_radius = static_cast<int>(radius * radius);
+    int half_width = 1;
+    for (int i = radius_int; i > 0; i--) {
+        for (; IntVector(half_width, i).squaredNorm() <= squared_radius;
+             half_width++);
+        // Look in all four cardinal directions, up to the radius.
+        for (Direction forward: Direction::all()) {
+            // From there, turn right, up to the width of the circle at the
+            // distance from the center.
+            for (int j = 0; j < half_width; j++) {
+                IntVector position = center + (forward.vector() * i)
+                                     + (forward.right().vector() * j);
+                auto iter = particle_map.find(position);
+                if (iter != particle_map.end()) {
+                    particles.push_back(iter->second);
+                }
+            }
+        }
+    }
+    return particles;
+}
+
+template<class P>
 void BlobState<P>::addParticle(const IntVector& position) {
     #ifndef NDEBUG
         typename ParticleMap::iterator position_iter

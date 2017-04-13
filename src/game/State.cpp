@@ -32,7 +32,8 @@ const std::vector<Blob<>>& State::getBlobs() const {
 
 void State::setTarget(PlayerId player, const IntVector& target) {
     assert(player < Config::num_players);
-    blobs[player].setTarget(target);
+    // TODO Unhardcode pressure, center and radius.
+    blobs[player].setTarget(target, 20.0f, IntVector(25, 10), 8.0f);
 }
 
 }
