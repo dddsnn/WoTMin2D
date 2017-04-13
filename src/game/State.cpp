@@ -43,8 +43,7 @@ const std::vector<Blob<>>& State::getBlobs() const {
     return blobs;
 }
 
-void State::selectParticles(PlayerId player, const IntVector& center) {
-    assert(player == 0 && "Can only select particless for player 0.");
+void State::selectParticles(const IntVector& center) {
     selection_center = center;
 }
 

@@ -61,7 +61,7 @@ void Battle::handleInput(std::vector<std::unique_ptr<InputAction>>& actions) {
 
 void Battle::selectParticles(const IntVector& coordinate) {
     IntVector position = screen.sdlToArenaCoordinates(coordinate);
-    state.selectParticles(0, position);
+    state.selectParticles(position);
 }
 
 void Battle::setTarget(const IntVector& coordinate) {

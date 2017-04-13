@@ -20,7 +20,7 @@ class State {
     float getSelectionRadius() const;
     void changeSelectionRadius(float difference);
     const std::vector<Blob<>>& getBlobs() const;
-    void selectParticles(PlayerId player, const IntVector& center);
+    void selectParticles(const IntVector& center);
     void setTarget(PlayerId player, const IntVector& target);
     private:
     const unsigned int arena_width;
