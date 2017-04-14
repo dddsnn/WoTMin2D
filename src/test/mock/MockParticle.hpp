@@ -69,6 +69,7 @@ class MockParticle {
                                  float target_pressure_per_second));
     MOCK_METHOD2(collideWith, void(NiceMockParticle& forward_neighbor,
                                    Direction collision_direction));
+    MOCK_METHOD1(killPressureInDirection, void(Direction direction));
     MOCK_METHOD2(addFollowers, void(BlobStateKey,
                                     const std::vector<NiceMockParticle*>
                                         new_followers));

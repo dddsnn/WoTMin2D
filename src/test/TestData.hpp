@@ -24,7 +24,7 @@ using mock::NiceMockParticle;
  * The test particle positions look as follows:
  *     012345678901234567890
  *    -----------------------
- * 20 |                     |
+ * 20 |                    w|
  * 19 |                     |
  * 18 |                     |
  * 17 |                     |
@@ -49,6 +49,7 @@ using mock::NiceMockParticle;
  * x: inSouthWestCorner
  * y: onSouthBorder
  * z: inside
+ * w: inNorthEastCorner
  * a: lineA
  * b: lineB
  * k: block
@@ -70,6 +71,7 @@ class TestData {
         particles(),
         particle_map(),
         inSouthWestCorner(0, 0),
+        inNorthEastCorner(width - 1, height - 1),
         onSouthBorder(10, 0),
         inside(15, 5),
         lineA(),
@@ -135,6 +137,7 @@ class TestData {
     std::vector<P*> particles;
     std::unordered_map<IntVector, P*, IntVector::Hash> particle_map;
     IntVector inSouthWestCorner;
+    IntVector inNorthEastCorner;
     IntVector onSouthBorder;
     IntVector inside;
     std::vector<IntVector> lineA;

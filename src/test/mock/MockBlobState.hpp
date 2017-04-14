@@ -28,6 +28,8 @@ class MockBlobState {
                                     Direction movement_direction));
     MOCK_METHOD3(collideParticles, void(P& first, P& second,
                                         Direction collision_direction));
+    MOCK_METHOD2(collideParticleWithWall,
+                 void(P& particle, Direction collision_direction));
     MOCK_METHOD1(advanceParticles, void(std::chrono::milliseconds time_delta));
     MOCK_METHOD0(getHighestMobilityParticle, P*());
     MOCK_METHOD2(addParticleFollowers, void(P& leader,

@@ -34,8 +34,10 @@ class Blob {
     void setTarget(const IntVector& target, float pressure_per_second,
                    const IntVector& center, float radius);
     private:
-    // TODO Store by value and make the tests a friend so they can replace it.
+    bool isMovementOutOfBounds(const IntVector& position,
+                               Direction movement_direction) const;
     const PlayerId player_id;
+    // TODO Store by value and make the tests a friend so they can replace it.
     std::shared_ptr<B> state;
     unsigned int arena_width;
     unsigned int arena_height;

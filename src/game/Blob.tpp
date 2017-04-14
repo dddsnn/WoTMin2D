@@ -80,8 +80,11 @@ void Blob<P, B>::setTarget(const IntVector& target, float pressure_per_second,
 
 template<class P, class B>
 void Blob<P, B>::handleParticle(P& particle) {
-    // TODO Prevent particles from moving outside bounds.
     Direction movement_direction = particle.getPressureDirection();
+    if (isMovementOutOfBounds(particle.getPosition(), movement_direction)) {
+        state->collideParticleWithWall(particle, movement_direction);
+        return;
+    }
     P* forward_neighbor = particle.getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
@@ -105,6 +108,18 @@ void Blob<P, B>::handleParticle(P& particle) {
         // neighbors follow it to catch up.
         state->addParticleFollowers(particle, neighbors);
     }
+}
+
+template<class P, class B>
+bool Blob<P, B>::isMovementOutOfBounds(const IntVector& position,
+                                       Direction movement_direction) const {
+    IntVector new_position = position + movement_direction.vector();
+    int x = new_position.getX();
+    int y = new_position.getY();
+    bool x_out_of_bounds = x < 0 || static_cast<unsigned int>(x) >= arena_width;
+    bool y_out_of_bounds = y < 0
+         || static_cast<unsigned int>(y) >= arena_height;
+    return x_out_of_bounds || y_out_of_bounds;
 }
 
 }

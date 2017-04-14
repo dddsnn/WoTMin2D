@@ -191,7 +191,7 @@ TEST_F(ParticleTest,
 
 TEST_F(ParticleTest, passesOnPartOfPressureOnCollision) {
     Particle p(start_position);
-    Particle neighbor(start_position + IntVector(1, 0));;
+    Particle neighbor(start_position + IntVector(1, 0));
     p.setTarget(start_position + IntVector(5, 0), 1.0f);
     p.advance(one_second);
     neighbor.advance(one_second);
@@ -207,6 +207,35 @@ TEST_F(ParticleTest, passesOnPartOfPressureOnCollision) {
                   + neighbor_pressure_before,
               neighbor.getPressure());
     EXPECT_EQ(Direction::east(), neighbor.getPressureDirection());
+}
+
+TEST_F(ParticleTest, killsPressure) {
+    for (Direction direction: Direction::all()) {
+        Particle p(start_position);
+        p.setTarget(p.getPosition() + direction.vector(), 1.0f);
+        p.advance(one_second);
+        EXPECT_NE(FloatVector(0.0f, 0.0f), p.getPressure());
+        p.killPressureInDirection(direction);
+        EXPECT_EQ(FloatVector(0.0f, 0.0f), p.getPressure());
+    }
+}
+
+TEST_F(ParticleTest, killsPressureOnlyInDirectionThatWasAsked) {
+    Particle p1(start_position);
+    Particle p2(start_position + IntVector(1, 0));
+    p1.setTarget(p1.getPosition() + Direction::north().vector(), 1.0f);
+    p2.setTarget(p2.getPosition() + IntVector(4, 7), 1.0f);
+    p1.advance(one_second);
+    p2.advance(one_second);
+    FloatVector p1_pressure_before = p1.getPressure();
+    FloatVector p2_pressure_before = p2.getPressure();
+    EXPECT_NE(FloatVector(0.0f, 0.0f), p1_pressure_before);
+    EXPECT_NE(FloatVector(0.0f, 0.0f), p2_pressure_before);
+    p1.killPressureInDirection(Direction::west());
+    p2.killPressureInDirection(Direction::east());
+    EXPECT_EQ(p1_pressure_before, p1.getPressure());
+    FloatVector expected_p2(0.0f, p2_pressure_before.getY());
+    EXPECT_EQ(expected_p2, p2.getPressure());
 }
 
 TEST_F(ParticleTest, addsFollowersWhenAskedAndBoostsThem) {

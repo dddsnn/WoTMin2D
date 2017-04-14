@@ -151,6 +151,19 @@ void Particle::collideWith(Particle& forward_neighbor,
     leaders.clear();
 }
 
+void Particle::killPressureInDirection(Direction direction) {
+    switch (direction) {
+    case Direction::north():
+    case Direction::south():
+        pressure.setY(0.0f);
+        break;
+    case Direction::west():
+    case Direction::east():
+        pressure.setX(0.0f);
+        break;
+    }
+}
+
 void Particle::addFollowers(BlobStateKey,
                             const std::vector<Particle*> new_followers)
 {

@@ -53,6 +53,7 @@ class Particle {
     void advance(std::chrono::milliseconds time_delta);
     void setTarget(const IntVector& target, float target_pressure_per_second);
     void collideWith(Particle& forward_neighbor, Direction collision_direction);
+    void killPressureInDirection(Direction direction);
     void addFollowers(BlobStateKey, const std::vector<Particle*> new_followers);
     bool canMove() const;
     private:

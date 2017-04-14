@@ -272,6 +272,48 @@ TEST_F(BlobTest, movesParticlesIndependently) {
     blob.advance(time_delta);
 }
 
+TEST_F(BlobTest, doesntMoveParticlesBeyondBounds) {
+    td.makeParticles({}, { td.inSouthWestCorner, td.inNorthEastCorner });
+    P* swc = td.particle_map[td.inSouthWestCorner];
+    P* nec = td.particle_map[td.inNorthEastCorner];
+    EXPECT_CALL(*state, getHighestMobilityParticle())
+        .Times(AnyNumber())
+        .WillOnce(Return(swc))
+        .WillOnce(Return(swc))
+        .WillOnce(Return(nec))
+        .WillOnce(Return(nec))
+        .WillRepeatedly(Return(td.particles.front()));
+    EXPECT_CALL(*swc, getPressureDirection())
+        .Times(AnyNumber())
+        .WillOnce(Return(Direction::west()))
+        .WillRepeatedly(Return(Direction::south()));
+    EXPECT_CALL(*nec, getPressureDirection())
+        .Times(AnyNumber())
+        .WillOnce(Return(Direction::east()))
+        .WillRepeatedly(Return(Direction::north()));
+    EXPECT_CALL(*swc, canMove())
+        .Times(AnyNumber())
+        .WillOnce(Return(true))
+        .WillOnce(Return(true))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*nec, canMove())
+        .Times(AnyNumber())
+        .WillOnce(Return(true))
+        .WillOnce(Return(true))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*state, collideParticleWithWall(Ref(*swc), Direction::west()))
+        .Times(1);
+    EXPECT_CALL(*state, collideParticleWithWall(Ref(*swc), Direction::south()))
+        .Times(1);
+    EXPECT_CALL(*state, collideParticleWithWall(Ref(*nec), Direction::east()))
+        .Times(1);
+    EXPECT_CALL(*state, collideParticleWithWall(Ref(*nec), Direction::north()))
+        .Times(1);
+    EXPECT_CALL(*state, moveParticle(_, _)).Times(0);
+    Blob<P, B> blob(0, td.width, td.height, state);
+    blob.advance(time_delta);
+}
+
 TEST_F(BlobTest, addsSingleNeighborAsFollowerIfParticleGetsDisconnected) {
     td.makeParticles({ td.lineA }, {});
     P* firstParticle = td.particle_map[IntVector(3, 10)];

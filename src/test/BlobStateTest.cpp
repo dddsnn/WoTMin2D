@@ -140,6 +140,19 @@ TEST_F(BlobStateTest, collidesParticles) {
     state.collideParticles(*particle1, *particle2, Direction::north());
 }
 
+TEST_F(BlobStateTest, killsPressureOnCollisionWithWall) {
+    IntVector pos1(0, 0);
+    IntVector pos2(5, 7);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    EXPECT_CALL(*particle1, killPressureInDirection(Direction::north()));
+    EXPECT_CALL(*particle2, killPressureInDirection(Direction::east()));
+    state.collideParticleWithWall(*particle1, Direction::north());
+    state.collideParticleWithWall(*particle2, Direction::east());
+}
+
 TEST_F(BlobStateTest, addsFollowers) {
     IntVector pos1(0, 0);
     IntVector pos2(0, 1);

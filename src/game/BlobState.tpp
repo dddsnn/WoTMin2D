@@ -161,6 +161,12 @@ void BlobState<P>::collideParticles(P& first, P& second,
     first.collideWith(second, collision_direction);
 }
 
+template<class P>
+void BlobState<P>::collideParticleWithWall(P& particle,
+                                           Direction collision_direction) {
+    particle.killPressureInDirection(collision_direction);
+}
+
 // Advances all particles to "refresh" pressure.
 template<class P>
 void BlobState<P>::advanceParticles(std::chrono::milliseconds time_delta) {
