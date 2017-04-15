@@ -9,7 +9,8 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/CMake/)
 set(COMPILE_OPTIONS -std=c++11 -Wall -Wextra -pedantic)
 
 find_package(SDL2 REQUIRED)
-include_directories(${SDL2_INCLUDE_DIR})
+find_package(Boost REQUIRED)
+include_directories(${SDL2_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
 add_library(Game STATIC "")
 target_compile_options(Game PUBLIC ${COMPILE_OPTIONS})
