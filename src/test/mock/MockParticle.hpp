@@ -44,13 +44,15 @@ class MockParticle {
         ON_CALL(*this, hasPath(_))
             .WillByDefault(Invoke(&real_particle, &Particle::hasPath));
         ON_CALL(*this, getPressure())
-            .WillByDefault(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
+            .WillByDefault(Invoke(&real_particle, &Particle::getPressure));
         ON_CALL(*this, getPressureDirection())
             .WillByDefault(Return(Direction::north()));
         ON_CALL(*this, advance(_))
             .WillByDefault(Invoke(&real_particle, &Particle::advance));
         ON_CALL(*this, setTarget(_, _))
             .WillByDefault(Invoke(&real_particle, &Particle::setTarget));
+        ON_CALL(*this, canMove())
+            .WillByDefault(Invoke(&real_particle, &Particle::canMove));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
     MOCK_METHOD1(getNeighbor, NiceMockParticle*(Direction direction));

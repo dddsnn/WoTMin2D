@@ -1,4 +1,5 @@
 #include "../game/BlobState.hpp"
+#include "../game/Particle.hpp"
 #include "mock/MockParticle.hpp"
 #include "../game/Vector.hpp"
 #include "../Config.hpp"
@@ -24,14 +25,22 @@ class BlobStateTest : public ::testing::Test {
         state(),
         one_second(1000) {}
     BlobState<P> state;
+    BlobState<Particle> real_state;
     std::chrono::milliseconds one_second;
-    P* particleAt(IntVector position) {
-        for (P* particle: state.getParticles()) {
+    template<class PT>
+    PT* particleAt(IntVector position, BlobState<PT>& state) {
+        for (PT* particle: state.getParticles()) {
             if (particle->getPosition() == position) {
                 return particle;
             }
         }
         return nullptr;
+    }
+    P* particleAt(IntVector position) {
+        return particleAt(position, state);
+    }
+    Particle* realParticleAt(IntVector position) {
+        return particleAt(position, real_state);
     }
 };
 
@@ -191,6 +200,152 @@ TEST_F(BlobStateTest, getsHighestMobilityParticle) {
         .WillByDefault(ReturnRefOfCopy(FloatVector(-1.0f, 0.5f)));
     // Now particle 2.
     EXPECT_EQ(particle2, state.getHighestMobilityParticle());
+}
+
+TEST_F(BlobStateTest, getsHighestMobilityParticleAfterAdvances) {
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    particle1->setTarget(particle1->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure * 3.0f);
+    particle2->setTarget(particle2->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure * 2.0f);
+    particle1->advance(one_second);
+    particle2->advance(one_second);
+    EXPECT_EQ(particle1, real_state.getHighestMobilityParticle());
+    particle1->setTarget(particle1->getPosition(), 0.0f);
+    particle1->advance(one_second);
+    particle2->advance(one_second);
+    EXPECT_EQ(particle2, real_state.getHighestMobilityParticle());
+}
+
+TEST_F(BlobStateTest, getsHighestMobilityParticleAfterMove) {
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    particle1->setTarget(particle1->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure * 3.0f + 3.0f);
+    particle2->setTarget(particle2->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure * 2.0f + 3.0f);
+    particle1->advance(one_second);
+    particle2->advance(one_second);
+    ASSERT_LT(particle2->getPressure().squaredNorm(),
+              particle1->getPressure().squaredNorm());
+    int num_moves
+        = static_cast<int>(Config::min_directed_movement_pressure) + 1;
+    for (int i = 0; i < num_moves; i++) {
+        ASSERT_TRUE(particle1->canMove());
+        real_state.moveParticle(*particle1, particle1->getPressureDirection());
+    }
+    EXPECT_EQ(particle2, real_state.getHighestMobilityParticle());
+    EXPECT_TRUE(particle2->canMove());
+}
+
+TEST_F(BlobStateTest, getsHighestMobilityParticleAfterLeaderAdvance) {
+    if (Config::target_pressure_share == 0.0f) {
+        // No point in this test since leaders aren't supposed to share with
+        // their followers.
+        return;
+    }
+    ASSERT_GT((float)Config::target_pressure_share, 0.0f);
+    ASSERT_LE((float)Config::target_pressure_share, 1.0f);
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    IntVector pos3(7, 11);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    real_state.addParticle(pos3);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    Particle* particle3 = realParticleAt(pos3);
+    particle1->setTarget(particle1->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure);
+    particle3->setTarget(particle3->getPosition()
+                             + Direction::north().vector() * 100,
+                         Config::min_directed_movement_pressure * 2.0f);
+    particle1->advance(one_second);
+    particle3->advance(one_second);
+    real_state.addParticleFollowers(*particle1, { particle2 });
+    ASSERT_LT(particle2->getPressure().squaredNorm(),
+              particle3->getPressure().squaredNorm());
+    // Particle 2 has lower mobility than particle 3, but advancing particle 1
+    // should change that eventually since it's a leader.
+    int num_advances = static_cast<int>(2.0f / Config::target_pressure_share)
+                       + 1;
+    particle1->advance(one_second * num_advances);
+    Particle* highest_mobility;
+    while (true) {
+        highest_mobility = real_state.getHighestMobilityParticle();
+        if (highest_mobility == particle1) {
+            ASSERT_TRUE(particle1->canMove());
+            real_state.moveParticle(*particle1,
+                                    particle1->getPressureDirection());
+        } else {
+            break;
+        }
+    }
+    EXPECT_EQ(particle2, highest_mobility);
+    EXPECT_TRUE(particle2->canMove());
+    EXPECT_TRUE(particle3->canMove());
+}
+
+TEST_F(BlobStateTest, getsHighestMobilityParticleAfterFollowerAdd) {
+    if (Config::boost_fraction == 0.0f) {
+        // No point in this test since leaders aren't supposed to boost
+        // followers when they're added.
+        return;
+    }
+    ASSERT_GT((float)Config::boost_fraction, 0.0f);
+    ASSERT_LE((float)Config::boost_fraction, 1.0f);
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    IntVector pos3(7, 11);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    real_state.addParticle(pos3);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    Particle* particle3 = realParticleAt(pos3);
+    float pressure3 = Config::min_directed_movement_pressure * 2.0f;
+    float pressure1_mult = static_cast<int>(1.0f / Config::boost_fraction) + 1;
+    particle1->setTarget(particle1->getPosition()
+                             + Direction::north().vector() * 100,
+                         pressure1_mult * pressure3);
+    particle3->setTarget(particle3->getPosition()
+                             + Direction::north().vector() * 100,
+                         pressure3);
+    particle1->advance(one_second);
+    particle3->advance(one_second);
+    ASSERT_LT(particle2->getPressure().squaredNorm(),
+              particle3->getPressure().squaredNorm());
+    // Particle 2 has lower mobility than particle 3, but adding it as a
+    // follower to particle 1 should change that since it will receive a boost.
+    real_state.addParticleFollowers(*particle1, { particle2 });
+    Particle* highest_mobility;
+    while (true) {
+        highest_mobility = real_state.getHighestMobilityParticle();
+        if (highest_mobility == particle1) {
+            ASSERT_TRUE(particle1->canMove());
+            real_state.moveParticle(*particle1,
+                                    particle1->getPressureDirection());
+        } else {
+            break;
+        }
+    }
+    EXPECT_EQ(particle2, highest_mobility);
+    EXPECT_TRUE(particle2->canMove());
+    EXPECT_TRUE(particle3->canMove());
 }
 
 TEST_F(BlobStateTest, getsParticlesAroundCenter) {
