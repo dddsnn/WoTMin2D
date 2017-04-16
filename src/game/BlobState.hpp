@@ -10,23 +10,36 @@
 #include <algorithm>
 #include <array>
 #include <chrono>
+#include <boost/multi_index_container.hpp>
+#include <boost/multi_index/hashed_index.hpp>
+#include <boost/multi_index/ordered_index.hpp>
+#include <boost/multi_index/identity.hpp>
 
 namespace wotmin2d {
+
+namespace mi = boost::multi_index;
 
 template<class P = Particle>
 class BlobState {
     private:
-    using ParticleMap = std::unordered_map<IntVector, P*, IntVector::Hash>;
-    class ParticleMobilityLess {
+    class ParticleMobilityGreater {
         public:
         bool operator()(const P* first, const P* second) const;
     };
+    using ParticleMap = std::unordered_map<IntVector, P*, IntVector::Hash>;
     public:
+    using ParticleSet = mi::multi_index_container<
+        P*,
+        mi::indexed_by<
+            mi::hashed_unique<mi::identity<P*>>,
+            mi::ordered_non_unique<mi::identity<P*>, ParticleMobilityGreater>
+        >
+    >;
     BlobState();
     BlobState(const BlobState&) = delete;
     BlobState& operator=(const BlobState&) = delete;
     ~BlobState();
-    const std::vector<P*>& getParticles() const;
+    const ParticleSet& getParticles() const;
     const std::vector<P*> getParticles(const IntVector& center,
                                        float radius) const;
     void addParticle(const IntVector& position);
@@ -37,12 +50,14 @@ class BlobState {
     P* getHighestMobilityParticle();
     void addParticleFollowers(P& leader, const std::vector<P*>& followers);
     private:
-    std::vector<P*> particles;
+    ParticleSet particles;
     ParticleMap particle_map;
     void updateParticleInformation(P& particle,
                                    const IntVector& old_position);
     void updateParticleMap(P& particle, const IntVector& old_position);
     void updateParticleNeighbors(P& particle);
+    template<class Modifier>
+    void modifyParticle(P& particle, Modifier modifier);
 };
 
 }

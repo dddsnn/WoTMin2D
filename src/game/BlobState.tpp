@@ -14,7 +14,7 @@ BlobState<P>::~BlobState() {
 }
 
 template<class P>
-const std::vector<P*>& BlobState<P>::getParticles() const {
+const typename BlobState<P>::ParticleSet& BlobState<P>::getParticles() const {
     return particles;
 }
 
@@ -65,7 +65,7 @@ void BlobState<P>::addParticle(const IntVector& position) {
                && "Attempt to add particle on top of another one.");
     #endif
     P* particle = new P(position);
-    particles.push_back(particle);
+    particles.insert(particle);
     particle_map.emplace(position, particle);
     // Make potential neighbors aware of the new particle and vice versa.
     for (const Direction& direction: Direction::all()) {
@@ -145,7 +145,8 @@ void BlobState<P>::updateParticleNeighbors(P& particle) {
 template<class P>
 void BlobState<P>::moveParticle(P& particle, Direction forward_direction) {
     const IntVector old_position = particle.getPosition();
-    particle.move({}, forward_direction);
+    auto modifier = [=](P* p) { p->move({}, forward_direction); };
+    modifyParticle(particle, modifier);
     updateParticleInformation(particle, old_position);
 }
 
@@ -158,55 +159,84 @@ void BlobState<P>::collideParticles(P& first, P& second,
                == second.getPosition() - first.getPosition()
            && "Collision direction doesn't correspond to relative particle "
               "positions.");
-    first.collideWith(second, collision_direction);
+    auto modifier = [&second, collision_direction](P* p) {
+        p->collideWith(second, collision_direction);
+    };
+    modifyParticle(first, modifier);
+    // Modify second as well so it's put into its possibly changed place in the
+    // index (modification itself is a nop). The order of particles in the 0-th
+    // index never changes, so this is safe.
+    modifyParticle(second, [](P*){ /* nop */ });
 }
 
 template<class P>
 void BlobState<P>::collideParticleWithWall(P& particle,
                                            Direction collision_direction) {
-    particle.killPressureInDirection(collision_direction);
+    auto modifier = [=](P* p) {
+        p->killPressureInDirection(collision_direction);
+    };
+    modifyParticle(particle, modifier);
 }
 
 // Advances all particles to "refresh" pressure.
 template<class P>
 void BlobState<P>::advanceParticles(std::chrono::milliseconds time_delta) {
-    // TODO test
+    auto modifier = [=](P* p) { p->advance(time_delta); };
+    // Modifying particles doesn't change their order in the 0-th index (using
+    // identity, i.e. their memory address, as key), so the iterator stays valid
+    // even if we modify stuff.
     for (P* particle: particles) {
-        particle->advance(time_delta);
+        modifyParticle(*particle, modifier);
     }
 }
 
 template<class P>
 P* BlobState<P>::getHighestMobilityParticle() {
-    // TODO Make this faster by using a heap somehow. The problem is only that
-    // Blob may invalidate the heap and we don't know which particles it
-    // touches.
     if (particles.empty()) {
         return nullptr;
     }
-    return *std::max_element(particles.cbegin(), particles.cend(),
-                             ParticleMobilityLess());
+    const typename ParticleSet::template nth_index<1>::type& mobility_index
+        = particles.template get<1>();
+    return *(mobility_index.begin());
 }
 
 template<class P>
 void BlobState<P>::addParticleFollowers(P& leader,
                                         const std::vector<P*>& followers) {
     // TODO Do I need to prevent particles from following each other?
-    leader.addFollowers({}, followers);
+    auto modifier = [&](P* p) { p->addFollowers({}, followers); };
+    modifyParticle(leader, modifier);
+    particles.insert(&leader);
+    for (P* follower: followers) {
+        // Do a nop-modification on all followers so they're reordered in the
+        // mobility index.
+        modifyParticle(*follower, [](P*){});
+    }
 }
 
-// Returns whether first is less mobile than second, i.e. compares pressure and
+template<class P>
+template<class Modifier>
+void BlobState<P>::modifyParticle(P& particle, Modifier modifier) {
+    typename ParticleSet::iterator it = particles.find(&particle);
+    assert(it != particles.end());
+    #ifndef NDEBUG
+    bool success =
+    #endif
+    particles.modify(it, modifier);
+    assert(success && "Modification of particle failed.");
+}
+
+// Returns whether first is more mobile than second, i.e. compares pressure and
 // treats a particle whose canMove() returns false as having no pressure.
 template<class P>
-bool BlobState<P>::ParticleMobilityLess::operator()(const P* first,
-                                                    const P* second)
-    const {
+bool BlobState<P>::ParticleMobilityGreater::operator()(const P* first,
+                                                       const P* second) const {
     bool first_can_move = first->canMove();
     bool second_can_move = second->canMove();
     if (first_can_move && second_can_move) {
         return first->getPressure().squaredNorm()
-            < second->getPressure().squaredNorm();
-    } else if (second_can_move) {
+            > second->getPressure().squaredNorm();
+    } else if (first_can_move) {
         return true;
     } else {
         return false;

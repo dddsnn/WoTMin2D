@@ -7,6 +7,7 @@
 #include <gtest/gtest.h>
 #include <gmock/gmock.h>
 #include <chrono>
+#include <algorithm>
 
 namespace wotmin2d {
 namespace test {
@@ -49,10 +50,12 @@ TEST_F(BlobStateTest, addsParticles) {
     IntVector pos2(5, 7);
     state.addParticle(pos1);
     ASSERT_EQ(1, state.getParticles().size());
-    EXPECT_EQ(pos1, state.getParticles().front()->getPosition());
+    EXPECT_EQ(pos1, (*(state.getParticles().begin()))->getPosition());
     state.addParticle(pos2);
     EXPECT_EQ(2, state.getParticles().size());
-    EXPECT_EQ(pos2, state.getParticles().back()->getPosition());
+    EXPECT_TRUE(std::any_of(state.getParticles().cbegin(),
+                            state.getParticles().cend(),
+                            [=](P* p) { return p->getPosition() == pos2; }));
 }
 
 TEST_F(BlobStateTest, advancesAllParticles) {
@@ -182,24 +185,38 @@ TEST_F(BlobStateTest, getsNullAsHighestMobilityOnEmpty) {
 }
 
 TEST_F(BlobStateTest, getsHighestMobilityParticle) {
-    IntVector pos1(0, 0);
-    IntVector pos2(0, 1);
-    state.addParticle(pos1);
-    state.addParticle(pos2);
-    P* particle1 = particleAt(pos1);
-    P* particle2 = particleAt(pos2);
-    ON_CALL(*particle2, canMove()).WillByDefault(Return(true));
-    // Only particle 2 can even move.
-    EXPECT_EQ(particle2, state.getHighestMobilityParticle());
-    ON_CALL(*particle1, canMove()).WillByDefault(Return(true));
-    ON_CALL(*particle1, getPressure())
-        .WillByDefault(ReturnRefOfCopy(FloatVector(1.0f, 0.0f)));
-    // Particle 1 has more pressure.
-    EXPECT_EQ(particle1, state.getHighestMobilityParticle());
-    ON_CALL(*particle2, getPressure())
-        .WillByDefault(ReturnRefOfCopy(FloatVector(-1.0f, 0.5f)));
-    // Now particle 2.
-    EXPECT_EQ(particle2, state.getHighestMobilityParticle());
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    particle1->setTarget(particle1->getPosition()
+                             + Direction::north().vector() * 10,
+                         Config::min_directed_movement_pressure);
+    particle2->setTarget(particle2->getPosition()
+                             + Direction::north().vector() * 10,
+                         Config::min_directed_movement_pressure * 1.1f);
+    real_state.advanceParticles(one_second);
+    ASSERT_TRUE(particle1->canMove());
+    ASSERT_TRUE(particle2->canMove());
+    EXPECT_EQ(particle2, real_state.getHighestMobilityParticle());
+}
+
+TEST_F(BlobStateTest, getsHighestMobilityParticleIfOnlyOneCanMove) {
+    IntVector pos1(3, 5);
+    IntVector pos2(5, 7);
+    real_state.addParticle(pos1);
+    real_state.addParticle(pos2);
+    Particle* particle1 = realParticleAt(pos1);
+    Particle* particle2 = realParticleAt(pos2);
+    particle2->setTarget(particle2->getPosition()
+                             + Direction::north().vector() * 10,
+                         Config::min_directed_movement_pressure);
+    real_state.advanceParticles(one_second);
+    ASSERT_FALSE(particle1->canMove());
+    ASSERT_TRUE(particle2->canMove());
+    EXPECT_EQ(particle2, real_state.getHighestMobilityParticle());
 }
 
 TEST_F(BlobStateTest, getsHighestMobilityParticleAfterAdvances) {
@@ -215,12 +232,10 @@ TEST_F(BlobStateTest, getsHighestMobilityParticleAfterAdvances) {
     particle2->setTarget(particle2->getPosition()
                              + Direction::north().vector() * 100,
                          Config::min_directed_movement_pressure * 2.0f);
-    particle1->advance(one_second);
-    particle2->advance(one_second);
+    real_state.advanceParticles(one_second);
     EXPECT_EQ(particle1, real_state.getHighestMobilityParticle());
     particle1->setTarget(particle1->getPosition(), 0.0f);
-    particle1->advance(one_second);
-    particle2->advance(one_second);
+    real_state.advanceParticles(one_second);
     EXPECT_EQ(particle2, real_state.getHighestMobilityParticle());
 }
 
@@ -274,8 +289,7 @@ TEST_F(BlobStateTest, getsHighestMobilityParticleAfterLeaderAdvance) {
     particle3->setTarget(particle3->getPosition()
                              + Direction::north().vector() * 100,
                          Config::min_directed_movement_pressure * 2.0f);
-    particle1->advance(one_second);
-    particle3->advance(one_second);
+    real_state.advanceParticles(one_second);
     real_state.addParticleFollowers(*particle1, { particle2 });
     ASSERT_LT(particle2->getPressure().squaredNorm(),
               particle3->getPressure().squaredNorm());
@@ -283,7 +297,8 @@ TEST_F(BlobStateTest, getsHighestMobilityParticleAfterLeaderAdvance) {
     // should change that eventually since it's a leader.
     int num_advances = static_cast<int>(2.0f / Config::target_pressure_share)
                        + 1;
-    particle1->advance(one_second * num_advances);
+    particle3->setTarget(particle3->getPosition(), 0.0f);
+    real_state.advanceParticles(num_advances * one_second);
     Particle* highest_mobility;
     while (true) {
         highest_mobility = real_state.getHighestMobilityParticle();

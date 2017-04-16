@@ -29,7 +29,7 @@ class Blob {
     Blob(PlayerId player_id, const IntVector& center, float radius,
          unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<B> state = std::make_shared<B>());
-    const std::vector<P*>& getParticles() const;
+    const typename BlobState<P>::ParticleSet& getParticles() const;
     void advance(std::chrono::milliseconds time_delta);
     void setTarget(const IntVector& target, float pressure_per_second,
                    const IntVector& center, float radius);

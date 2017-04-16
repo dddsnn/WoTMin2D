@@ -47,7 +47,7 @@ Blob<P, B>::Blob(PlayerId player_id, const IntVector& center, float radius,
 }
 
 template<class P, class B>
-const std::vector<P*>& Blob<P, B>::getParticles() const {
+const typename BlobState<P>::ParticleSet& Blob<P, B>::getParticles() const {
     return state->getParticles();
 }
 
