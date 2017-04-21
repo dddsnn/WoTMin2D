@@ -50,7 +50,7 @@ bool Particle::hasPath(std::initializer_list<Direction> directions) const {
     return neighbor != nullptr;
 }
 
-void Particle::advance(std::chrono::milliseconds time_delta) {
+void Particle::advance(BlobStateKey, std::chrono::milliseconds time_delta) {
     // How much target pressure do we need to apply?
     std::chrono::duration<float, std::ratio<1>> second_fraction = time_delta;
     float target_pressure = second_fraction.count()
@@ -123,7 +123,7 @@ void Particle::move(BlobStateKey, Direction direction) {
     pressure -= static_cast<FloatVector>(vector);
 }
 
-void Particle::collideWith(Particle& forward_neighbor,
+void Particle::collideWith(BlobStateKey, Particle& forward_neighbor,
                            Direction collision_direction) {
     switch (collision_direction) {
     case Direction::north():
@@ -151,7 +151,7 @@ void Particle::collideWith(Particle& forward_neighbor,
     leaders.clear();
 }
 
-void Particle::killPressureInDirection(Direction direction) {
+void Particle::killPressureInDirection(BlobStateKey, Direction direction) {
     switch (direction) {
     case Direction::north():
     case Direction::south():

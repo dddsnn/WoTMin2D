@@ -68,9 +68,9 @@ TEST_F(BlobStateTest, advancesAllParticles) {
     P* particle1 = particleAt(pos1);
     P* particle2 = particleAt(pos2);
     P* particle3 = particleAt(pos3);
-    EXPECT_CALL(*particle1, advance(one_second)).Times(1);
-    EXPECT_CALL(*particle2, advance(one_second)).Times(1);
-    EXPECT_CALL(*particle3, advance(one_second)).Times(1);
+    EXPECT_CALL(*particle1, advance(_, one_second)).Times(1);
+    EXPECT_CALL(*particle2, advance(_, one_second)).Times(1);
+    EXPECT_CALL(*particle3, advance(_, one_second)).Times(1);
     state.advanceParticles(one_second);
 }
 
@@ -104,7 +104,7 @@ TEST_F(BlobStateTest, movesParticles) {
     P* particle1 = particleAt(pos1);
     particle1->setTarget(pos1 + Direction::east().vector(),
                          2.0f * Config::min_directed_movement_pressure);
-    particle1->advance(one_second);
+    particle1->advance({}, one_second);
     state.moveParticle(*particle1, Direction::east());
     EXPECT_EQ(pos1 + Direction::east().vector(), particle1->getPosition());
 }
@@ -118,7 +118,7 @@ TEST_F(BlobStateTest, unsetsNeighborsAfterMoving) {
     P* particle2 = particleAt(pos2);
     particle1->setTarget(pos1 + Direction::east().vector(),
                          2.0f * Config::min_directed_movement_pressure);
-    particle1->advance(one_second);
+    particle1->advance({}, one_second);
     state.moveParticle(*particle1, Direction::east());
     for (Direction direction: Direction::all()) {
         EXPECT_EQ(nullptr, particle1->getNeighbor(direction));
@@ -135,7 +135,7 @@ TEST_F(BlobStateTest, setsNeighborsAfterMoving) {
     P* particle2 = particleAt(pos2);
     particle1->setTarget(pos1 + Direction::east().vector(),
                          2.0f * Config::min_directed_movement_pressure);
-    particle1->advance(one_second);
+    particle1->advance({}, one_second);
     state.moveParticle(*particle1, Direction::east());
     EXPECT_EQ(particle1, particle2->getNeighbor(Direction::south()));
     EXPECT_EQ(particle2, particle1->getNeighbor(Direction::north()));
@@ -148,7 +148,8 @@ TEST_F(BlobStateTest, collidesParticles) {
     state.addParticle(pos2);
     P* particle1 = particleAt(pos1);
     P* particle2 = particleAt(pos2);
-    EXPECT_CALL(*particle1, collideWith(Ref(*particle2), Direction::north()));
+    EXPECT_CALL(*particle1, collideWith(_, Ref(*particle2),
+                                        Direction::north()));
     state.collideParticles(*particle1, *particle2, Direction::north());
 }
 
@@ -159,8 +160,8 @@ TEST_F(BlobStateTest, killsPressureOnCollisionWithWall) {
     state.addParticle(pos2);
     P* particle1 = particleAt(pos1);
     P* particle2 = particleAt(pos2);
-    EXPECT_CALL(*particle1, killPressureInDirection(Direction::north()));
-    EXPECT_CALL(*particle2, killPressureInDirection(Direction::east()));
+    EXPECT_CALL(*particle1, killPressureInDirection(_, Direction::north()));
+    EXPECT_CALL(*particle2, killPressureInDirection(_, Direction::east()));
     state.collideParticleWithWall(*particle1, Direction::north());
     state.collideParticleWithWall(*particle2, Direction::east());
 }
@@ -252,8 +253,7 @@ TEST_F(BlobStateTest, getsHighestMobilityParticleAfterMove) {
     particle2->setTarget(particle2->getPosition()
                              + Direction::north().vector() * 100,
                          Config::min_directed_movement_pressure * 2.0f + 3.0f);
-    particle1->advance(one_second);
-    particle2->advance(one_second);
+    real_state.advanceParticles(one_second);
     ASSERT_LT(particle2->getPressure().squaredNorm(),
               particle1->getPressure().squaredNorm());
     int num_moves
@@ -340,8 +340,7 @@ TEST_F(BlobStateTest, getsHighestMobilityParticleAfterFollowerAdd) {
     particle3->setTarget(particle3->getPosition()
                              + Direction::north().vector() * 100,
                          pressure3);
-    particle1->advance(one_second);
-    particle3->advance(one_second);
+    real_state.advanceParticles(one_second);
     ASSERT_LT(particle2->getPressure().squaredNorm(),
               particle3->getPressure().squaredNorm());
     // Particle 2 has lower mobility than particle 3, but adding it as a

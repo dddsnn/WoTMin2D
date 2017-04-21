@@ -47,8 +47,8 @@ class MockParticle {
             .WillByDefault(Invoke(&real_particle, &Particle::getPressure));
         ON_CALL(*this, getPressureDirection())
             .WillByDefault(Return(Direction::north()));
-        ON_CALL(*this, advance(_))
-            .WillByDefault(Invoke(&real_particle, &Particle::advance));
+        ON_CALL(*this, advance(_, _))
+            .WillByDefault(Invoke(this, &MockParticle::callAdvance));
         ON_CALL(*this, setTarget(_, _))
             .WillByDefault(Invoke(&real_particle, &Particle::setTarget));
         ON_CALL(*this, canMove())
@@ -66,12 +66,15 @@ class MockParticle {
                        bool(std::initializer_list<Direction> directions));
     MOCK_CONST_METHOD0(getPressure, const FloatVector&());
     MOCK_CONST_METHOD0(getPressureDirection, Direction());
-    MOCK_METHOD1(advance, void(std::chrono::milliseconds time_delta));
+    MOCK_METHOD2(advance, void(BlobStateKey,
+                               std::chrono::milliseconds time_delta));
     MOCK_METHOD2(setTarget, void(const IntVector& target,
                                  float target_pressure_per_second));
-    MOCK_METHOD2(collideWith, void(NiceMockParticle& forward_neighbor,
+    MOCK_METHOD3(collideWith, void(BlobStateKey,
+                                   NiceMockParticle& forward_neighbor,
                                    Direction collision_direction));
-    MOCK_METHOD1(killPressureInDirection, void(Direction direction));
+    MOCK_METHOD2(killPressureInDirection, void(BlobStateKey,
+                                               Direction direction));
     MOCK_METHOD2(addFollowers, void(BlobStateKey,
                                     const std::vector<NiceMockParticle*>
                                         new_followers));
@@ -95,6 +98,9 @@ class MockParticle {
     }
     void callMove(BlobStateKey, Direction direction) {
         real_particle.move({}, direction);
+    }
+    void callAdvance(BlobStateKey, std::chrono::milliseconds time_delta) {
+        real_particle.advance({}, time_delta);
     }
 };
 

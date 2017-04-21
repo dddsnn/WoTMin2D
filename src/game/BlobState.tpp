@@ -160,7 +160,7 @@ void BlobState<P>::collideParticles(P& first, P& second,
            && "Collision direction doesn't correspond to relative particle "
               "positions.");
     auto modifier = [&second, collision_direction](P* p) {
-        p->collideWith(second, collision_direction);
+        p->collideWith({}, second, collision_direction);
     };
     modifyParticle(first, modifier);
     // Modify second as well so it's put into its possibly changed place in the
@@ -173,7 +173,7 @@ template<class P>
 void BlobState<P>::collideParticleWithWall(P& particle,
                                            Direction collision_direction) {
     auto modifier = [=](P* p) {
-        p->killPressureInDirection(collision_direction);
+        p->killPressureInDirection({}, collision_direction);
     };
     modifyParticle(particle, modifier);
 }
@@ -181,7 +181,7 @@ void BlobState<P>::collideParticleWithWall(P& particle,
 // Advances all particles to "refresh" pressure.
 template<class P>
 void BlobState<P>::advanceParticles(std::chrono::milliseconds time_delta) {
-    auto modifier = [=](P* p) { p->advance(time_delta); };
+    auto modifier = [=](P* p) { p->advance({}, time_delta); };
     // Modifying particles doesn't change their order in the 0-th index (using
     // identity, i.e. their memory address, as key), so the iterator stays valid
     // even if we modify stuff.

@@ -5,6 +5,7 @@
 #include "Vector.hpp"
 #include "Direction.hpp"
 
+#include <vector>
 #include <array>
 #include <utility>
 #include <algorithm>
@@ -25,6 +26,7 @@ namespace test {
 template<class P>
 class TestData;
 class ParticleTest;
+class BlobStateTest;
 }
 
 class Particle {
@@ -34,6 +36,7 @@ class Particle {
         friend class wotmin2d::mock::MockParticle;
         friend class wotmin2d::test::TestData<Particle>;
         friend class wotmin2d::test::ParticleTest;
+        friend class wotmin2d::test::BlobStateTest;
         private:
         BlobStateKey() {}
         BlobStateKey(const BlobStateKey&) = delete;
@@ -50,10 +53,11 @@ class Particle {
     bool hasPath(std::initializer_list<Direction> directions) const;
     const FloatVector& getPressure() const;
     Direction getPressureDirection() const;
-    void advance(std::chrono::milliseconds time_delta);
+    void advance(BlobStateKey, std::chrono::milliseconds time_delta);
     void setTarget(const IntVector& target, float target_pressure_per_second);
-    void collideWith(Particle& forward_neighbor, Direction collision_direction);
-    void killPressureInDirection(Direction direction);
+    void collideWith(BlobStateKey, Particle& forward_neighbor,
+                     Direction collision_direction);
+    void killPressureInDirection(BlobStateKey, Direction direction);
     void addFollowers(BlobStateKey, const std::vector<Particle*> new_followers);
     bool canMove() const;
     private:

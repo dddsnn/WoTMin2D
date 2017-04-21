@@ -26,6 +26,16 @@ class ParticleTest : public ::testing::Test {
     {
         particle.addFollowers({}, followers);
     }
+    void callAdvance(Particle& particle, std::chrono::milliseconds time_delta) {
+        particle.advance({}, time_delta);
+    }
+    void callCollideWith(Particle& first, Particle& second,
+                         Direction collision_direction) {
+        first.collideWith({}, second, collision_direction);
+    }
+    void callKillPressure(Particle& particle, Direction direction) {
+        particle.killPressureInDirection({}, direction);
+    }
 };
 
 TEST_F(ParticleTest, hasNeighbors) {
@@ -74,17 +84,17 @@ TEST_F(ParticleTest, reportsCorrectPressureDirection) {
     Particle p_north(td.inside);
     p_north.setTarget(p_north.getPosition() + Direction::north().vector(),
                      Config::min_directed_movement_pressure);
-    p_north.advance(2 * one_second);
+    callAdvance(p_north, 2 * one_second);
     EXPECT_EQ(Direction::north(), p_north.getPressureDirection());
     Particle p_east(td.inside);
     p_east.setTarget(p_east.getPosition() + Direction::east().vector(),
                      Config::min_directed_movement_pressure);
-    p_east.advance(2 * one_second);
+    callAdvance(p_east, 2 * one_second);
     EXPECT_EQ(Direction::east(), p_east.getPressureDirection());
     Particle p_ssw(td.inside);
     p_ssw.setTarget(p_ssw.getPosition() + IntVector(-1, -2),
                      Config::min_directed_movement_pressure);
-    p_ssw.advance(2 * one_second);
+    callAdvance(p_ssw, 2 * one_second);
     EXPECT_EQ(Direction::south(), p_ssw.getPressureDirection());
 }
 
@@ -93,13 +103,13 @@ TEST_F(ParticleTest, moves) {
     IntVector before = p.getPosition();
     p.setTarget(p.getPosition() + Direction::north().vector(),
                 Config::min_directed_movement_pressure);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     callParticleMove(p, Direction::north());
     EXPECT_EQ(before + Direction::north().vector(), p.getPosition());
     before = p.getPosition();
     p.setTarget(p.getPosition() + Direction::east().vector(),
                 Config::min_directed_movement_pressure);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     callParticleMove(p, Direction::east());
     EXPECT_EQ(before + Direction::east().vector(), p.getPosition());
 }
@@ -120,7 +130,7 @@ TEST_F(ParticleTest, doesntWantToMoveWithTargetBeforeAdvancing) {
 TEST_F(ParticleTest, doesntWantToMoveWithTargetAtOwnPosition) {
     Particle p(start_position);
     p.setTarget(p.getPosition(), 2 * Config::min_directed_movement_pressure);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_FALSE(p.canMove());
     EXPECT_EQ(FloatVector(0.0f, 0.0f), p.getPressure());
 }
@@ -128,7 +138,7 @@ TEST_F(ParticleTest, doesntWantToMoveWithTargetAtOwnPosition) {
 TEST_F(ParticleTest, wantsToMoveAfterAdvancing) {
     Particle p(start_position);
     p.setTarget(start_position + IntVector(5, 0), 1.0f);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::east(), p.getPressureDirection());
     EXPECT_GT(p.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
@@ -137,12 +147,12 @@ TEST_F(ParticleTest, wantsToMoveAfterAdvancing) {
 TEST_F(ParticleTest, canChangeDirection) {
     Particle p(start_position);
     p.setTarget(start_position + IntVector(5, 0), 1.0f);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     callParticleMove(p, Direction::east());
     EXPECT_EQ(start_position + Direction::east().vector(), p.getPosition());
     p.setTarget(start_position - IntVector(5, 0), 1.0f);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::west(), p.getPressureDirection());
     EXPECT_GT(p.getPressure().dot(FloatVector(-1.0f, 0.0f)), 0.0f);
@@ -151,13 +161,13 @@ TEST_F(ParticleTest, canChangeDirection) {
 TEST_F(ParticleTest, canMoveInNonStraightLines) {
     Particle p(start_position);
     p.setTarget(start_position + IntVector(2, 1), 1.0f);
-    p.advance(2 * one_second);
+    callAdvance(p, 2 * one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::east(), p.getPressureDirection());
     EXPECT_GT(p.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
     callParticleMove(p, Direction::east());
     EXPECT_EQ(start_position + Direction::east().vector(), p.getPosition());
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::north(), p.getPressureDirection());
     EXPECT_GT(p.getPressure().dot(FloatVector(0.0f, 1.0f)), 0.0f);
@@ -171,20 +181,20 @@ TEST_F(ParticleTest,
        continuesMovingWithoutTargetWithRemainingPressureUntilItRunsOut) {
     Particle p(start_position);
     p.setTarget(start_position + IntVector(1, 0), 2.0f);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::east(), p.getPressureDirection());
     callParticleMove(p, Direction::east());
     EXPECT_EQ(start_position + Direction::east().vector(), p.getPosition());
     p.setTarget(start_position, 0.0f);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_TRUE(p.canMove());
     EXPECT_EQ(Direction::east(), p.getPressureDirection());
     EXPECT_GT(p.getPressure().dot(FloatVector(1.0f, 0.0f)), 0.0f);
     callParticleMove(p, Direction::east());
     EXPECT_EQ(start_position + (Direction::east().vector() * 2),
               p.getPosition());
-    p.advance(one_second);
+    callAdvance(p, one_second);
     EXPECT_FALSE(p.canMove());
     EXPECT_EQ(FloatVector(0.0f, 0.0f), p.getPressure());
 }
@@ -193,11 +203,11 @@ TEST_F(ParticleTest, passesOnPartOfPressureOnCollision) {
     Particle p(start_position);
     Particle neighbor(start_position + IntVector(1, 0));
     p.setTarget(start_position + IntVector(5, 0), 1.0f);
-    p.advance(one_second);
-    neighbor.advance(one_second);
+    callAdvance(p, one_second);
+    callAdvance(neighbor, one_second);
     FloatVector p_pressure_before = p.getPressure();
     FloatVector neighbor_pressure_before = neighbor.getPressure();
-    p.collideWith(neighbor, Direction::east());
+    callCollideWith(p, neighbor, Direction::east());
     EXPECT_FALSE(p.canMove());
     EXPECT_EQ(p_pressure_before * (1.0f - Config::collision_pass_on),
               p.getPressure());
@@ -213,9 +223,9 @@ TEST_F(ParticleTest, killsPressure) {
     for (Direction direction: Direction::all()) {
         Particle p(start_position);
         p.setTarget(p.getPosition() + direction.vector(), 1.0f);
-        p.advance(one_second);
+        callAdvance(p, one_second);
         EXPECT_NE(FloatVector(0.0f, 0.0f), p.getPressure());
-        p.killPressureInDirection(direction);
+        callKillPressure(p, direction);
         EXPECT_EQ(FloatVector(0.0f, 0.0f), p.getPressure());
     }
 }
@@ -225,14 +235,14 @@ TEST_F(ParticleTest, killsPressureOnlyInDirectionThatWasAsked) {
     Particle p2(start_position + IntVector(1, 0));
     p1.setTarget(p1.getPosition() + Direction::north().vector(), 1.0f);
     p2.setTarget(p2.getPosition() + IntVector(4, 7), 1.0f);
-    p1.advance(one_second);
-    p2.advance(one_second);
+    callAdvance(p1, one_second);
+    callAdvance(p2, one_second);
     FloatVector p1_pressure_before = p1.getPressure();
     FloatVector p2_pressure_before = p2.getPressure();
     EXPECT_NE(FloatVector(0.0f, 0.0f), p1_pressure_before);
     EXPECT_NE(FloatVector(0.0f, 0.0f), p2_pressure_before);
-    p1.killPressureInDirection(Direction::west());
-    p2.killPressureInDirection(Direction::east());
+    callKillPressure(p1, Direction::west());
+    callKillPressure(p2, Direction::east());
     EXPECT_EQ(p1_pressure_before, p1.getPressure());
     FloatVector expected_p2(0.0f, p2_pressure_before.getY());
     EXPECT_EQ(expected_p2, p2.getPressure());
@@ -244,7 +254,7 @@ TEST_F(ParticleTest, addsFollowersWhenAskedAndBoostsThem) {
     Particle f2(td.inSouthWestCorner);
     p.setTarget(td.inside + Direction::north().vector() * 5,
                 5.0f * Config::min_directed_movement_pressure);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     FloatVector before_pressure = p.getPressure();
     callAddFollowers(p, { &f1, &f2 });
     float follower_magnitude = before_pressure.norm() * Config::boost_fraction;
@@ -272,7 +282,7 @@ TEST_F(ParticleTest, sharesPressureWithFollowersOnAdvance) {
     callAddFollowers(p, { &f1, &f2 });
     p.setTarget(td.inside + Direction::north().vector() * 5,
                 5.0f * Config::min_directed_movement_pressure);
-    p.advance(one_second);
+    callAdvance(p, one_second);
     float p_magnitude = p.getPressure().norm();
     float f1_magnitude = f1.getPressure().norm();
     float f2_magnitude = f2.getPressure().norm();
@@ -299,8 +309,8 @@ TEST_F(ParticleTest, passesOnLeadersOnCollision) {
     callAddFollowers(p1, { &f });
     p1.setTarget(td.inside + Direction::north().vector() * 5,
                  5.0f * Config::min_directed_movement_pressure);
-    f.collideWith(p2, Direction::north());
-    p1.advance(one_second);
+    callCollideWith(f, p2, Direction::north());
+    callAdvance(p1, one_second);
     float p1_magnitude = p1.getPressure().norm();
     float p2_magnitude = p2.getPressure().norm();
     float p1_multiplier = (1.0f + Config::target_pressure_share) / 2.0f;
@@ -314,8 +324,8 @@ TEST_F(ParticleTest, dropsFollowershipOnCollisionWithLeader) {
     callAddFollowers(p, { &f });
     p.setTarget(td.inside + Direction::north().vector() * 5,
                 5.0f * Config::min_directed_movement_pressure);
-    f.collideWith(p, Direction::north());
-    p.advance(one_second);
+    callCollideWith(f, p, Direction::north());
+    callAdvance(p, one_second);
     EXPECT_EQ(FloatVector(0.0f, 0.0f), f.getPressure());
 }
 
@@ -327,8 +337,8 @@ TEST_F(ParticleTest, dropsFollowershipOnOpposingPressureDirections) {
     IntVector f_pressure_direction(-4, 0);
     p.setTarget(p.getPosition() + p_pressure_direction, pressure);
     f.setTarget(f.getPosition() + f_pressure_direction, pressure);
-    p.advance(one_second);
-    f.advance(one_second);
+    callAdvance(p, one_second);
+    callAdvance(f, one_second);
     float boost_magnitude = p.getPressure().norm() * Config::boost_fraction;
     FloatVector f_to_p
         = static_cast<FloatVector>(p.getPosition() - f.getPosition());
@@ -339,8 +349,8 @@ TEST_F(ParticleTest, dropsFollowershipOnOpposingPressureDirections) {
     // If we called p first, it would give some of its pressure to f. This isn't
     // exactly ideal, but the important thing is that followership is dropped
     // after a finite amount of time of going if opposing directions.
-    f.advance(one_second);
-    p.advance(one_second);
+    callAdvance(f, one_second);
+    callAdvance(p, one_second);
     FloatVector p_pressure
         = static_cast<FloatVector>(p_pressure_direction)
               * pressure / p_pressure_direction.norm();
@@ -362,8 +372,8 @@ TEST_F(ParticleTest, dropsFollowershipWhenNextToLeader) {
     p.setTarget(td.inside + Direction::north().vector() * 5,
                 5.0f * Config::min_directed_movement_pressure);
     f.setTarget(f.getPosition(), 0.0f);
-    f.advance(one_second);
-    p.advance(one_second);
+    callAdvance(f, one_second);
+    callAdvance(p, one_second);
     EXPECT_EQ(FloatVector(0.0f, 0.0f), f.getPressure());
 }
 
@@ -374,12 +384,12 @@ TEST_F(ParticleTest, switchesFollowershipIfFollowerAheadOfLeader) {
     p1.setTarget(p1.getPosition() + Direction::north().vector(), pressure);
     p2.setTarget(p2.getPosition() + Direction::north().vector(), pressure);
     callAddFollowers(p2, { &p1 });
-    p1.advance(one_second);
-    p2.advance(one_second);
+    callAdvance(p1, one_second);
+    callAdvance(p2, one_second);
     // p1 should have realized that it's ahead of its leader p2 and switched the
     // relationship.
-    p1.advance(one_second);
-    p2.advance(one_second);
+    callAdvance(p1, one_second);
+    callAdvance(p2, one_second);
     FloatVector pressure_vector
         = static_cast<FloatVector>(Direction::north().vector()) * pressure;
     // Each of them should have one advance for themselves, and one where p1
