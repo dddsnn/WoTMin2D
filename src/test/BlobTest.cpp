@@ -53,7 +53,7 @@ class BlobTest : public ::testing::Test {
 
 TEST_F(BlobTest, normalConstructorDoesntAddParticles) {
     EXPECT_CALL(*state, addParticle(_)).Times(0);
-    Blob<P, B> blob(0, td.width, td.height, state);
+    Blob<P, B> blob(0, state);
 }
 
 TEST_F(BlobTest, circleConstructorAddsParticles) {
@@ -130,204 +130,45 @@ TEST_F(BlobTest, circleConstructorDoesntAddParticlesIfCenterIsOutOfBounds) {
     IntVector center(td.width + 4, td.height + 4);
     float radius = 3.0f;
     EXPECT_CALL(*state, addParticle(_)).Times(0);
-    Blob<P, B> blob(0, center, radius, td.width, td.height,
-                                 state);
+    Blob<P, B> blob(0, center, radius, td.width, td.height, state);
 }
 
 TEST_F(BlobTest, advancesParticles) {
-    td.makeParticles({ td.lineA, td.lineB, td.block, td.loop },
-                     { td.inSouthWestCorner, td.onSouthBorder, td.inside});
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(td.particles.front()));
     EXPECT_CALL(*state, advanceParticles(time_delta)).Times(1);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
-}
-
-TEST_F(BlobTest, advancesParticlesBeforeMoving) {
-    td.makeParticles({ td.lineA }, {});
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(td.particles.front()));
-    P* firstParticle = td.particle_map[IntVector(3, 10)];
-    ON_CALL(*firstParticle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*firstParticle, getPressure())
-        .Times(AnyNumber())
-        .WillOnce(ReturnRefOfCopy(
-            static_cast<FloatVector>(Direction::north().vector())))
-        .WillRepeatedly(DoDefault());
-    {
-        InSequence dummy;
-        EXPECT_CALL(*state, advanceParticles(time_delta)).Times(1);
-        EXPECT_CALL(*state, moveParticle(_, _)).Times(AnyNumber());
-    }
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.advanceParticles(time_delta);
 }
 
 TEST_F(BlobTest, onlyCollidesParticlesThatAreBlocked) {
     td.makeParticles({ td.lineA }, {});
     P* blockedParticle = td.particle_map[IntVector(3, 9)];
     P* blockingParticle = td.particle_map[IntVector(3, 10)];
-    EXPECT_CALL(*state, getHighestMobilityParticle())
-        .Times(AnyNumber())
-        .WillOnce(Return(blockedParticle))
-        .WillOnce(Return(blockingParticle))
-        .WillRepeatedly(Return(td.particles.front()));
-    ON_CALL(*blockedParticle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    ON_CALL(*blockedParticle, canMove())
-        .WillByDefault(Return(true));
     EXPECT_CALL(*state, collideParticles(Ref(*blockedParticle),
                                          Ref(*blockingParticle),
                                          Direction::north())).Times(1);
     for (const P* p: td.particles) {
         EXPECT_CALL(*state, moveParticle(Ref(*p), _)).Times(0);
     }
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.handleParticle(*blockedParticle, Direction::north());
 }
 
-TEST_F(BlobTest, quitsWhenHighestMobilityParticleCantMove) {
-    td.makeParticles({ td.lineA }, {});
-    for (P* particle: td.particles) {
-        EXPECT_CALL(*state, getHighestMobilityParticle())
-            .Times(AtMost(1))
-            .WillOnce(Return(particle));
-    }
+TEST_F(BlobTest, movesParticles) {
+    td.makeParticles({}, { td.inside });
+    P* particle = td.particle_map[td.inside];
+    EXPECT_CALL(*state, moveParticle(Ref(*particle), Direction::north()))
+        .Times(1);
     EXPECT_CALL(*state, collideParticles(_, _, _)).Times(0);
-    EXPECT_CALL(*state, moveParticle(_, _)).Times(0);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
-}
-
-TEST_F(BlobTest, movesSingleParticles) {
-    td.makeParticles({}, { td.inside });
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(td.particles.front()));
-    P* particle = td.particle_map[td.inside];
-    ON_CALL(*particle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*particle, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*state, moveParticle(Ref(*particle), Direction::north()))
-        .Times(1);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
-}
-
-TEST_F(BlobTest, movesSingleParticlesMultipleTimes) {
-    td.makeParticles({}, { td.inside });
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(td.particles.front()));
-    P* particle = td.particle_map[td.inside];
-    ON_CALL(*particle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*particle, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*state, moveParticle(Ref(*particle), Direction::north()))
-        .Times(3);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
-}
-
-TEST_F(BlobTest, movesParticlesIndependently) {
-    td.makeParticles({}, { td.inSouthWestCorner, td.onSouthBorder, td.inside });
-    P* swc = td.particle_map[td.inSouthWestCorner];
-    P* sb = td.particle_map[td.onSouthBorder];
-    P* in = td.particle_map[td.inside];
-    {
-        InSequence dummy;
-        // Return particles starting with the ones with the highest mobility so
-        // the Blob doesn't quit early.
-        for (P* particle: { swc, sb, in }) {
-            EXPECT_CALL(*state, getHighestMobilityParticle())
-                .WillOnce(Return(particle));
-        }
-    }
-    ON_CALL(*swc, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*swc, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    ON_CALL(*sb, getPressureDirection())
-        .WillByDefault(Return(Direction::east()));
-    EXPECT_CALL(*sb, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    ON_CALL(*in, canMove()).WillByDefault(Return(false));
-    EXPECT_CALL(*state, moveParticle(Ref(*swc), Direction::north()))
-        .Times(1);
-    EXPECT_CALL(*state, moveParticle(Ref(*sb), Direction::east()))
-        .Times(1);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
-}
-
-TEST_F(BlobTest, doesntMoveParticlesBeyondBounds) {
-    td.makeParticles({}, { td.inSouthWestCorner, td.inNorthEastCorner });
-    P* swc = td.particle_map[td.inSouthWestCorner];
-    P* nec = td.particle_map[td.inNorthEastCorner];
-    EXPECT_CALL(*state, getHighestMobilityParticle())
-        .Times(AnyNumber())
-        .WillOnce(Return(swc))
-        .WillOnce(Return(swc))
-        .WillOnce(Return(nec))
-        .WillOnce(Return(nec))
-        .WillRepeatedly(Return(td.particles.front()));
-    EXPECT_CALL(*swc, getPressureDirection())
-        .Times(AnyNumber())
-        .WillOnce(Return(Direction::west()))
-        .WillRepeatedly(Return(Direction::south()));
-    EXPECT_CALL(*nec, getPressureDirection())
-        .Times(AnyNumber())
-        .WillOnce(Return(Direction::east()))
-        .WillRepeatedly(Return(Direction::north()));
-    EXPECT_CALL(*swc, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*nec, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*state, collideParticleWithWall(Ref(*swc), Direction::west()))
-        .Times(1);
-    EXPECT_CALL(*state, collideParticleWithWall(Ref(*swc), Direction::south()))
-        .Times(1);
-    EXPECT_CALL(*state, collideParticleWithWall(Ref(*nec), Direction::east()))
-        .Times(1);
-    EXPECT_CALL(*state, collideParticleWithWall(Ref(*nec), Direction::north()))
-        .Times(1);
-    EXPECT_CALL(*state, moveParticle(_, _)).Times(0);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.handleParticle(*particle, Direction::north());
 }
 
 TEST_F(BlobTest, addsSingleNeighborAsFollowerIfParticleGetsDisconnected) {
     td.makeParticles({ td.lineA }, {});
     P* firstParticle = td.particle_map[IntVector(3, 10)];
     P* secondParticle = td.particle_map[IntVector(3, 9)];
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(firstParticle));
-    ON_CALL(*firstParticle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
     ON_CALL(*firstParticle, hasNeighbor())
         .WillByDefault(Return(false));
-    EXPECT_CALL(*firstParticle, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
     for (int i = 4; i <= 9; i++) {
         P* particle = td.particle_map[IntVector(3, i)];
         EXPECT_CALL(*state, moveParticle(Ref(*particle), _)).Times(0);
@@ -337,8 +178,8 @@ TEST_F(BlobTest, addsSingleNeighborAsFollowerIfParticleGetsDisconnected) {
     EXPECT_CALL(*state, addParticleFollowers(Ref(*firstParticle),
                                              ElementsAre(secondParticle)))
         .Times(1);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.handleParticle(*firstParticle, Direction::north());
 }
 
 TEST_F(BlobTest, addsThreeNeighborsAsFollowersIfParticleGetsDisconnected) {
@@ -347,16 +188,8 @@ TEST_F(BlobTest, addsThreeNeighborsAsFollowersIfParticleGetsDisconnected) {
     auto neighbors = { td.particle_map[IntVector(4, 4)],
                        td.particle_map[IntVector(5, 3)],
                        td.particle_map[IntVector(6, 4)] };
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(firstParticle));
-    ON_CALL(*firstParticle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
     ON_CALL(*firstParticle, hasNeighbor())
         .WillByDefault(Return(false));
-    EXPECT_CALL(*firstParticle, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
     for (P* particle: td.particles) {
         if (particle != firstParticle) {
             EXPECT_CALL(*state, moveParticle(Ref(*particle), _)).Times(0);
@@ -368,21 +201,13 @@ TEST_F(BlobTest, addsThreeNeighborsAsFollowersIfParticleGetsDisconnected) {
                 addParticleFollowers(Ref(*firstParticle),
                                      UnorderedElementsAreArray(neighbors)))
         .Times(1);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.handleParticle(*firstParticle, Direction::north());
 }
 
 TEST_F(BlobTest, doesnAddFollowersIfParticleDoesntGetDisconnected) {
     td.makeParticles({ td.loop }, {});
     P* firstParticle = td.particle_map[IntVector(11, 11)];
-    ON_CALL(*state, getHighestMobilityParticle())
-        .WillByDefault(Return(firstParticle));
-    ON_CALL(*firstParticle, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*firstParticle, canMove())
-        .Times(AnyNumber())
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
     for (P* particle: td.particles) {
         if (particle != firstParticle) {
             EXPECT_CALL(*state, moveParticle(Ref(*particle), _)).Times(0);
@@ -391,8 +216,8 @@ TEST_F(BlobTest, doesnAddFollowersIfParticleDoesntGetDisconnected) {
     EXPECT_CALL(*state, moveParticle(Ref(*firstParticle), Direction::north()))
         .Times(1);
     EXPECT_CALL(*state, addParticleFollowers(_, _)).Times(0);
-    Blob<P, B> blob(0, td.width, td.height, state);
-    blob.advance(time_delta);
+    Blob<P, B> blob(0, state);
+    blob.handleParticle(*firstParticle, Direction::north());
 }
 
 }

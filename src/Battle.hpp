@@ -26,7 +26,7 @@ class Battle {
     void selectParticles(const IntVector& coordinate);
     void setTarget(const IntVector& coordinate);
     Screen screen;
-    State state;
+    State<> state;
     InputParser input_parser;
     bool running;
 };

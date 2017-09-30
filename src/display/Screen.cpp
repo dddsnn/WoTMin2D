@@ -67,7 +67,7 @@ void swap(Screen& first, Screen& second) noexcept {
     swap(first.texture, second.texture);
 }
 
-void Screen::draw(const State& state) {
+void Screen::draw(const State<>& state) {
     updateTexture(state);
     presentTexture();
 }
@@ -113,7 +113,7 @@ IntVector Screen::sdlToArenaCoordinates(const IntVector& coordinate) const {
     return IntVector(arena_coordinate.getX(), y_inv);
 }
 
-void Screen::updateTexture(const State& state) {
+void Screen::updateTexture(const State<>& state) {
     assert(!texture->isLocked() && "Attempt to update a texture that was "
            "already locked for writing.");
     texture->lockForWriting();
@@ -127,7 +127,7 @@ void Screen::updateTexture(const State& state) {
     texture->unlock();
 }
 
-void Screen::putBlobs(const State& state) {
+void Screen::putBlobs(const State<>& state) {
     assert(texture->isLocked() && "Attempt to set pixels on a texture that "
            "isn't locked for writing.");
     for (const Blob<>& blob: state.getBlobs()) {
@@ -150,7 +150,7 @@ void Screen::putBlobs(const State& state) {
     }
 }
 
-void Screen::putSelectionCircleAndAimPoint(const State& state) {
+void Screen::putSelectionCircleAndAimPoint(const State<>& state) {
     assert(texture->isLocked() && "Attempt to set pixels on a texture that "
            "isn't locked for writing.");
     // TODO A bit ugly that I'm getting the mouse state here.

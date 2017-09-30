@@ -21,13 +21,12 @@ namespace mi = boost::multi_index;
 
 template<class P = Particle>
 class BlobState {
-    private:
+    public:
     class ParticleMobilityGreater {
         public:
         bool operator()(const P* first, const P* second) const;
     };
     using ParticleMap = std::unordered_map<IntVector, P*, IntVector::Hash>;
-    public:
     using ParticleSet = mi::multi_index_container<
         P*,
         mi::indexed_by<

@@ -1,12 +1,9 @@
 namespace wotmin2d {
 
 template<class P, class B>
-Blob<P, B>::Blob(PlayerId player_id, unsigned int arena_width,
-                 unsigned int arena_height, std::shared_ptr<B> state) :
+Blob<P, B>::Blob(PlayerId player_id, std::shared_ptr<B> state) :
     player_id(player_id),
-    state(state),
-    arena_width(arena_width),
-    arena_height(arena_height)
+    state(state)
 {
     assert(player_id < Config::num_players);
 }
@@ -16,9 +13,7 @@ Blob<P, B>::Blob(PlayerId player_id, const IntVector& center, float radius,
                  unsigned int arena_width, unsigned int arena_height,
                  std::shared_ptr<B> state) :
     player_id(player_id),
-    state(state),
-    arena_width(arena_width),
-    arena_height(arena_height)
+    state(state)
 {
     assert(player_id < Config::num_players);
     if (radius <= 0.0) {
@@ -52,21 +47,18 @@ const typename BlobState<P>::ParticleSet& Blob<P, B>::getParticles() const {
 }
 
 template<class P, class B>
-void Blob<P, B>::advance(std::chrono::milliseconds time_delta) {
+typename Blob<P, B>::PlayerId Blob<P, B>::getPlayerId() const {
+    return player_id;
+}
+
+template<class P, class B>
+void Blob<P, B>::advanceParticles(std::chrono::milliseconds time_delta) {
     state->advanceParticles(time_delta);
-    while (true) {
-        // TODO There's optimization potential if we know that the highest
-        // pressure particle will remain the highest pressure one even after
-        // moving n times.
-        P* particle = state->getHighestMobilityParticle();
-        assert(particle != nullptr && "Highest pressure particle in blob was "
-               "null.");
-        if (!particle->canMove()) {
-            // Highest mobility particle can't move, nothing left to do.
-            break;
-        }
-        handleParticle(*particle);
-    }
+}
+
+template<class P, class B>
+P* Blob<P, B>::getHighestMobilityParticle() const {
+    return state->getHighestMobilityParticle();
 }
 
 template<class P, class B>
@@ -79,12 +71,13 @@ void Blob<P, B>::setTarget(const IntVector& target, float pressure_per_second,
 }
 
 template<class P, class B>
-void Blob<P, B>::handleParticle(P& particle) {
-    Direction movement_direction = particle.getPressureDirection();
-    if (isMovementOutOfBounds(particle.getPosition(), movement_direction)) {
-        state->collideParticleWithWall(particle, movement_direction);
-        return;
-    }
+void Blob<P, B>::collideParticleWithWall(P& particle,
+                                         Direction collision_direction) {
+    state->collideParticleWithWall(particle, collision_direction);
+}
+
+template<class P, class B>
+void Blob<P, B>::handleParticle(P& particle, Direction movement_direction) {
     P* forward_neighbor = particle.getNeighbor(movement_direction);
     if (forward_neighbor != nullptr) {
         // Movement is obstructed. Only collide.
@@ -108,18 +101,6 @@ void Blob<P, B>::handleParticle(P& particle) {
         // neighbors follow it to catch up.
         state->addParticleFollowers(particle, neighbors);
     }
-}
-
-template<class P, class B>
-bool Blob<P, B>::isMovementOutOfBounds(const IntVector& position,
-                                       Direction movement_direction) const {
-    IntVector new_position = position + movement_direction.vector();
-    int x = new_position.getX();
-    int y = new_position.getY();
-    bool x_out_of_bounds = x < 0 || static_cast<unsigned int>(x) >= arena_width;
-    bool y_out_of_bounds = y < 0
-         || static_cast<unsigned int>(y) >= arena_height;
-    return x_out_of_bounds || y_out_of_bounds;
 }
 
 }

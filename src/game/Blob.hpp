@@ -23,25 +23,22 @@ template<class P = Particle, class B = BlobState<P>>
 class Blob {
     public:
     using PlayerId = std::uint_fast8_t;
-    Blob(PlayerId player_id, unsigned int arena_width,
-         unsigned int arena_height,
-         std::shared_ptr<B> state = std::make_shared<B>());
+    Blob(PlayerId player_id, std::shared_ptr<B> state = std::make_shared<B>());
     Blob(PlayerId player_id, const IntVector& center, float radius,
          unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<B> state = std::make_shared<B>());
     const typename BlobState<P>::ParticleSet& getParticles() const;
-    void advance(std::chrono::milliseconds time_delta);
+    PlayerId getPlayerId() const;
+    void advanceParticles(std::chrono::milliseconds time_delta);
+    P* getHighestMobilityParticle() const;
     void setTarget(const IntVector& target, float pressure_per_second,
                    const IntVector& center, float radius);
+    void collideParticleWithWall(P& particle, Direction collision_direction);
+    void handleParticle(P& particle, Direction movement_direction);
     private:
-    bool isMovementOutOfBounds(const IntVector& position,
-                               Direction movement_direction) const;
     const PlayerId player_id;
     // TODO Store by value and make the tests a friend so they can replace it.
     std::shared_ptr<B> state;
-    unsigned int arena_width;
-    unsigned int arena_height;
-    void handleParticle(P& particle);
 };
 
 }
