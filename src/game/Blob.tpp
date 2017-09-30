@@ -1,21 +1,14 @@
 namespace wotmin2d {
 
 template<class P, class B>
-Blob<P, B>::Blob(PlayerId player_id, std::shared_ptr<B> state) :
-    player_id(player_id),
-    state(state)
-{
-    assert(player_id < Config::num_players);
-}
+Blob<P, B>::Blob(std::shared_ptr<B> state) : state(state) {}
 
 template<class P, class B>
-Blob<P, B>::Blob(PlayerId player_id, const IntVector& center, float radius,
+Blob<P, B>::Blob(const IntVector& center, float radius,
                  unsigned int arena_width, unsigned int arena_height,
                  std::shared_ptr<B> state) :
-    player_id(player_id),
     state(state)
 {
-    assert(player_id < Config::num_players);
     if (radius <= 0.0) {
         return;
     }
@@ -44,11 +37,6 @@ Blob<P, B>::Blob(PlayerId player_id, const IntVector& center, float radius,
 template<class P, class B>
 const typename BlobState<P>::ParticleSet& Blob<P, B>::getParticles() const {
     return state->getParticles();
-}
-
-template<class P, class B>
-typename Blob<P, B>::PlayerId Blob<P, B>::getPlayerId() const {
-    return player_id;
 }
 
 template<class P, class B>

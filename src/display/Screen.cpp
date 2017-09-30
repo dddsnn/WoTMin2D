@@ -130,7 +130,8 @@ void Screen::updateTexture(const State<>& state) {
 void Screen::putBlobs(const State<>& state) {
     assert(texture->isLocked() && "Attempt to set pixels on a texture that "
            "isn't locked for writing.");
-    for (const Blob<>& blob: state.getBlobs()) {
+    for (const auto& id_blob: state.getBlobs()) {
+        const Blob<>& blob = id_blob.second;
         for (const Particle* particle: blob.getParticles()) {
             int x_signed = particle->getPosition().getX();
             int y_signed = particle->getPosition().getY();

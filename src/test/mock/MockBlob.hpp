@@ -16,12 +16,10 @@ class MockBlob {
     private:
     using P = NiceMockParticle;
     public:
-    using PlayerId = Blob<P>::PlayerId;
     MockBlob() {}
-    MockBlob(PlayerId, const IntVector&, float, unsigned int, unsigned int) {}
+    MockBlob(const IntVector&, float, unsigned int, unsigned int) {}
     MOCK_CONST_METHOD0(getParticles,
                        const typename BlobState<P>::ParticleSet&());
-    MOCK_CONST_METHOD0(getPlayerId, PlayerId());
     MOCK_METHOD1(advanceParticles, void(std::chrono::milliseconds time_delta));
     MOCK_CONST_METHOD0(getHighestMobilityParticle, P*());
     MOCK_METHOD4(setTarget, void(const IntVector& target,
@@ -38,11 +36,9 @@ class MockBlob {
 class NiceMockBlob : public ::testing::NiceMock<MockBlob> {
     public:
     NiceMockBlob(const NiceMockBlob&) : NiceMock<MockBlob>() {}
-    NiceMockBlob(PlayerId player_id, const IntVector& center,
-                         float radius, unsigned int arena_width,
-                         unsigned int arena_height) :
-        NiceMock<MockBlob>(player_id, center, radius, arena_width,
-                           arena_height) {}
+    NiceMockBlob(const IntVector& center, float radius,
+                 unsigned int arena_width, unsigned int arena_height) :
+        NiceMock<MockBlob>(center, radius, arena_width, arena_height) {}
 };
 
 }

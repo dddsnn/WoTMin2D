@@ -12,6 +12,7 @@ Battle::Battle(unsigned int arena_width, unsigned int arena_height,
     input_parser(),
     running(true) {
     state.emplaceBlob(0, IntVector(20, 20), 10.0f);
+    state.emplaceBlob(1, IntVector(80, 80), 10.0f);
 }
 
 void Battle::start() {

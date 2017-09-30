@@ -44,8 +44,8 @@ TEST_F(StateTest, advancesParticles) {
                      { td.inSouthWestCorner, td.onSouthBorder, td.inside });
     state.emplaceBlob(0, IntVector(0, 0), 2);
     state.emplaceBlob(7, IntVector(5, 8), 4);
-    B& blob1 = const_cast<B&>(state.getBlobs()[0]);
-    B& blob2 = const_cast<B&>(state.getBlobs()[1]);
+    B& blob1 = const_cast<B&>(state.getBlobs().at(0));
+    B& blob2 = const_cast<B&>(state.getBlobs().at(7));
     ON_CALL(blob1, getHighestMobilityParticle())
         .WillByDefault(Return(td.particles[0]));
     ON_CALL(blob2, getHighestMobilityParticle())
@@ -58,7 +58,7 @@ TEST_F(StateTest, advancesParticles) {
 TEST_F(StateTest, advancesParticlesBeforeMoving) {
     td.makeParticles({ td.lineA }, {});
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     ON_CALL(blob, getHighestMobilityParticle())
         .WillByDefault(Return(td.particles[0]));
     {
@@ -73,7 +73,7 @@ TEST_F(StateTest, advancesParticlesBeforeMoving) {
 TEST_F(StateTest, letsBlobMoveSingleParticles) {
     td.makeParticles({}, { td.inSouthWestCorner });
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     P* particle = td.particles[0];
     ON_CALL(blob, getHighestMobilityParticle())
         .WillByDefault(Return(particle));
@@ -92,7 +92,7 @@ TEST_F(StateTest, letsBlobMoveSingleParticles) {
 TEST_F(StateTest, letsBlobMoveSingleParticlesMultipleTimes) {
     td.makeParticles({}, { td.inSouthWestCorner });
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     P* particle = td.particles[0];
     ON_CALL(blob, getHighestMobilityParticle())
         .WillByDefault(Return(particle));
@@ -122,7 +122,7 @@ TEST_F(StateTest, letsBlobMoveSingleParticlesMultipleTimes) {
 TEST_F(StateTest, letsBlobMoveParticlesIndependently) {
     td.makeParticles({}, { td.inSouthWestCorner, td.onSouthBorder });
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     P* swc = td.particle_map[td.inSouthWestCorner];
     P* osb = td.particle_map[td.onSouthBorder];
     EXPECT_CALL(blob, getHighestMobilityParticle())
@@ -162,7 +162,7 @@ TEST_F(StateTest, letsBlobMoveParticlesIndependently) {
 TEST_F(StateTest, quitsWhenHighestMobilityParticleCantMove) {
     td.makeParticles({ td.lineA }, {});
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     ON_CALL(blob, getHighestMobilityParticle())
         .WillByDefault(Return(td.particles[0]));
     for (P* particle: td.particles) {
@@ -178,7 +178,7 @@ TEST_F(StateTest, quitsWhenHighestMobilityParticleCantMove) {
 TEST_F(StateTest, doesntMoveParticlesBeyondBounds) {
     td.makeParticles({}, { td.inSouthWestCorner, td.inNorthEastCorner });
     state.emplaceBlob(0, IntVector(0, 0), 2);
-    B& blob = const_cast<B&>(state.getBlobs()[0]);
+    B& blob = const_cast<B&>(state.getBlobs().at(0));
     P* swc = td.particle_map[td.inSouthWestCorner];
     P* nec = td.particle_map[td.inNorthEastCorner];
     EXPECT_CALL(blob, getHighestMobilityParticle())
@@ -222,8 +222,8 @@ TEST_F(StateTest, usesHighestMobilityBlobFirst) {
     td.makeParticles({}, { td.inSouthWestCorner, td.onSouthBorder });
     state.emplaceBlob(0, IntVector(0, 0), 2);
     state.emplaceBlob(7, IntVector(5, 8), 4);
-    B& blob1 = const_cast<B&>(state.getBlobs()[0]);
-    B& blob2 = const_cast<B&>(state.getBlobs()[1]);
+    B& blob1 = const_cast<B&>(state.getBlobs().at(0));
+    B& blob2 = const_cast<B&>(state.getBlobs().at(7));
     P* p1 = td.particle_map[td.inSouthWestCorner];
     P* p2 = td.particle_map[td.onSouthBorder];
     ON_CALL(blob1, getHighestMobilityParticle())
