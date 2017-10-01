@@ -46,11 +46,15 @@ class MockParticle {
         ON_CALL(*this, getPressure())
             .WillByDefault(Invoke(&real_particle, &Particle::getPressure));
         ON_CALL(*this, getPressureDirection())
-            .WillByDefault(Return(Direction::north()));
+            .WillByDefault(Invoke(&real_particle,
+                                  &Particle::getPressureDirection));
         ON_CALL(*this, advance(_, _))
             .WillByDefault(Invoke(this, &MockParticle::callAdvance));
         ON_CALL(*this, setTarget(_, _))
             .WillByDefault(Invoke(&real_particle, &Particle::setTarget));
+        ON_CALL(*this, killPressureInDirection(_, _))
+            .WillByDefault(Invoke(this,
+                                  &MockParticle::callKillPressureInDirection));
         ON_CALL(*this, canMove())
             .WillByDefault(Invoke(&real_particle, &Particle::canMove));
     }
@@ -101,6 +105,9 @@ class MockParticle {
     }
     void callAdvance(BlobStateKey, std::chrono::milliseconds time_delta) {
         real_particle.advance({}, time_delta);
+    }
+    void callKillPressureInDirection(BlobStateKey, Direction direction) {
+        real_particle.killPressureInDirection({}, direction);
     }
 };
 

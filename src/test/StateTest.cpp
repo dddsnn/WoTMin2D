@@ -20,9 +20,14 @@ using ::testing::Ref;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
 using ::testing::InSequence;
+using ::testing::WithArg;
 
 using P = NiceMockParticle;
 using B = NiceMockBlob;
+
+ACTION_P2(KillPressureInDirection, particle, direction) {
+    particle->killPressureInDirection({}, direction);
+}
 
 class StateTest : public ::testing::Test {
     protected:
@@ -231,12 +236,10 @@ TEST_F(StateTest, usesHighestMobilityBlobFirst) {
     ON_CALL(blob2, getHighestMobilityParticle())
         .WillByDefault(Return(p2));
     EXPECT_CALL(*p1, canMove())
-        .Times(AnyNumber())
         .WillOnce(Return(true))
         .WillOnce(Return(true))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*p2, canMove())
-        .Times(AnyNumber())
         .WillOnce(Return(true))
         .WillOnce(Return(true))
         .WillOnce(Return(true))
@@ -251,7 +254,6 @@ TEST_F(StateTest, usesHighestMobilityBlobFirst) {
     ON_CALL(*p2, getPressureDirection())
         .WillByDefault(Return(Direction::north()));
     EXPECT_CALL(*p2, getPressure())
-        .Times(AnyNumber())
         .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 10.0f)))
         .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 4.0f)))
         .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 4.0f)))
@@ -265,8 +267,67 @@ TEST_F(StateTest, usesHighestMobilityBlobFirst) {
     state.advance(time_delta);
 }
 
+TEST_F(StateTest, doesntMoveParticleIntoHostileParticle) {
+    td.makeParticles({ td.lineA }, {});
+    state.emplaceBlob(0, IntVector(0, 0), 2);
+    state.emplaceBlob(7, IntVector(5, 8), 4);
+    B& blob_upper = const_cast<B&>(state.getBlobs().at(0));
+    B& blob_lower = const_cast<B&>(state.getBlobs().at(7));
+    P* upper = td.particle_map[IntVector(3, 10)];
+    P* lower = td.particle_map[IntVector(3, 9)];
+    ON_CALL(blob_upper, getHighestMobilityParticle())
+        .WillByDefault(Return(upper));
+    ON_CALL(blob_lower, getHighestMobilityParticle())
+        .WillByDefault(Return(lower));
+    ON_CALL(blob_upper, getParticleAt(IntVector(3, 10)))
+        .WillByDefault(Return(upper));
+    ON_CALL(blob_lower, getParticleAt(IntVector(3, 9)))
+        .WillByDefault(Return(lower));
+    lower->setTarget(IntVector(3, 15), 1.0f);
+    lower->advance({}, std::chrono::milliseconds(1000));
+    EXPECT_CALL(blob_lower, collideParticleWithWall(Ref(*lower),
+                                                    Direction::north()))
+        .Times(1)
+        .WillRepeatedly(KillPressureInDirection(lower, Direction::north()));
+    EXPECT_CALL(blob_lower, handleParticle(_, _)).Times(0);
+    state.advance(time_delta);
+}
+
 TEST_F(StateTest, doesntMoveHostileParticlesIntoEachOther) {
-    // TODO
+    td.makeParticles({ td.lineA }, {});
+    state.emplaceBlob(0, IntVector(0, 0), 2);
+    state.emplaceBlob(7, IntVector(5, 8), 4);
+    B& blob_upper = const_cast<B&>(state.getBlobs().at(0));
+    B& blob_lower = const_cast<B&>(state.getBlobs().at(7));
+    P* upper = td.particle_map[IntVector(3, 10)];
+    P* lower = td.particle_map[IntVector(3, 9)];
+    ON_CALL(blob_upper, getHighestMobilityParticle())
+        .WillByDefault(Return(upper));
+    ON_CALL(blob_lower, getHighestMobilityParticle())
+        .WillByDefault(Return(lower));
+    ON_CALL(blob_upper, getParticleAt(IntVector(3, 10)))
+        .WillByDefault(Return(upper));
+    ON_CALL(blob_lower, getParticleAt(IntVector(3, 9)))
+        .WillByDefault(Return(lower));
+    // canMove() and getPressure() will be called an undetermined amount of
+    // times as the particles are sorted in the priority queue. Instead of
+    // mocking the invokations, set a target and advance in order to use the
+    // real particles in the mock particles.
+    upper->setTarget(IntVector(3, 0), 1.0f);
+    lower->setTarget(IntVector(3, 15), 1.0f);
+    upper->advance({}, std::chrono::milliseconds(1000));
+    lower->advance({}, std::chrono::milliseconds(1000));
+    EXPECT_CALL(blob_upper, collideParticleWithWall(Ref(*upper),
+                                                    Direction::south()))
+        .Times(1)
+        .WillRepeatedly(KillPressureInDirection(upper, Direction::south()));
+    EXPECT_CALL(blob_upper, handleParticle(_, _)).Times(0);
+    EXPECT_CALL(blob_lower, collideParticleWithWall(Ref(*lower),
+                                                    Direction::north()))
+        .Times(1)
+        .WillRepeatedly(KillPressureInDirection(lower, Direction::north()));
+    EXPECT_CALL(blob_lower, handleParticle(_, _)).Times(0);
+    state.advance(time_delta);
 }
 
 }

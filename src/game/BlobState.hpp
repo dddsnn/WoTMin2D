@@ -41,6 +41,7 @@ class BlobState {
     const ParticleSet& getParticles() const;
     const std::vector<P*> getParticles(const IntVector& center,
                                        float radius) const;
+    const P* getParticleAt(const IntVector& position) const;
     void addParticle(const IntVector& position);
     void moveParticle(P& particle, Direction movement_direction);
     void collideParticles(P& first, P& second, Direction collision_direction);

@@ -20,6 +20,7 @@ class MockBlob {
     MockBlob(const IntVector&, float, unsigned int, unsigned int) {}
     MOCK_CONST_METHOD0(getParticles,
                        const typename BlobState<P>::ParticleSet&());
+    MOCK_CONST_METHOD1(getParticleAt, P*(const IntVector& position));
     MOCK_METHOD1(advanceParticles, void(std::chrono::milliseconds time_delta));
     MOCK_CONST_METHOD0(getHighestMobilityParticle, P*());
     MOCK_METHOD4(setTarget, void(const IntVector& target,

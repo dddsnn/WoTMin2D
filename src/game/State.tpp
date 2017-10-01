@@ -143,7 +143,18 @@ template<class P, class B>
 bool State<P, B>::isHostileCollision(const P& particle,
                                      Direction movement_direction,
                                      PlayerId player_id) {
-    // TODO
+    IntVector forward_position(particle.getPosition()
+                               + movement_direction.vector());
+    for (const auto& id_blob: blobs) {
+        if (id_blob.first == player_id) {
+            continue;
+        }
+        const B& blob = id_blob.second;
+        const P* forward_particle = blob.getParticleAt(forward_position);
+        if (forward_particle != nullptr) {
+            return true;
+        }
+    }
     return false;
 }
 

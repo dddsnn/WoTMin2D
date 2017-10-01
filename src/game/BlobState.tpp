@@ -57,6 +57,15 @@ const std::vector<P*> BlobState<P>::getParticles(const IntVector& center,
 }
 
 template<class P>
+const P* BlobState<P>::getParticleAt(const IntVector& position) const {
+    auto iter = particle_map.find(position);
+    if (iter == particle_map.end()) {
+        return nullptr;
+    }
+    return iter->second;
+}
+
+template<class P>
 void BlobState<P>::addParticle(const IntVector& position) {
     #ifndef NDEBUG
         typename ParticleMap::iterator position_iter

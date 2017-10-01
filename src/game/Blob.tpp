@@ -39,6 +39,11 @@ const typename BlobState<P>::ParticleSet& Blob<P, B>::getParticles() const {
     return state->getParticles();
 }
 
+template<class P,class B>
+const P* Blob<P, B>::getParticleAt(const IntVector& position) const {
+    return state->getParticleAt(position);
+}
+
 template<class P, class B>
 void Blob<P, B>::advanceParticles(std::chrono::milliseconds time_delta) {
     state->advanceParticles(time_delta);
