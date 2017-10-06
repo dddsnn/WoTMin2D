@@ -8,6 +8,7 @@
 #include <gmock/gmock.h>
 #include <chrono>
 #include <algorithm>
+#include <unordered_set>
 
 namespace wotmin2d {
 namespace test {
@@ -16,7 +17,10 @@ using ::testing::_;
 using ::testing::Ref;
 using ::testing::ReturnRefOfCopy;
 using ::testing::Return;
+using ::testing::ReturnRef;
 using ::testing::UnorderedElementsAre;
+using ::testing::ElementsAre;
+using ::testing::IsEmpty;
 
 using P = mock::NiceMockParticle;
 
@@ -384,6 +388,119 @@ TEST_F(BlobStateTest, getsParticlesAroundCenter) {
     EXPECT_THAT(state.getParticles(center, 3.0f),
                 UnorderedElementsAre(particle_c, particle_2, particle_1,
                                      particle_3));
+}
+
+TEST_F(BlobStateTest, getsParticlesAtPosition) {
+    IntVector pos1(5, 5);
+    IntVector pos2(3, 4);
+    IntVector pos3(4, 4);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    EXPECT_EQ(state.getParticleAt(pos1), particle1);
+    EXPECT_EQ(state.getParticleAt(pos2), particle2);
+    EXPECT_EQ(state.getParticleAt(pos3), nullptr);
+}
+
+TEST_F(BlobStateTest, removesParticles) {
+    IntVector pos1(5, 5);
+    IntVector pos2(3, 4);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    state.removeParticle(*particle2);
+    EXPECT_THAT(state.getParticles(), ElementsAre(particle1));
+    EXPECT_THAT(state.getParticles(pos2, 5.0f), ElementsAre(particle1));
+    state.removeParticle(*particle1);
+    EXPECT_THAT(state.getParticles(), IsEmpty());
+    EXPECT_THAT(state.getParticles(pos2, 5.0f), IsEmpty());
+}
+
+TEST_F(BlobStateTest, clearsParticleMapOnParticleRemoval) {
+    IntVector pos1(5, 5);
+    IntVector pos2(3, 4);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    state.removeParticle(*particle2);
+    EXPECT_EQ(state.getParticleAt(pos2), nullptr);
+    EXPECT_EQ(state.getParticleAt(pos1), particle1);
+    state.removeParticle(*particle1);
+    EXPECT_EQ(state.getParticleAt(pos1), nullptr);
+}
+
+TEST_F(BlobStateTest, clearsParticleNeighborsOnParticleRemoval) {
+    IntVector pos_center(5, 5);
+    IntVector pos_left(4, 5);
+    IntVector pos_right(6, 5);
+    IntVector pos_up(5, 6);
+    IntVector pos_down(5, 4);
+    state.addParticle(pos_center);
+    state.addParticle(pos_left);
+    state.addParticle(pos_right);
+    state.addParticle(pos_up);
+    state.addParticle(pos_down);
+    P* center = particleAt(pos_center);
+    P* left = particleAt(pos_left);
+    P* right = particleAt(pos_right);
+    P* up = particleAt(pos_up);
+    P* down = particleAt(pos_down);
+    center->setNeighbor({}, Direction::west(), left);
+    left->setNeighbor({}, Direction::east(), center);
+    center->setNeighbor({}, Direction::east(), right);
+    right->setNeighbor({}, Direction::west(), center);
+    center->setNeighbor({}, Direction::north(), up);
+    up->setNeighbor({}, Direction::south(), center);
+    center->setNeighbor({}, Direction::south(), down);
+    down->setNeighbor({}, Direction::north(), center);
+    EXPECT_TRUE(center->hasNeighbor());
+    EXPECT_TRUE(left->hasNeighbor());
+    EXPECT_TRUE(right->hasNeighbor());
+    EXPECT_TRUE(up->hasNeighbor());
+    EXPECT_TRUE(down->hasNeighbor());
+    state.removeParticle(*left);
+    EXPECT_EQ(center->getNeighbor(Direction::west()), nullptr);
+    state.removeParticle(*center);
+    EXPECT_FALSE(right->hasNeighbor());
+    EXPECT_FALSE(up->hasNeighbor());
+    EXPECT_FALSE(down->hasNeighbor());
+}
+
+TEST_F(BlobStateTest, clearsParticleLeadersOnParticleRemoval) {
+    IntVector pos1(5, 5);
+    IntVector pos2(3, 4);
+    IntVector pos3(7, 1);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    state.addParticle(pos3);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    P* particle3 = particleAt(pos3);
+    std::unordered_set<P*> leaders({ particle2, particle3 });
+    ON_CALL(*particle1, getLeaders(_)).WillByDefault(ReturnRef(leaders));
+    EXPECT_CALL(*particle2, removeFollower(_, Ref(*particle1))).Times(1);
+    EXPECT_CALL(*particle3, removeFollower(_, Ref(*particle1))).Times(1);
+    state.removeParticle(*particle1);
+}
+
+TEST_F(BlobStateTest, clearsParticleFollowersOnParticleRemoval) {
+    IntVector pos1(5, 5);
+    IntVector pos2(3, 4);
+    IntVector pos3(7, 1);
+    state.addParticle(pos1);
+    state.addParticle(pos2);
+    state.addParticle(pos3);
+    P* particle1 = particleAt(pos1);
+    P* particle2 = particleAt(pos2);
+    P* particle3 = particleAt(pos3);
+    std::unordered_set<P*> followers({ particle2, particle3 });
+    ON_CALL(*particle1, getFollowers(_)).WillByDefault(ReturnRef(followers));
+    EXPECT_CALL(*particle2, removeLeader(_, Ref(*particle1))).Times(1);
+    EXPECT_CALL(*particle3, removeLeader(_, Ref(*particle1))).Times(1);
+    state.removeParticle(*particle1);
 }
 
 }

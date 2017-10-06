@@ -25,8 +25,9 @@ class Blob {
     Blob(const IntVector& center, float radius,
          unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<B> state = std::make_shared<B>());
+    void removeParticle(P& particle);
     const typename BlobState<P>::ParticleSet& getParticles() const;
-    const P* getParticleAt(const IntVector& position) const;
+    P* getParticleAt(const IntVector& position) const;
     void advanceParticles(std::chrono::milliseconds time_delta);
     P* getHighestMobilityParticle() const;
     void setTarget(const IntVector& target, float pressure_per_second,

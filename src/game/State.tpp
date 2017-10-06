@@ -13,6 +13,15 @@ void State<P, B>::advance(std::chrono::milliseconds time_delta) {
     for (auto& blob: blobs) {
         blob.second.advanceParticles(time_delta);
     }
+    std::vector<CollidingParticle> colliding_particles;
+    doParticleMovement(colliding_particles);
+    resolveCollisions(colliding_particles);
+}
+
+template<class P, class B>
+void State<P, B>::doParticleMovement(
+    std::vector<CollidingParticle>& colliding_particles)
+{
     assert(!blobs.empty());
     using IdBlob = std::pair<PlayerId, B*>;
     std::vector<IdBlob> blob_pointers;
@@ -42,7 +51,8 @@ void State<P, B>::advance(std::chrono::milliseconds time_delta) {
             // Highest mobility particle can't move, nothing left to do.
             break;
         }
-        handleParticle(*particle, *current_blob.second, current_blob.first);
+        handleParticle(*particle, *current_blob.second, current_blob.first,
+                       colliding_particles);
         // TODO There's optimization potential if we know that the highest
         // pressure particle will remain the highest pressure one even after
         // moving n times.
@@ -68,15 +78,76 @@ void State<P, B>::advance(std::chrono::milliseconds time_delta) {
 }
 
 template<class P, class B>
-void State<P, B>::handleParticle(P& particle, B& blob, PlayerId player_id) {
+void State<P, B>::handleParticle(
+    P& particle, B& blob, PlayerId player_id,
+    std::vector<CollidingParticle>& colliding_particles)
+{
     Direction movement_direction = particle.getPressureDirection();
-    if (isMovementOutOfBounds(particle.getPosition(), movement_direction)
-        || isHostileCollision(particle, movement_direction, player_id))
-    {
+    if (isMovementOutOfBounds(particle.getPosition(), movement_direction)) {
+        blob.collideParticleWithWall(particle, movement_direction);
+        return;
+    }
+    if (isHostileCollision(particle, movement_direction, player_id)) {
+        colliding_particles.emplace_back(&particle, player_id,
+                                         movement_direction);
         blob.collideParticleWithWall(particle, movement_direction);
         return;
     }
     blob.handleParticle(particle, movement_direction);
+}
+
+template<class P, class B>
+void State<P, B>::resolveCollisions(
+    std::vector<CollidingParticle>& colliding_particles)
+{
+    std::unordered_set<const P*> handled_particles;
+    for (auto& cp: colliding_particles) {
+        P* particle;
+        PlayerId player_id;
+        Direction movement_direction = Direction::north();
+        std::tie(particle, player_id, movement_direction) = cp;
+        if (handled_particles.count(particle) > 0) {
+            continue;
+        }
+        if (particle->getNeighbor(movement_direction) != nullptr) {
+            // Particle in front is of the same blob, no action necessary.
+            #ifndef NDEBUG
+            IntVector forward_position = particle->getPosition()
+                + movement_direction.vector();
+            for (auto& id_blob: blobs) {
+                assert((id_blob.first == player_id
+                        || id_blob.second.getParticleAt(forward_position)
+                            == nullptr)
+                        && "Particles of different blobs sharing a position.");
+            }
+            #endif
+            continue;
+        }
+        IntVector forward_position = particle->getPosition()
+            + movement_direction.vector();
+        assert(blobs.count(player_id) > 0);
+        // Check if any particle of another blob is in movement direction and
+        // apply damage.
+        // TODO Instead of having to iterate over all blobs, it would be better
+        // to have a map of all particles here. But that would require moving
+        // even more functionality up into State. With a small amount of blobs I
+        // guess it's fine.
+        for (auto& id_blob: blobs) {
+            if (id_blob.first == player_id) {
+                continue;
+            }
+            P* forward_particle
+                = id_blob.second.getParticleAt(forward_position);
+            if (forward_particle == nullptr) {
+                continue;
+            }
+            assert(blobs.count(id_blob.first) > 0);
+            blobs.at(player_id).removeParticle(*particle);
+            blobs.at(id_blob.first).removeParticle(*forward_particle);
+            handled_particles.insert(particle);
+            handled_particles.insert(forward_particle);
+        }
+    }
 }
 
 template<class P, class B>

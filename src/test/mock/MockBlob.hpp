@@ -18,6 +18,7 @@ class MockBlob {
     public:
     MockBlob() {}
     MockBlob(const IntVector&, float, unsigned int, unsigned int) {}
+    MOCK_METHOD1(removeParticle, void(const P& particle));
     MOCK_CONST_METHOD0(getParticles,
                        const typename BlobState<P>::ParticleSet&());
     MOCK_CONST_METHOD1(getParticleAt, P*(const IntVector& position));

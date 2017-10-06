@@ -35,12 +35,17 @@ Blob<P, B>::Blob(const IntVector& center, float radius,
 }
 
 template<class P, class B>
+void Blob<P, B>::removeParticle(P& particle) {
+    state->removeParticle(particle);
+}
+
+template<class P, class B>
 const typename BlobState<P>::ParticleSet& Blob<P, B>::getParticles() const {
     return state->getParticles();
 }
 
 template<class P,class B>
-const P* Blob<P, B>::getParticleAt(const IntVector& position) const {
+P* Blob<P, B>::getParticleAt(const IntVector& position) const {
     return state->getParticleAt(position);
 }
 

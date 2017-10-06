@@ -57,6 +57,14 @@ class MockParticle {
                                   &MockParticle::callKillPressureInDirection));
         ON_CALL(*this, canMove())
             .WillByDefault(Invoke(&real_particle, &Particle::canMove));
+        ON_CALL(*this, getFollowers(_))
+            .WillByDefault(
+                ReturnRefOfCopy(std::unordered_set<NiceMockParticle*>())
+            );
+        ON_CALL(*this, getLeaders(_))
+            .WillByDefault(
+                ReturnRefOfCopy(std::unordered_set<NiceMockParticle*>())
+            );
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
     MOCK_METHOD1(getNeighbor, NiceMockParticle*(Direction direction));
@@ -79,10 +87,18 @@ class MockParticle {
                                    Direction collision_direction));
     MOCK_METHOD2(killPressureInDirection, void(BlobStateKey,
                                                Direction direction));
-    MOCK_METHOD2(addFollowers, void(BlobStateKey,
-                                    const std::vector<NiceMockParticle*>
-                                        new_followers));
     MOCK_CONST_METHOD0(canMove, bool());
+    MOCK_METHOD2(addFollowers, void(BlobStateKey,
+                                    const std::vector<NiceMockParticle*>&
+                                        new_followers));
+    MOCK_METHOD2(removeFollower, void(BlobStateKey,
+                                      const NiceMockParticle& follower));
+    MOCK_METHOD2(removeLeader, void(BlobStateKey,
+                                    const NiceMockParticle& leader));
+    MOCK_METHOD1(getFollowers,
+                 std::unordered_set<NiceMockParticle*>&(BlobStateKey));
+    MOCK_METHOD1(getLeaders,
+                 std::unordered_set<NiceMockParticle*>&(BlobStateKey));
     private:
     Particle real_particle;
     std::array<NiceMockParticle*, 4> mock_neighbors;

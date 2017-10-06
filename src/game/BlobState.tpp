@@ -57,7 +57,7 @@ const std::vector<P*> BlobState<P>::getParticles(const IntVector& center,
 }
 
 template<class P>
-const P* BlobState<P>::getParticleAt(const IntVector& position) const {
+P* BlobState<P>::getParticleAt(const IntVector& position) const {
     auto iter = particle_map.find(position);
     if (iter == particle_map.end()) {
         return nullptr;
@@ -86,6 +86,28 @@ void BlobState<P>::addParticle(const IntVector& position) {
         particle->setNeighbor({}, direction, &neighbor);
         neighbor.setNeighbor({}, direction.opposite(), particle);
     }
+}
+
+template<class P>
+void BlobState<P>::removeParticle(P& particle) {
+    for (auto& follower: particle.getFollowers({})) {
+        follower->removeLeader({}, particle);
+    }
+    for (auto& leader: particle.getLeaders({})) {
+        leader->removeFollower({}, particle);
+    }
+    for (Direction direction: Direction::all()) {
+        P* neighbor = particle.getNeighbor(direction);
+        if (neighbor != nullptr) {
+            neighbor->setNeighbor({}, direction.opposite(), nullptr);
+        }
+    }
+    assert(particles.count(&particle) > 0);
+    particles.erase(&particle);
+    assert(particle_map.at(particle.getPosition()) == &particle
+           && "Particle is not at the position it thinks it is.");
+    particle_map.erase(particle.getPosition());
+    delete &particle;
 }
 
 template<class P>

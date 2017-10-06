@@ -164,8 +164,18 @@ void Particle::killPressureInDirection(BlobStateKey, Direction direction) {
     }
 }
 
+bool Particle::canMove() const {
+    // TODO Using a constant here only works as long as the movements a particle
+    // is asked to make have fixed length (of 1). If that ever changes, this
+    // needs to be parameterized on the length of the movement, i.e. "can this
+    // particle move 6 to the east?".
+    return std::abs(pressure.getX()) >= Config::min_directed_movement_pressure
+           || std::abs(pressure.getY())
+              >= Config::min_directed_movement_pressure;
+}
+
 void Particle::addFollowers(BlobStateKey,
-                            const std::vector<Particle*> new_followers)
+                            const std::vector<Particle*>& new_followers)
 {
     static_assert(Config::boost_fraction >= 0.0f
                   && Config::boost_fraction <= 1.0f,
@@ -182,16 +192,6 @@ void Particle::addFollowers(BlobStateKey,
     addPressureToFollowers(new_followers, boost_magnitude / divisor);
 }
 
-bool Particle::canMove() const {
-    // TODO Using a constant here only works as long as the movements a particle
-    // is asked to make have fixed length (of 1). If that ever changes, this
-    // needs to be parameterized on the length of the movement, i.e. "can this
-    // particle move 6 to the east?".
-    return std::abs(pressure.getX()) >= Config::min_directed_movement_pressure
-           || std::abs(pressure.getY())
-              >= Config::min_directed_movement_pressure;
-}
-
 void Particle::addLeader(Particle& leader) {
     leaders.insert(&leader);
 }
@@ -206,6 +206,22 @@ void Particle::removeLeader(Particle& leader) {
 
 void Particle::removeFollower(Particle& follower) {
     followers.erase(&follower);
+}
+
+void Particle::removeLeader(BlobStateKey, Particle& leader) {
+    removeLeader(leader);
+}
+
+void Particle::removeFollower(BlobStateKey, Particle& follower) {
+    removeFollower(follower);
+}
+
+std::unordered_set<Particle*>& Particle::getFollowers(BlobStateKey) {
+    return followers;
+}
+
+std::unordered_set<Particle*>& Particle::getLeaders(BlobStateKey) {
+    return leaders;
 }
 
 void Particle::reevaluateFollowership() {

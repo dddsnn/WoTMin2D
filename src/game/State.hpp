@@ -7,6 +7,7 @@
 
 #include <vector>
 #include <unordered_map>
+#include <unordered_set>
 #include <queue>
 #include <tuple>
 #include <chrono>
@@ -39,6 +40,7 @@ class State {
     void selectParticles(const IntVector& center);
     void setTarget(PlayerId player, const IntVector& target);
     private:
+    using CollidingParticle = std::tuple<P*, PlayerId, Direction>;
     const unsigned int arena_width;
     const unsigned int arena_height;
     std::unordered_map<PlayerId, B> blobs;
@@ -48,7 +50,11 @@ class State {
                                Direction movement_direction) const;
     bool isHostileCollision(const P& particle, Direction movement_direction,
                             PlayerId player_id);
-    void handleParticle(P& particle, B& blob, PlayerId player_id);
+    void doParticleMovement(std::vector<CollidingParticle>&
+        colliding_particles);
+    void handleParticle(P& particle, B& blob, PlayerId player_id,
+                        std::vector<CollidingParticle>& colliding_particles);
+    void resolveCollisions(std::vector<CollidingParticle>& colliding_particles);
 };
 
 }

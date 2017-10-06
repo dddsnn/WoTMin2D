@@ -58,8 +58,13 @@ class Particle {
     void collideWith(BlobStateKey, Particle& forward_neighbor,
                      Direction collision_direction);
     void killPressureInDirection(BlobStateKey, Direction direction);
-    void addFollowers(BlobStateKey, const std::vector<Particle*> new_followers);
     bool canMove() const;
+    void addFollowers(BlobStateKey,
+                      const std::vector<Particle*>& new_followers);
+    void removeFollower(BlobStateKey, Particle& follower);
+    void removeLeader(BlobStateKey, Particle& leader);
+    std::unordered_set<Particle*>& getFollowers(BlobStateKey);
+    std::unordered_set<Particle*>& getLeaders(BlobStateKey);
     private:
     template<class C>
     void addPressureToFollowers(const C&, float magnitude);
