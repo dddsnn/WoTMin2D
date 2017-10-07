@@ -70,29 +70,27 @@ bool SdlTexture::isLocked() const {
     return pixels != nullptr;
 }
 
-void SdlTexture::setPixel(unsigned int x, unsigned int y, std::uint8_t red,
-                          std::uint8_t green, std::uint8_t blue) {
+void SdlTexture::setPixel(unsigned int x, unsigned int y, const Color& color) {
     if (x >= texture_width || y >= texture_height) {
         // Coordinates out of bounds, return gracefully.
         return;
     }
     unsigned int index = texture_width * y + x;
-    setPixelIndex(index, red, green, blue);
+    setPixelIndex(index, color);
 }
 
-void SdlTexture::setPixelIndex(unsigned int index, std::uint8_t red,
-                               std::uint8_t green, std::uint8_t blue) {
+void SdlTexture::setPixelIndex(unsigned int index, const Color& color) {
     assert(isLocked() && "Attempt to set pixels on unlocked texture.");
     assert(index < texture_width * texture_height && "Pixel index out of "
            "range.");
-    std::uint32_t pixel_value = SDL_MapRGB(pixel_format, red, green, blue);
+    std::uint32_t pixel_value = SDL_MapRGB(pixel_format, color[0], color[1],
+                                           color[2]);
     std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
     pixels32[index] = pixel_value;
 }
 
 void SdlTexture::setPixelRange(unsigned int start, unsigned int end,
-                               std::uint8_t red, std::uint8_t green,
-                               std::uint8_t blue) {
+                               const Color& color) {
     assert(isLocked() && "Attempt to set pixels on unlocked texture.");
     assert(start <= texture_width * texture_height && "Start index out of "
            "range.");
@@ -100,7 +98,8 @@ void SdlTexture::setPixelRange(unsigned int start, unsigned int end,
     if (start > end) {
         return;
     }
-    std::uint32_t pixel_value = SDL_MapRGB(pixel_format, red, green, blue);
+    std::uint32_t pixel_value = SDL_MapRGB(pixel_format, color[0], color[1],
+                                           color[2]);
     std::uint32_t* pixels32 = static_cast<std::uint32_t*>(pixels);
     std::fill_n(pixels32 + start, end - start, pixel_value);
 }

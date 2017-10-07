@@ -2,6 +2,11 @@
 
 namespace wotmin2d {
 
+const SdlTexture::Color Screen::BLACK = { 0x00, 0x00, 0x00 };
+const SdlTexture::Color Screen::WHITE = { 0xff, 0xff, 0xff };
+const SdlTexture::Color Screen::BLUE = { 0x00, 0x00, 0xff };
+const SdlTexture::Color Screen::RED = { 0xff, 0x00, 0x00 };
+
 void Screen::construct(unsigned int arena_width,
                        unsigned int arena_height,
                        unsigned int display_width,
@@ -118,8 +123,8 @@ void Screen::updateTexture(const State<>& state) {
            "already locked for writing.");
     texture->lockForWriting();
     // Make everything white to begin with.
-    texture->setPixelRange(0, texture->getWidth() * texture->getHeight(), 0xff,
-                           0xff, 0xff);
+    texture->setPixelRange(0, texture->getWidth() * texture->getHeight(),
+                           WHITE);
     putBlobs(state);
     // TODO Getting the mouse state here means it may be a bit old (since
     // rendering the blobs takes time).
@@ -146,7 +151,7 @@ void Screen::putBlobs(const State<>& state) {
             // The y-coordinates of particle start at the bottom, increasing
             // towards the top, texture coordinates are the other way around.
             unsigned int y_arena = invertArenaY(y);
-            texture->setPixel(x, y_arena, 0xff, 0x00, 0x00);
+            texture->setPixel(x, y_arena, RED);
         }
     }
 }
@@ -169,13 +174,13 @@ void Screen::putSelectionCircleAndAimPoint(const State<>& state) {
     while (y >= 0) {
         assert(IntVector(x, y).squaredNorm() <= squared_radius);
         texture->setPixel(mouse_position.getX() + x, mouse_position.getY() + y,
-                          0x00, 0x00, 0x00);
+                          BLACK);
         texture->setPixel(mouse_position.getX() + x, mouse_position.getY() - y,
-                          0x00, 0x00, 0x00);
+                          BLACK);
         texture->setPixel(mouse_position.getX() - x, mouse_position.getY() + y,
-                          0x00, 0x00, 0x00);
+                          BLACK);
         texture->setPixel(mouse_position.getX() - x, mouse_position.getY() - y,
-                          0x00, 0x00, 0x00);
+                          BLACK);
         if (IntVector(x + 1, y).squaredNorm() <= squared_radius) {
             x++;
         } else {
@@ -183,8 +188,7 @@ void Screen::putSelectionCircleAndAimPoint(const State<>& state) {
         }
     }
     // Aim point
-    texture->setPixel(mouse_position.getX(), mouse_position.getY(), 0x00, 0x00,
-                      0x00);
+    texture->setPixel(mouse_position.getX(), mouse_position.getY(), BLACK);
 }
 
 void Screen::presentTexture() {

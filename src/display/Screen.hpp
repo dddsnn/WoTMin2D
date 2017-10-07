@@ -36,6 +36,10 @@ class Screen {
     SDL_Window* window;
     SDL_Renderer* renderer;
     std::unique_ptr<SdlTexture> texture;
+    const static SdlTexture::Color BLACK;
+    const static SdlTexture::Color WHITE;
+    const static SdlTexture::Color BLUE;
+    const static SdlTexture::Color RED;
 };
 
 }
