@@ -29,6 +29,10 @@ ACTION_P2(KillPressureInDirection, particle, direction) {
     particle->killPressureInDirection({}, direction);
 }
 
+ACTION_P2(MoveParticle, particle, direction) {
+    particle->move({}, direction);
+}
+
 class StateTest : public ::testing::Test {
     protected:
     StateTest() :
@@ -235,34 +239,18 @@ TEST_F(StateTest, usesHighestMobilityBlobFirst) {
         .WillByDefault(Return(p1));
     ON_CALL(blob2, getHighestMobilityParticle())
         .WillByDefault(Return(p2));
-    EXPECT_CALL(*p1, canMove())
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    EXPECT_CALL(*p2, canMove())
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillOnce(Return(true))
-        .WillRepeatedly(Return(false));
-    ON_CALL(*p1, getPressureDirection())
-        .WillByDefault(Return(Direction::east()));
-    EXPECT_CALL(*p1, getPressure())
-        .Times(AnyNumber())
-        .WillOnce(ReturnRefOfCopy(FloatVector(5.0f, 0.0f)))
-        .WillOnce(ReturnRefOfCopy(FloatVector(5.0f, 0.0f)))
-        .WillRepeatedly(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
-    ON_CALL(*p2, getPressureDirection())
-        .WillByDefault(Return(Direction::north()));
-    EXPECT_CALL(*p2, getPressure())
-        .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 10.0f)))
-        .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 4.0f)))
-        .WillOnce(ReturnRefOfCopy(FloatVector(0.0f, 4.0f)))
-        .WillRepeatedly(ReturnRefOfCopy(FloatVector(0.0f, 0.0f)));
+    p1->setTarget(td.inSouthWestCorner + Direction::east().vector(), 1.5f);
+    p2->setTarget(td.onSouthBorder + Direction::north().vector(), 2.0f);
+    p1->advance({}, std::chrono::milliseconds(1000));
+    p2->advance({}, std::chrono::milliseconds(1000));
     {
         InSequence dummy;
-        EXPECT_CALL(blob2, handleParticle(Ref(*p2), Direction::north()));
-        EXPECT_CALL(blob1, handleParticle(Ref(*p1), Direction::east()));
-        EXPECT_CALL(blob2, handleParticle(Ref(*p2), Direction::north()));
+        EXPECT_CALL(blob2, handleParticle(Ref(*p2), Direction::north()))
+            .WillOnce(MoveParticle(p2, Direction::north()));
+        EXPECT_CALL(blob1, handleParticle(Ref(*p1), Direction::east()))
+            .WillOnce(MoveParticle(p1, Direction::east()));
+        EXPECT_CALL(blob2, handleParticle(Ref(*p2), Direction::north()))
+            .WillOnce(MoveParticle(p2, Direction::north()));
     }
     state.advance(time_delta);
 }

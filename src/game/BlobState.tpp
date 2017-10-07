@@ -262,8 +262,11 @@ void BlobState<P>::modifyParticle(P& particle, Modifier modifier) {
 template<class P>
 bool BlobState<P>::ParticleMobilityGreater::operator()(const P* first,
                                                        const P* second) const {
-    assert(first != nullptr);
-    assert(second != nullptr);
+    if (first == nullptr) {
+        return false;
+    } else if (second == nullptr) {
+        return true;
+    }
     bool first_can_move = first->canMove();
     bool second_can_move = second->canMove();
     if (first_can_move && second_can_move) {

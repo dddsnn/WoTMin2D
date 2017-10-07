@@ -10,8 +10,8 @@ State<P, B>::State(unsigned int arena_width, unsigned int arena_height) :
 
 template<class P, class B>
 void State<P, B>::advance(std::chrono::milliseconds time_delta) {
-    for (auto& blob: blobs) {
-        blob.second.advanceParticles(time_delta);
+    for (auto& id_blob: blobs) {
+        id_blob.second.advanceParticles(time_delta);
     }
     std::vector<CollidingParticle> colliding_particles;
     doParticleMovement(colliding_particles);
@@ -38,15 +38,16 @@ void State<P, B>::doParticleMovement(
     if (blob_queue.empty()) {
         second_pressure = -std::numeric_limits<float>::infinity();
     } else {
-        assert(blob_queue.top().second->getHighestMobilityParticle() != nullptr
-                   && "Highest mobility particle was null.");
-        second_pressure = blob_queue.top().second->getHighestMobilityParticle()
-                              ->getPressure().squaredNorm();
+        P* second_particle
+            = blob_queue.top().second->getHighestMobilityParticle();
+        if (second_particle == nullptr) {
+            second_pressure = -std::numeric_limits<float>::infinity();
+        } else {
+            second_pressure = second_particle->getPressure().squaredNorm();
+        }
     }
     P* particle = current_blob.second->getHighestMobilityParticle();
-    while (true) {
-        assert(particle != nullptr && "Highest pressure particle in blob was "
-               "null.");
+    while (particle != nullptr) {
         if (!particle->canMove()) {
             // Highest mobility particle can't move, nothing left to do.
             break;
@@ -63,16 +64,26 @@ void State<P, B>::doParticleMovement(
             // Switch blobs.
             IdBlob new_blob = blob_queue.top();
             assert(new_blob.second != nullptr && "Blob was null.");
+            assert(new_blob.second->getHighestMobilityParticle()->getPressure()
+                       .squaredNorm() == second_pressure
+                   && "Pressure of the second most mobile particle not as "
+                      "expected.");
             blob_queue.pop();
             blob_queue.push(current_blob);
             current_blob = new_blob;
             particle = current_blob.second->getHighestMobilityParticle();
-            assert(blob_queue.top().second->getHighestMobilityParticle()
-                       != nullptr
-                       && "Highest mobility particle was null.");
-            second_pressure = blob_queue.top().second
-                                  ->getHighestMobilityParticle()
-                                  ->getPressure().squaredNorm();
+            if (blob_queue.empty()) {
+                second_pressure = -std::numeric_limits<float>::infinity();
+            } else {
+                P* second_particle
+                    = blob_queue.top().second->getHighestMobilityParticle();
+                if (second_particle == nullptr) {
+                    second_pressure = -std::numeric_limits<float>::infinity();
+                } else {
+                    second_pressure = second_particle->getPressure()
+                        .squaredNorm();
+                }
+            }
         }
     }
 }
