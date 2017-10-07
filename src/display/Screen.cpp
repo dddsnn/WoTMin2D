@@ -137,6 +137,7 @@ void Screen::putBlobs(const State<>& state) {
            "isn't locked for writing.");
     for (const auto& id_blob: state.getBlobs()) {
         const Blob<>& blob = id_blob.second;
+        const SdlTexture::Color& color = id_blob.first == 0 ? BLUE : RED;
         for (const Particle* particle: blob.getParticles()) {
             int x_signed = particle->getPosition().getX();
             int y_signed = particle->getPosition().getY();
@@ -151,7 +152,7 @@ void Screen::putBlobs(const State<>& state) {
             // The y-coordinates of particle start at the bottom, increasing
             // towards the top, texture coordinates are the other way around.
             unsigned int y_arena = invertArenaY(y);
-            texture->setPixel(x, y_arena, RED);
+            texture->setPixel(x, y_arena, color);
         }
     }
 }
