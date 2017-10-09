@@ -36,6 +36,9 @@ class ParticleTest : public ::testing::Test {
     void callKillPressure(Particle& particle, Direction direction) {
         particle.killPressureInDirection({}, direction);
     }
+    void callDamage(Particle& particle, unsigned int amount) {
+        particle.damage({}, amount);
+    }
 };
 
 TEST_F(ParticleTest, hasNeighbors) {
@@ -399,6 +402,26 @@ TEST_F(ParticleTest, switchesFollowershipIfFollowerAheadOfLeader) {
     FloatVector expected_p2 = pressure_vector * (2.0f + (1.0f - leader_share));
     EXPECT_EQ(expected_p1, p1.getPressure());
     EXPECT_EQ(expected_p2, p2.getPressure());
+}
+
+TEST_F(ParticleTest, takesDamage) {
+    Particle p(td.inside);
+    EXPECT_EQ(100, p.getHealth());
+    callDamage(p, 0);
+    EXPECT_EQ(100, p.getHealth());
+    callDamage(p, 25);
+    EXPECT_EQ(100 - 25, p.getHealth());
+    callDamage(p, 70);
+    EXPECT_EQ(100 - 95, p.getHealth());
+}
+
+TEST_F(ParticleTest, takesNoMoreDamageOnceHealthReachesZero) {
+    Particle p(td.inside);
+    EXPECT_EQ(100, p.getHealth());
+    callDamage(p, 105);
+    EXPECT_EQ(0, p.getHealth());
+    callDamage(p, 70);
+    EXPECT_EQ(0, p.getHealth());
 }
 
 }

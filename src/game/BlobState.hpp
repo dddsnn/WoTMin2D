@@ -43,13 +43,14 @@ class BlobState {
                                        float radius) const;
     P* getParticleAt(const IntVector& position) const;
     void addParticle(const IntVector& position);
-    void removeParticle(P& particle);
+    void damageParticle(P& particle, int advantage);
     void moveParticle(P& particle, Direction movement_direction);
     void collideParticles(P& first, P& second, Direction collision_direction);
     void collideParticleWithWall(P& particle, Direction collision_direction);
     void advanceParticles(std::chrono::milliseconds time_delta);
     P* getHighestMobilityParticle();
     void addParticleFollowers(P& leader, const std::vector<P*>& followers);
+    int getParticleStrength(const P& particle) const;
     private:
     ParticleSet particles;
     ParticleMap particle_map;
@@ -59,6 +60,7 @@ class BlobState {
     void updateParticleNeighbors(P& particle);
     template<class Modifier>
     void modifyParticle(P& particle, Modifier modifier);
+    void removeParticle(P& particle);
 };
 
 }

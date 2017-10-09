@@ -65,6 +65,11 @@ class MockParticle {
             .WillByDefault(
                 ReturnRefOfCopy(std::unordered_set<NiceMockParticle*>())
             );
+        ON_CALL(*this, getHealth())
+            .WillByDefault(Invoke(&real_particle, &Particle::getHealth));
+        ON_CALL(*this, damage(_, _))
+            .WillByDefault(Invoke(this,
+                                  &MockParticle::callDamage));
     }
     MOCK_CONST_METHOD0(getPosition, const IntVector&());
     MOCK_METHOD1(getNeighbor, NiceMockParticle*(Direction direction));
@@ -99,6 +104,8 @@ class MockParticle {
                  std::unordered_set<NiceMockParticle*>&(BlobStateKey));
     MOCK_METHOD1(getLeaders,
                  std::unordered_set<NiceMockParticle*>&(BlobStateKey));
+    MOCK_CONST_METHOD0(getHealth, unsigned int());
+    MOCK_METHOD2(damage, void(BlobStateKey, unsigned int amount));
     private:
     Particle real_particle;
     std::array<NiceMockParticle*, 4> mock_neighbors;
@@ -124,6 +131,9 @@ class MockParticle {
     }
     void callKillPressureInDirection(BlobStateKey, Direction direction) {
         real_particle.killPressureInDirection({}, direction);
+    }
+    void callDamage(BlobStateKey, unsigned int amount) {
+        real_particle.damage({}, amount);
     }
 };
 

@@ -65,6 +65,8 @@ class Particle {
     void removeLeader(BlobStateKey, Particle& leader);
     std::unordered_set<Particle*>& getFollowers(BlobStateKey);
     std::unordered_set<Particle*>& getLeaders(BlobStateKey);
+    unsigned int getHealth() const;
+    void damage(BlobStateKey, unsigned int amount);
     private:
     template<class C>
     void addPressureToFollowers(const C&, float magnitude);
@@ -80,6 +82,7 @@ class Particle {
     FloatVector pressure;
     std::unordered_set<Particle*> followers;
     std::unordered_set<Particle*> leaders;
+    unsigned int health;
 };
 
 template<class C>

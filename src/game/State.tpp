@@ -153,8 +153,14 @@ void State<P, B>::resolveCollisions(
                 continue;
             }
             assert(blobs.count(id_blob.first) > 0);
-            blobs.at(player_id).removeParticle(*particle);
-            blobs.at(id_blob.first).removeParticle(*forward_particle);
+            B& this_blob = blobs.at(player_id);
+            B& forward_blob = id_blob.second;
+            int this_strength = this_blob.getParticleStrength(*particle);
+            int forward_strength
+                = forward_blob.getParticleStrength(*forward_particle);
+            int this_advantage = this_strength - forward_strength;
+            this_blob.damageParticle(*particle, this_advantage);
+            forward_blob.damageParticle(*forward_particle, -this_advantage);
             handled_particles.insert(particle);
             handled_particles.insert(forward_particle);
         }

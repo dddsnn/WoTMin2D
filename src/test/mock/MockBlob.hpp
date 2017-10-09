@@ -18,7 +18,7 @@ class MockBlob {
     public:
     MockBlob() {}
     MockBlob(const IntVector&, float, unsigned int, unsigned int) {}
-    MOCK_METHOD1(removeParticle, void(const P& particle));
+    MOCK_METHOD2(damageParticle, void(const P& particle, int advantage));
     MOCK_CONST_METHOD0(getParticles,
                        const typename BlobState<P>::ParticleSet&());
     MOCK_CONST_METHOD1(getParticleAt, P*(const IntVector& position));
@@ -31,6 +31,7 @@ class MockBlob {
                  void(P& particle, Direction collision_direction));
     MOCK_METHOD2(handleParticle,
                  void(P& particle, Direction collision_direction));
+    MOCK_CONST_METHOD1(getParticleStrength, int(const P& particle));
 };
 
 // Subclass NiceMock to allow copying. This is necessary to allow them to be

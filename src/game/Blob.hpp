@@ -25,7 +25,7 @@ class Blob {
     Blob(const IntVector& center, float radius,
          unsigned int arena_width, unsigned int arena_height,
          std::shared_ptr<B> state = std::make_shared<B>());
-    void removeParticle(P& particle);
+    void damageParticle(P& particle, int advantage);
     const typename BlobState<P>::ParticleSet& getParticles() const;
     P* getParticleAt(const IntVector& position) const;
     void advanceParticles(std::chrono::milliseconds time_delta);
@@ -34,6 +34,7 @@ class Blob {
                    const IntVector& center, float radius);
     void collideParticleWithWall(P& particle, Direction collision_direction);
     void handleParticle(P& particle, Direction movement_direction);
+    int getParticleStrength(const P& particle) const;
     private:
     // TODO Store by value and make the tests a friend so they can replace it.
     std::shared_ptr<B> state;

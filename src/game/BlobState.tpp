@@ -89,6 +89,16 @@ void BlobState<P>::addParticle(const IntVector& position) {
 }
 
 template<class P>
+void BlobState<P>::damageParticle(P& particle, int advantage) {
+    // TODO unhardcode
+    unsigned int amount = advantage < 10 ? 10 - advantage : 0;
+    particle.damage({}, amount);
+    if (particle.getHealth() == 0) {
+        removeParticle(particle);
+    }
+}
+
+template<class P>
 void BlobState<P>::removeParticle(P& particle) {
     for (auto& follower: particle.getFollowers({})) {
         follower->removeLeader({}, particle);
@@ -243,6 +253,25 @@ void BlobState<P>::addParticleFollowers(P& leader,
         // mobility index.
         modifyParticle(*follower, [](P*){});
     }
+}
+
+template<class P>
+int BlobState<P>::getParticleStrength(const P& particle) const {
+    int particle_x = particle.getPosition().getX();
+    int particle_y = particle.getPosition().getY();
+    // TODO unharcode
+    int start_x = 4 < particle_x ? particle_x - 4 : 0;
+    int start_y = 4 < particle_y ? particle_y - 4 : 0;
+    // TODO Need the arena dimensions in order to determine end coordinates.
+    // This way there could be unnecessary map lookups.
+    // TODO Use a less brute-forcey way of doing this.
+    int strength = 0;
+    for (int x = start_x; x <= particle_x + 4; x++) {
+        for (int y = start_y; y <= particle_y + 4; y++) {
+            strength += particle_map.count(IntVector(x, y));
+        }
+    }
+    return strength;
 }
 
 template<class P>

@@ -346,8 +346,8 @@ TEST_F(StateTest, handlesHostileCollisions) {
                                                    Direction::east()))
         .Times(AnyNumber())
         .WillRepeatedly(KillPressureInDirection(left, Direction::east()));
-    EXPECT_CALL(blob_left, removeParticle(Ref(*left))).Times(1);
-    EXPECT_CALL(blob_right, removeParticle(Ref(*right))).Times(1);
+    EXPECT_CALL(blob_left, damageParticle(Ref(*left), _)).Times(1);
+    EXPECT_CALL(blob_right, damageParticle(Ref(*right), _)).Times(1);
     state.advance(time_delta);
 }
 
@@ -382,8 +382,8 @@ TEST_F(StateTest, handlesParticlesInHostileCollisionsOnlyOnce) {
                                                    Direction::east()))
         .Times(AnyNumber())
         .WillRepeatedly(KillPressureInDirection(left, Direction::east()));
-    EXPECT_CALL(blob_left, removeParticle(Ref(*left))).Times(1);
-    EXPECT_CALL(blob_right, removeParticle(Ref(*right))).Times(1);
+    EXPECT_CALL(blob_left, damageParticle(Ref(*left), _)).Times(1);
+    EXPECT_CALL(blob_right, damageParticle(Ref(*right), _)).Times(1);
     state.advance(time_delta);
 }
 
@@ -410,8 +410,46 @@ TEST_F(StateTest, doesntHandleHostileCollisionsWithinTheSameBlob) {
     EXPECT_CALL(blob, handleParticle(Ref(*left), Direction::east()))
         .Times(AnyNumber())
         .WillRepeatedly(KillPressureInDirection(left, Direction::east()));
-    EXPECT_CALL(blob, removeParticle(Ref(*left))).Times(0);
-    EXPECT_CALL(blob, removeParticle(Ref(*right))).Times(0);
+    EXPECT_CALL(blob, damageParticle(_, _)).Times(0);
+    state.advance(time_delta);
+}
+
+TEST_F(StateTest, calculatesAdvantageWhenDamagingParticles) {
+    td.makeParticles({ td.lineA }, {});
+    TestData<P> td2;
+    td2.makeParticles({ td2.lineB }, {});
+    state.emplaceBlob(0, IntVector(0, 0), 2);
+    state.emplaceBlob(7, IntVector(5, 8), 4);
+    B& blob_right = const_cast<B&>(state.getBlobs().at(0));
+    B& blob_left = const_cast<B&>(state.getBlobs().at(7));
+    P* right = td2.particle_map[IntVector(4, 10)];
+    P* left = td.particle_map[IntVector(3, 10)];
+    int right_strength = 5;
+    int left_strength = 12;
+    ON_CALL(blob_right, getHighestMobilityParticle())
+        .WillByDefault(Return(right));
+    ON_CALL(blob_left, getHighestMobilityParticle())
+        .WillByDefault(Return(left));
+    ON_CALL(blob_right, getParticleAt(IntVector(4, 10)))
+        .WillByDefault(Return(right));
+    ON_CALL(blob_left, getParticleAt(IntVector(3, 10)))
+        .WillByDefault(Return(left));
+    ON_CALL(blob_right, getParticleStrength(Ref(*right)))
+        .WillByDefault(Return(right_strength));
+    ON_CALL(blob_left, getParticleStrength(Ref(*left)))
+        .WillByDefault(Return(left_strength));
+    left->setTarget(IntVector(5, 10), 1.0f);
+    left->advance({}, std::chrono::milliseconds(1000));
+    EXPECT_CALL(blob_left, collideParticleWithWall(Ref(*left),
+                                                   Direction::east()))
+        .Times(AnyNumber())
+        .WillRepeatedly(KillPressureInDirection(left, Direction::east()));
+    EXPECT_CALL(blob_left, damageParticle(Ref(*left),
+                                          left_strength - right_strength))
+        .Times(1);
+    EXPECT_CALL(blob_right, damageParticle(Ref(*right),
+                                           right_strength - left_strength))
+        .Times(1);
     state.advance(time_delta);
 }
 

@@ -9,7 +9,9 @@ Particle::Particle(IntVector position) :
     target_pressure_per_second(0.0f),
     pressure(0.0f, 0.0f),
     followers(),
-    leaders() {}
+    leaders(),
+    // TODO unhardcode
+    health(100) {}
 
 const IntVector& Particle::getPosition() const {
     return position;
@@ -260,6 +262,14 @@ void Particle::reevaluateFollowership() {
         addFollower(*leader);
         leader->addLeader(*this);
     }
+}
+
+unsigned int Particle::getHealth() const {
+    return health;
+}
+
+void Particle::damage(BlobStateKey, unsigned int amount) {
+    health = amount < health ? health - amount : 0;
 }
 
 }

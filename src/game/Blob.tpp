@@ -35,8 +35,8 @@ Blob<P, B>::Blob(const IntVector& center, float radius,
 }
 
 template<class P, class B>
-void Blob<P, B>::removeParticle(P& particle) {
-    state->removeParticle(particle);
+void Blob<P, B>::damageParticle(P& particle, int advantage) {
+    state->damageParticle(particle, advantage);
 }
 
 template<class P, class B>
@@ -99,6 +99,11 @@ void Blob<P, B>::handleParticle(P& particle, Direction movement_direction) {
         // neighbors follow it to catch up.
         state->addParticleFollowers(particle, neighbors);
     }
+}
+
+template<class P, class B>
+int Blob<P, B>::getParticleStrength(const P& particle) const {
+    return state->getParticleStrength(particle);
 }
 
 }
