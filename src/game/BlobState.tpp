@@ -90,8 +90,12 @@ void BlobState<P>::addParticle(const IntVector& position) {
 
 template<class P>
 void BlobState<P>::damageParticle(P& particle, int advantage) {
-    // TODO unhardcode
-    unsigned int amount = advantage < 10 ? 10 - advantage : 0;
+    unsigned int amount;
+    if (advantage < Config::particle_damage) {
+        amount = Config::particle_damage - advantage;
+    } else {
+        amount = 0;
+    }
     particle.damage({}, amount);
     if (particle.getHealth() == 0) {
         removeParticle(particle);
@@ -259,15 +263,27 @@ template<class P>
 int BlobState<P>::getParticleStrength(const P& particle) const {
     int particle_x = particle.getPosition().getX();
     int particle_y = particle.getPosition().getY();
-    // TODO unharcode
-    int start_x = 4 < particle_x ? particle_x - 4 : 0;
-    int start_y = 4 < particle_y ? particle_y - 4 : 0;
+    int start_x, start_y;
+    if (Config::particle_strength_offset < particle_x) {
+        start_x = particle_x - Config::particle_strength_offset;
+    } else {
+        start_x = 0;
+    }
+    if (Config::particle_strength_offset < particle_y) {
+        start_y = particle_y - Config::particle_strength_offset;
+    } else {
+        start_y = 0;
+    }
     // TODO Need the arena dimensions in order to determine end coordinates.
     // This way there could be unnecessary map lookups.
     // TODO Use a less brute-forcey way of doing this.
     int strength = 0;
-    for (int x = start_x; x <= particle_x + 4; x++) {
-        for (int y = start_y; y <= particle_y + 4; y++) {
+    for (int x = start_x; x <= particle_x + Config::particle_strength_offset;
+         x++)
+    {
+        for (int y = start_y;
+             y <= particle_y + Config::particle_strength_offset; y++)
+        {
             strength += particle_map.count(IntVector(x, y));
         }
     }

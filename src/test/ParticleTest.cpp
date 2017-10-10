@@ -2,6 +2,8 @@
 #include "../Config.hpp"
 #include "TestData.hpp"
 
+#include <gtest/gtest.h>
+#include <gmock/gmock.h>
 #include <chrono>
 
 namespace wotmin2d {
@@ -405,20 +407,23 @@ TEST_F(ParticleTest, switchesFollowershipIfFollowerAheadOfLeader) {
 }
 
 TEST_F(ParticleTest, takesDamage) {
+    const unsigned int health = Config::particle_health;
     Particle p(td.inside);
-    EXPECT_EQ(100, p.getHealth());
+    EXPECT_EQ(health, p.getHealth());
     callDamage(p, 0);
-    EXPECT_EQ(100, p.getHealth());
-    callDamage(p, 25);
-    EXPECT_EQ(100 - 25, p.getHealth());
-    callDamage(p, 70);
-    EXPECT_EQ(100 - 95, p.getHealth());
+    EXPECT_EQ(health, p.getHealth());
+    int amount1 = 0.25f * health;
+    callDamage(p, amount1);
+    EXPECT_EQ(health - amount1, p.getHealth());
+    int amount2 = 0.7f * health;
+    callDamage(p, amount2);
+    EXPECT_EQ(health - (amount1 + amount2), p.getHealth());
 }
 
 TEST_F(ParticleTest, takesNoMoreDamageOnceHealthReachesZero) {
+    const unsigned int health = Config::particle_health;
     Particle p(td.inside);
-    EXPECT_EQ(100, p.getHealth());
-    callDamage(p, 105);
+    callDamage(p, health + 1);
     EXPECT_EQ(0, p.getHealth());
     callDamage(p, 70);
     EXPECT_EQ(0, p.getHealth());

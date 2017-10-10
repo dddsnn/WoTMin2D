@@ -31,6 +31,20 @@ class Config {
     constexpr static float min_directed_movement_pressure = 1.0f;
     constexpr static float min_selection_radius = 0.0f;
     constexpr static float selection_change_multiplier = 1.0f;
+    constexpr static unsigned int particle_health = 100;
+    static_assert(particle_health > 0, "Particles should be healty.");
+    constexpr static int particle_damage = 10;
+    static_assert(particle_damage > 0, "Non-positive damage ticks don't make "
+                  "sense.");
+    /**
+     * The offset from a particle's coordinate, both in x and y direction,
+     * defining the square in which other particles contribute to that
+     * particle's strength. Two times the offset plus on is the length of the
+     * side of the square.
+     */
+    constexpr static int particle_strength_offset = 4;
+    static_assert(particle_strength_offset > 1, "Particle strength offsets "
+                  "less than 2 mean there is no strength in numbers");
 };
 
 }

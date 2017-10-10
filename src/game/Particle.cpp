@@ -10,8 +10,7 @@ Particle::Particle(IntVector position) :
     pressure(0.0f, 0.0f),
     followers(),
     leaders(),
-    // TODO unhardcode
-    health(100) {}
+    health(Config::particle_health) {}
 
 const IntVector& Particle::getPosition() const {
     return position;

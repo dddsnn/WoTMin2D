@@ -407,7 +407,7 @@ TEST_F(BlobStateTest, damagesParticles) {
     IntVector pos(5, 5);
     state.addParticle(pos);
     P* particle = particleAt(pos);
-    EXPECT_CALL(*particle, damage(_, 10));
+    EXPECT_CALL(*particle, damage(_, Config::particle_damage));
     state.damageParticle(*particle, 0);
 }
 
@@ -421,12 +421,12 @@ TEST_F(BlobStateTest, damagesParticlesWithAdvantage) {
     P* particle1 = particleAt(pos1);
     P* particle2 = particleAt(pos2);
     P* particle3 = particleAt(pos3);
-    int advantage1 = 8;
-    int advantage2 = 12;
+    int advantage1 = Config::particle_damage - 1;
+    int advantage2 = Config::particle_damage + 3;
     int advantage3 = -4;
-    EXPECT_CALL(*particle1, damage(_, 10 - advantage1));
+    EXPECT_CALL(*particle1, damage(_, Config::particle_damage - advantage1));
     EXPECT_CALL(*particle2, damage(_, 0));
-    EXPECT_CALL(*particle3, damage(_, 10 - advantage3));
+    EXPECT_CALL(*particle3, damage(_, Config::particle_damage - advantage3));
     state.damageParticle(*particle1, advantage1);
     state.damageParticle(*particle2, advantage2);
     state.damageParticle(*particle3, advantage3);
@@ -541,11 +541,12 @@ TEST_F(BlobStateTest, clearsParticleFollowersOnParticleRemoval) {
 }
 
 TEST_F(BlobStateTest, calculatesParticleStrength) {
-    IntVector pos_center(5, 5);
-    IntVector pos_next_to(4, 5);
-    IntVector pos_at_border(5, 9);
-    IntVector pos_outside_x(0, 5);
-    IntVector pos_outside_y(5, 10);
+    const int so = Config::particle_strength_offset;
+    IntVector pos_center(so + 2, so + 2);
+    IntVector pos_next_to(pos_center + Direction::north().vector());
+    IntVector pos_at_border(pos_center.getX(), pos_center.getY() + so);
+    IntVector pos_outside_x(pos_center.getX() - (so + 1), pos_center.getY());
+    IntVector pos_outside_y(pos_center.getX(), pos_center.getY() + so + 1);
     state.addParticle(pos_center);
     P* center = particleAt(pos_center);
     EXPECT_EQ(1, state.getParticleStrength(*center));
@@ -557,15 +558,15 @@ TEST_F(BlobStateTest, calculatesParticleStrength) {
     EXPECT_EQ(2, state.getParticleStrength(*center));
     state.addParticle(pos_at_border);
     EXPECT_EQ(3, state.getParticleStrength(*center));
-    for (int x = pos_center.getX() - 4; x <= pos_center.getX() + 4; x++) {
-        for (int y = pos_center.getY() - 4; y <= pos_center.getY() + 4; y++) {
+    for (int x = pos_center.getX() - so; x <= pos_center.getX() + so; x++) {
+        for (int y = pos_center.getY() - so; y <= pos_center.getY() + so; y++) {
             if (state.getParticleAt(IntVector(x, y)) != nullptr) {
                 continue;
             }
             state.addParticle(IntVector(x, y));
         }
     }
-    EXPECT_EQ((4 + 4 + 1) * (4 + 4 + 1), state.getParticleStrength(*center));
+    EXPECT_EQ((2 * so + 1) * (2 * so + 1), state.getParticleStrength(*center));
 }
 
 }
