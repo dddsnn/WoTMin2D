@@ -12,13 +12,12 @@ find_package(SDL2 REQUIRED)
 find_package(Boost REQUIRED)
 include_directories(${SDL2_INCLUDE_DIR} ${Boost_INCLUDE_DIR})
 
-add_library(Game STATIC "")
+add_library(Game OBJECT "")
 target_compile_options(Game PUBLIC ${COMPILE_OPTIONS})
-target_link_libraries(Game ${SDL2_LIBRARY})
 
-add_executable(WoTMin2D main.cpp)
+add_executable(WoTMin2D main.cpp $<TARGET_OBJECTS:Game>)
 target_compile_options(WoTMin2D PUBLIC ${COMPILE_OPTIONS})
-target_link_libraries(WoTMin2D Game ${SDL2_LIBRARY})
+target_link_libraries(WoTMin2D ${SDL2_LIBRARY})
 
 target_sources(Game PUBLIC
     ${CMAKE_CURRENT_LIST_DIR}/Battle.cpp

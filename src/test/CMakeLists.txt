@@ -2,10 +2,10 @@ find_package(GTest REQUIRED)
 find_package(GMock REQUIRED)
 include_directories(${GTEST_INCLUDE_DIRS} ${GMOCK_INCLUDE_DIRS})
 
-add_executable(UnitTests "")
+add_executable(UnitTests $<TARGET_OBJECTS:Game>)
 target_compile_options(UnitTests PUBLIC ${COMPILE_OPTIONS})
 target_link_libraries(UnitTests
-    Game
+    ${SDL2_LIBRARY}
     ${GTEST_BOTH_LIBRARIES}
     ${GMOCK_BOTH_LIBRARIES}
 )
